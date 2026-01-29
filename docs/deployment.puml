@@ -1,0 +1,65 @@
+@startuml
+
+' left to right direction
+
+cloud bls_gov
+cloud datausa_io
+
+rectangle bls_raw_s3 #orange
+rectangle datausa_raw_s3 #orange
+rectangle bls_silver_s3 #orange
+rectangle datausa_silver_s3 #orange
+
+process bls_getter_py
+note top of bls_getter_py
+1. Republish open dataset in Amazon S3 and share with us a link.
+2. Handle 403 Forbidden errors
+3. sync website and S3 bucket
+    - unit test: check is_updated
+    - unit test: check is_added
+    - unit test: check is_deleted
+    - unit test: handle added files
+    - unit test: handle removed files
+    - unit test:Ensure repeated uploads
+4. SQS Write ahead text log
+end note
+
+
+process datausa_getter_py
+note top of datausa_getter_py
+1. Create a script that will fetch data from honolulu-api.datausa.io
+2. Save the result of this API call as a JSON file in S3.
+3. SQS Write ahead text log
+end note
+
+package process_data_py {
+    process clean_and_save_bls
+    process clean_and_save_datausa
+}
+
+file analysis_notebook_ipynb {
+    process descriptive_stats
+    process best_year_by_series
+    process pr_popn_by_qtr
+}
+
+note as aws_cdk
+    AWS_SQS_JSON_UPDATES
+    log stuff for each message on queue
+    AWS_LAMBDA_DAILY
+end note
+
+bls_gov --> bls_getter_py
+bls_getter_py --> bls_raw_s3
+bls_raw_s3 --> clean_and_save_bls
+clean_and_save_bls -- bls_silver_s3
+
+datausa_io --> datausa_getter_py
+datausa_getter_py --> datausa_raw_s3
+datausa_raw_s3 --> clean_and_save_datausa
+clean_and_save_datausa --> datausa_silver_s3
+
+bls_silver_s3 --> analysis_notebook_ipynb
+datausa_silver_s3 --> analysis_notebook_ipynb
+
+@enduml
