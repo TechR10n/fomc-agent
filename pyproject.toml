@@ -1,6 +1,21 @@
 [project]
 name = "fomc-agent"
 version = "0.1.0"
-description = "Add your description here"
+description = "FOMC data pipeline: BLS & DataUSA ingestion, analytics, and serverless automation"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "boto3",
+    "requests",
+    "pyspark",
+]
+
+[project.optional-dependencies]
+cdk = ["aws-cdk-lib", "constructs"]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "moto[s3,sqs,lambda,iam]",
+    "requests-mock",
+    "freezegun",
+    "matplotlib",
+]
