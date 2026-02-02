@@ -2,7 +2,7 @@
 
 This document defines every manual verification step needed to confirm the FOMC data pipeline works correctly in both LocalStack (local) and personal AWS environments.
 
-If you want a guided, milestone-by-milestone checklist (recommended order), start with `docs/plan.md` and use this document for the deeper verification steps.
+If you want a guided, lab-by-lab curriculum (recommended order), start with `docs/lab-plan/README.md` and use this document for the deeper verification steps.
 
 ## Conventions
 
@@ -89,7 +89,7 @@ Check the coverage output table matches or exceeds these targets:
 
 ---
 
-## UAT-2: Helpers & Connectivity (Milestone 1)
+## UAT-2: Helpers & Connectivity
 
 ### UAT-2.1: LocalStack connectivity
 
@@ -143,7 +143,7 @@ python -c "from src.helpers.aws_client import is_localstack; print(f'LocalStack:
 
 ---
 
-## UAT-3: CDK Storage Stack (Milestone 2)
+## UAT-3: CDK Storage Stack
 
 ### UAT-3.1: CDK synth validation
 
@@ -234,7 +234,7 @@ python src/helpers/aws_status.py
 
 ---
 
-## UAT-4: BLS Data Fetcher (Milestone 3)
+## UAT-4: BLS Data Fetcher
 
 ### UAT-4.1: Fetch BLS data to LocalStack
 
@@ -331,7 +331,7 @@ aws s3 cp s3://fomc-bls-raw/_sync_state/pr/latest_state.json - | python -m json.
 
 ---
 
-## UAT-5: DataUSA API Fetcher (Milestone 3 continued)
+## UAT-5: DataUSA API Fetcher
 
 ### UAT-5.1: Fetch DataUSA data to LocalStack
 
@@ -434,7 +434,7 @@ aws s3 cp s3://fomc-datausa-raw/_sync_state/latest_state.json - | python -m json
 
 ---
 
-## UAT-6: PySpark Analytics (Milestone 4)
+## UAT-6: PySpark Analytics
 
 ### UAT-6.1: Run reports against LocalStack data
 
@@ -514,7 +514,7 @@ Run all cells in order:
 
 ---
 
-## UAT-7: CDK Compute Stack — Lambda (Milestone 5)
+## UAT-7: CDK Compute Stack — Lambda
 
 > Note: The fetcher Lambda imports third-party Python packages (currently `requests`). Ensure the deployed Lambda bundle includes dependencies, otherwise you may see `Runtime.ImportModuleError` at invoke time.
 
@@ -619,7 +619,7 @@ aws events list-rules | python -m json.tool
 
 ---
 
-## UAT-8: CDK Messaging Stack — SQS + Analytics Lambda (Milestone 6)
+## UAT-8: CDK Messaging Stack — SQS + Analytics Lambda
 
 ### UAT-8.1: CDK synth validation
 
@@ -734,7 +734,7 @@ aws s3 rm s3://fomc-datausa-raw/test-trigger.json
 
 ---
 
-## UAT-9: Full Pipeline End-to-End (Milestone 6 continued)
+## UAT-9: Full Pipeline End-to-End
 
 ### UAT-9.1: Deploy all stacks to LocalStack
 
