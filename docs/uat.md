@@ -2,6 +2,15 @@
 
 This document defines every manual verification step needed to confirm the FOMC data pipeline works correctly in both LocalStack (local) and personal AWS environments.
 
+If you want a guided, milestone-by-milestone checklist (recommended order), start with `docs/plan.md` and use this document for the deeper verification steps.
+
+## Conventions
+
+- Commands assume you are running from the repo root.
+- Commands assume your venv is active (`source .venv/bin/activate`). If it isn’t, replace `python` with `.venv/bin/python`.
+- LocalStack commands assume `AWS_ENDPOINT_URL=http://localhost.localstack.cloud:4566`.
+- If you deploy to personal AWS and change the bucket name prefix, replace `fomc` in bucket names/commands accordingly.
+
 ---
 
 ## Prerequisites
@@ -17,26 +26,29 @@ This document defines every manual verification step needed to confirm the FOMC 
 | Node.js (for CDK) | `brew install node` | `node --version` |
 | AWS CDK + cdklocal | `npm install -g aws-cdk-local aws-cdk` | `cdk --version && cdklocal --version` |
 | Java 21 (for PySpark) | `brew install openjdk@21` | `java -version` |
-| Python 3.12+ | Already installed | `python --version` |
+| Python 3.12+ | Already installed | `python3 --version` |
 | uv | `brew install uv` | `uv --version` |
 
 ### Environment Setup
 
 ```bash
-# 1. Install Python dependencies
-uv sync --extra dev
+# 1. Install Python dependencies (includes CDK + dev tooling)
+uv sync --all-extras
 
-# 2. Set JAVA_HOME (add to ~/.zshrc for persistence)
+# 2. Activate the virtualenv (so `python` exists and points at the project interpreter)
+source .venv/bin/activate
+
+# 3. Set JAVA_HOME (add to ~/.zshrc for persistence)
 export JAVA_HOME=/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home
 
-# 3. Start LocalStack
+# 4. Start LocalStack
 docker run -d --name localstack -p 4566:4566 localstack/localstack
 
-# 4. Verify LocalStack is running
+# 5. Verify LocalStack is running
 curl -s http://localhost.localstack.cloud:4566/_localstack/health | python -m json.tool
 # Expected: JSON with "services" showing "s3": "available", "sqs": "available", etc.
 
-# 5. Verify AWS CLI is configured for personal AWS
+# 6. Verify AWS CLI is configured for personal AWS
 aws sts get-caller-identity
 # Expected: JSON with your Account, UserId, and Arn
 ```
@@ -183,6 +195,8 @@ awslocal s3 ls
 
 ### UAT-3.4: Deploy to personal AWS
 
+> Note: S3 bucket names are globally unique. If `cdk deploy` fails with a bucket-name collision, choose a unique prefix by updating `bucket_prefix` in `infra/config.py` before deploying to AWS.
+
 ```bash
 # Bootstrap AWS (first time only)
 cdk bootstrap
@@ -197,7 +211,7 @@ cdk deploy FomcStorageStack --require-approval never
 ### UAT-3.5: Verify AWS buckets
 
 ```bash
-aws s3 ls | grep fomc
+aws s3 ls | grep fomc  # replace "fomc" if you changed the bucket prefix
 ```
 
 - [ ] All 4 `fomc-*` buckets exist in AWS
@@ -501,6 +515,8 @@ Run all cells in order:
 ---
 
 ## UAT-7: CDK Compute Stack — Lambda (Milestone 5)
+
+> Note: The fetcher Lambda imports third-party Python packages (currently `requests`). Ensure the deployed Lambda bundle includes dependencies, otherwise you may see `Runtime.ImportModuleError` at invoke time.
 
 ### UAT-7.1: CDK synth validation
 
