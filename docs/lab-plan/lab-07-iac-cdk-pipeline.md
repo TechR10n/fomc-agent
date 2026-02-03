@@ -212,12 +212,9 @@ def handler(event, context):
 EOF
 ```
 
-Instructor note (dependency packaging warning):
-- If your Lambda imports `requests` and it is not included in the deployed bundle, invocation will fail.
-- Solving packaging cleanly is a separate deep topic; for a workshop, you can:
-  - use LocalStack for code execution and keep AWS Lambda as “optional”, OR
-  - bundle dependencies using CDK bundling / layers (advanced), OR
-  - rewrite HTTP calls using the Python stdlib (`urllib.request`) (no external deps).
+Instructor note (dependency packaging):
+- This repo uses Python stdlib HTTP helpers so the Lambdas run without bundling third-party deps.
+- If you add non-stdlib dependencies later (e.g., `requests`, `pandas`), you must package them (CDK bundling/layers) or the Lambda will fail at import time.
 
 ## 07.5 Create the Messaging stack (S3 → SQS → analytics)
 
@@ -315,18 +312,17 @@ Set CDK context:
 
 ```bash
 export AWS_PROFILE=fomc-workshop
-unset AWS_ENDPOINT_URL
 
 # Choose a globally unique prefix for buckets
-export BUCKET_PREFIX="fomc-<yourname>-<yyyymmdd>"
+export FOMC_BUCKET_PREFIX="fomc-<yourname>-<yyyymmdd>"
 ```
 
 Deploy:
 
 ```bash
-cdk synth -c account="$(aws sts get-caller-identity --query Account --output text)" -c region=us-east-1 -c bucket_prefix="$BUCKET_PREFIX"
+cdk synth -c account="$(aws sts get-caller-identity --query Account --output text)" -c region=us-east-1 -c bucket_prefix="$FOMC_BUCKET_PREFIX"
 cdk bootstrap -c account="$(aws sts get-caller-identity --query Account --output text)" -c region=us-east-1
-cdk deploy StorageStack ComputeStack MessagingStack --require-approval never -c account="$(aws sts get-caller-identity --query Account --output text)" -c region=us-east-1 -c bucket_prefix="$BUCKET_PREFIX"
+cdk deploy StorageStack ComputeStack MessagingStack --require-approval never -c account="$(aws sts get-caller-identity --query Account --output text)" -c region=us-east-1 -c bucket_prefix="$FOMC_BUCKET_PREFIX"
 ```
 
 ## UAT Sign‑Off (Instructor)
@@ -343,4 +339,3 @@ Instructor initials: ________  Date/time: ________
 - Add CloudFront in front of the website bucket (HTTPS)
 - Add CDK `BucketDeployment` to automatically upload the `site/` folder
 - Implement Lambda dependency bundling so the fetcher can run in AWS without surprises
-

@@ -191,7 +191,6 @@ For now, upload to the DataUSA raw bucket under `exports/`:
 
 ```bash
 aws s3 cp site/data/timeseries.json "s3://$DATAUSA_BUCKET/exports/timeseries.json" || true
-awslocal s3 cp site/data/timeseries.json "s3://$DATAUSA_BUCKET/exports/timeseries.json" || true
 ```
 
 ## UAT Sign‑Off (Instructor)
@@ -208,4 +207,3 @@ Instructor initials: ________  Date/time: ________
 - Add a second exported JSON for “population-only” and plot it on a second chart
 - Export CSV as well as JSON for easy debugging
 - Add a data-quality check: ensure `year` is increasing and unique
-

@@ -40,6 +40,7 @@ class FomcComputeStack(Stack):
                     "notebooks/*",
                     "tests/*",
                     "docs/*",
+                    "site/*",
                     "__pycache__/*",
                     "*.pyc",
                 ],

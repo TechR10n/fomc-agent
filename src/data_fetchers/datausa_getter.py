@@ -4,9 +4,9 @@ import hashlib
 import json
 from datetime import datetime, timezone
 
-import requests
-
+from src.config import get_datausa_bucket
 from src.helpers.aws_client import get_client
+from src.helpers.http_client import fetch_json
 
 API_URL = (
     "https://honolulu-api.datausa.io/tesseract/data.jsonrecords"
@@ -27,18 +27,7 @@ def compute_content_hash(data: dict) -> str:
 
 def fetch_population_data(url: str = API_URL, retries: int = 3) -> dict:
     """Fetch population data from DataUSA API with retry logic."""
-    last_error = None
-    for attempt in range(retries):
-        try:
-            response = requests.get(url, timeout=30)
-            response.raise_for_status()
-            return response.json()
-        except (requests.RequestException, json.JSONDecodeError) as e:
-            last_error = e
-            if attempt < retries - 1:
-                import time
-                time.sleep(2 ** attempt)
-    raise last_error
+    return fetch_json(url, timeout=30, retries=retries)
 
 
 def needs_update(new_hash: str, s3_metadata: dict) -> bool:
@@ -94,11 +83,14 @@ def append_sync_log(s3_client, bucket: str, entry: dict):
     s3_client.put_object(Bucket=bucket, Key=log_key, Body=(existing + line).encode())
 
 
-def sync_population_data(bucket: str = BUCKET_NAME) -> dict:
+def sync_population_data(bucket: str | None = None) -> dict:
     """Fetch DataUSA population data and sync to S3.
 
     Returns a summary of the action taken.
     """
+    if bucket is None:
+        bucket = get_datausa_bucket()
+
     s3 = get_client("s3")
     now = datetime.now(timezone.utc)
 
@@ -155,5 +147,5 @@ def sync_population_data(bucket: str = BUCKET_NAME) -> dict:
 
 
 if __name__ == "__main__":
-    result = sync_population_data()
+    result = sync_population_data(bucket=get_datausa_bucket())
     print(json.dumps(result, indent=2))

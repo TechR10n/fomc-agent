@@ -1,18 +1,37 @@
 """BLS time-series data fetcher with sync state management."""
 
+import fnmatch
 import json
+import os
 import re
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 
-import requests
-
+from src.config import get_bls_bucket, get_bls_series_list
 from src.helpers.aws_client import get_client
+from src.helpers.http_client import fetch_bytes, fetch_text
 
-BLS_SERIES = ["pr"]
 BLS_BASE_URL = "https://download.bls.gov/pub/time.series"
 USER_AGENT = "fomc-agent/1.0 (data-pipeline; research-use)"
-BUCKET_NAME = "fomc-bls-raw"
+
+
+def _parse_file_patterns(patterns: str | None, series_id: str) -> list[str] | None:
+    """Parse comma-separated glob patterns (supports `{series}` placeholder)."""
+    if not patterns:
+        return None
+    items: list[str] = []
+    for raw in patterns.split(","):
+        p = raw.strip()
+        if not p:
+            continue
+        items.append(p.replace("{series}", series_id))
+    return items or None
+
+
+def _matches_patterns(filename: str, patterns: list[str] | None) -> bool:
+    if not patterns:
+        return True
+    return any(fnmatch.fnmatch(filename, pattern) for pattern in patterns)
 
 
 class BLSDirectoryParser(HTMLParser):
@@ -66,12 +85,13 @@ def parse_bls_timestamp(date_str: str) -> datetime:
 
 def fetch_directory_listing(series_id: str) -> list[dict]:
     """Fetch and parse the BLS directory listing for a series."""
-    url = f"{BLS_BASE_URL}/{series_id}/"
-    response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
-    response.raise_for_status()
+    base_url = os.environ.get("BLS_BASE_URL", BLS_BASE_URL)
+    user_agent = os.environ.get("BLS_USER_AGENT", USER_AGENT)
+    url = f"{base_url}/{series_id}/"
+    html = fetch_text(url, headers={"User-Agent": user_agent}, timeout=30)
 
     parser = BLSDirectoryParser()
-    parser.feed(response.text)
+    parser.feed(html)
     return parser.files
 
 
@@ -94,10 +114,10 @@ def get_s3_metadata(s3_client, bucket: str, key: str) -> dict:
 
 def download_file(series_id: str, filename: str) -> bytes:
     """Download a single file from BLS."""
-    url = f"{BLS_BASE_URL}/{series_id}/{filename}"
-    response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=60)
-    response.raise_for_status()
-    return response.content
+    base_url = os.environ.get("BLS_BASE_URL", BLS_BASE_URL)
+    user_agent = os.environ.get("BLS_USER_AGENT", USER_AGENT)
+    url = f"{base_url}/{series_id}/{filename}"
+    return fetch_bytes(url, headers={"User-Agent": user_agent}, timeout=60)
 
 
 def upload_to_s3(s3_client, bucket: str, key: str, data: bytes, metadata: dict):
@@ -148,11 +168,19 @@ def append_sync_log(s3_client, bucket: str, series_id: str, entry: dict):
     s3_client.put_object(Bucket=bucket, Key=log_key, Body=(existing + line).encode())
 
 
-def sync_series(series_id: str, bucket: str = BUCKET_NAME) -> dict:
+def sync_series(series_id: str, bucket: str | None = None) -> dict:
     """Sync a single BLS series to S3.
 
     Returns a summary of actions taken.
     """
+    if bucket is None:
+        bucket = get_bls_bucket()
+
+    file_patterns = _parse_file_patterns(
+        os.environ.get("BLS_FILE_PATTERNS"),
+        series_id=series_id,
+    )
+
     s3 = get_client("s3")
     now = datetime.now(timezone.utc)
 
@@ -165,6 +193,8 @@ def sync_series(series_id: str, bucket: str = BUCKET_NAME) -> dict:
 
     for file_info in files:
         filename = file_info["filename"]
+        if not _matches_patterns(filename, file_patterns):
+            continue
         source_time = parse_bls_timestamp(file_info["timestamp"])
         s3_key = f"{series_id}/{filename}"
         metadata = get_s3_metadata(s3, bucket, s3_key)
@@ -222,10 +252,12 @@ def sync_series(series_id: str, bucket: str = BUCKET_NAME) -> dict:
     return summary
 
 
-def sync_all(series_list: list[str] | None = None, bucket: str = BUCKET_NAME) -> dict:
+def sync_all(series_list: list[str] | None = None, bucket: str | None = None) -> dict:
     """Sync all configured BLS series."""
     if series_list is None:
-        series_list = BLS_SERIES
+        series_list = get_bls_series_list()
+    if bucket is None:
+        bucket = get_bls_bucket()
     results = {}
     for series_id in series_list:
         results[series_id] = sync_series(series_id, bucket)
@@ -233,5 +265,6 @@ def sync_all(series_list: list[str] | None = None, bucket: str = BUCKET_NAME) ->
 
 
 if __name__ == "__main__":
-    results = sync_all()
+    bucket = get_bls_bucket()
+    results = sync_all(bucket=bucket)
     print(json.dumps(results, indent=2))

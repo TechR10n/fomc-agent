@@ -1,8 +1,8 @@
 """Tests for datausa_getter.py."""
 
 import json
-import os
 from unittest.mock import patch
+import urllib.error
 
 import boto3
 import pytest
@@ -17,13 +17,6 @@ from src.data_fetchers.datausa_getter import (
     save_sync_state,
     append_sync_log,
 )
-
-
-@pytest.fixture(autouse=True)
-def clear_endpoint():
-    with patch.dict(os.environ, {}, clear=False):
-        os.environ.pop("AWS_ENDPOINT_URL", None)
-        yield
 
 
 class TestComputeContentHash:
@@ -61,59 +54,42 @@ class TestNeedsUpdate:
 
 
 class TestFetchPopulationData:
-    def test_fetch_population_data(self, requests_mock, sample_population_data):
+    def test_fetch_population_data(self, sample_population_data):
         """Successful API call returns expected JSON."""
-        requests_mock.get(
-            "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
-            json=sample_population_data,
-        )
-        data = fetch_population_data()
+        with patch("src.data_fetchers.datausa_getter.fetch_json", return_value=sample_population_data):
+            data = fetch_population_data()
         assert "data" in data
         assert len(data["data"]) == 8
 
-    def test_api_timeout(self, requests_mock):
+    def test_api_timeout(self):
         """Handles timeout with retry."""
-        import requests as req
+        with patch("src.data_fetchers.datausa_getter.fetch_json", side_effect=TimeoutError):
+            with pytest.raises(TimeoutError):
+                fetch_population_data(retries=1)
 
-        requests_mock.get(
-            "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
-            exc=req.exceptions.Timeout,
-        )
-        with pytest.raises(req.exceptions.Timeout):
-            fetch_population_data(retries=1)
-
-    def test_api_500_error(self, requests_mock):
+    def test_api_500_error(self):
         """Handles server error with retry."""
-        requests_mock.get(
-            "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
-            status_code=500,
-        )
-        with pytest.raises(Exception):
-            fetch_population_data(retries=1)
+        err = urllib.error.HTTPError(url="u", code=500, msg="ServerError", hdrs=None, fp=None)
+        with patch("src.data_fetchers.datausa_getter.fetch_json", side_effect=err):
+            with pytest.raises(urllib.error.HTTPError):
+                fetch_population_data(retries=1)
 
-    def test_api_malformed_json(self, requests_mock):
+    def test_api_malformed_json(self):
         """Handles invalid JSON response."""
-        requests_mock.get(
-            "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
-            text="not json{{{",
-        )
-        with pytest.raises(Exception):
-            fetch_population_data(retries=1)
+        with patch("src.data_fetchers.datausa_getter.fetch_json", side_effect=json.JSONDecodeError("msg", "doc", 0)):
+            with pytest.raises(json.JSONDecodeError):
+                fetch_population_data(retries=1)
 
 
 class TestSyncPopulationData:
     @mock_aws
-    def test_save_to_s3(self, requests_mock, sample_population_data):
+    def test_save_to_s3(self, sample_population_data):
         """JSON saved correctly to S3 bucket."""
         s3 = boto3.client("s3", region_name="us-east-1")
         s3.create_bucket(Bucket="fomc-datausa-raw")
 
-        requests_mock.get(
-            "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
-            json=sample_population_data,
-        )
-
-        result = sync_population_data()
+        with patch("src.data_fetchers.datausa_getter.fetch_json", return_value=sample_population_data):
+            result = sync_population_data()
         assert result["action"] == "updated"
         assert result["record_count"] == 8
 
@@ -123,7 +99,7 @@ class TestSyncPopulationData:
         assert len(data["data"]) == 8
 
     @mock_aws
-    def test_skip_unchanged(self, requests_mock, sample_population_data):
+    def test_skip_unchanged(self, sample_population_data):
         """Skips upload when content hash matches."""
         s3 = boto3.client("s3", region_name="us-east-1")
         s3.create_bucket(Bucket="fomc-datausa-raw")
@@ -136,12 +112,8 @@ class TestSyncPopulationData:
             Metadata={"content_hash": content_hash},
         )
 
-        requests_mock.get(
-            "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
-            json=sample_population_data,
-        )
-
-        result = sync_population_data()
+        with patch("src.data_fetchers.datausa_getter.fetch_json", return_value=sample_population_data):
+            result = sync_population_data()
         assert result["action"] == "unchanged"
 
 

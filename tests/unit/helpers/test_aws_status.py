@@ -1,11 +1,8 @@
 """Tests for aws_status.py."""
 
 import json
-import os
-from unittest.mock import patch
 
 import boto3
-import pytest
 from moto import mock_aws
 
 from src.helpers.aws_status import (
@@ -14,14 +11,6 @@ from src.helpers.aws_status import (
     check_lambda_status,
     check_all_status,
 )
-
-
-@pytest.fixture(autouse=True)
-def clear_endpoint():
-    """Ensure no endpoint URL interferes with moto."""
-    with patch.dict(os.environ, {}, clear=False):
-        os.environ.pop("AWS_ENDPOINT_URL", None)
-        yield
 
 
 @mock_aws

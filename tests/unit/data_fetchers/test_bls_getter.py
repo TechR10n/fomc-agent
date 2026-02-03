@@ -1,9 +1,9 @@
 """Tests for bls_getter.py."""
 
 import json
-import os
+import urllib.error
 from datetime import datetime
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import boto3
 import pytest
@@ -21,13 +21,6 @@ from src.data_fetchers.bls_getter import (
     save_sync_state,
     append_sync_log,
 )
-
-
-@pytest.fixture(autouse=True)
-def clear_endpoint():
-    with patch.dict(os.environ, {}, clear=False):
-        os.environ.pop("AWS_ENDPOINT_URL", None)
-        yield
 
 
 class TestBLSDirectoryParser:
@@ -150,56 +143,47 @@ class TestSyncState:
 
 
 class TestFetchDirectoryListing:
-    def test_403_without_user_agent(self, requests_mock):
+    def test_403_without_user_agent(self):
         """Simulates 403 response."""
-        requests_mock.get(
-            "https://download.bls.gov/pub/time.series/pr/",
-            status_code=403,
-        )
-        with pytest.raises(Exception):
-            fetch_directory_listing("pr")
+        err = urllib.error.HTTPError(url="u", code=403, msg="Forbidden", hdrs=None, fp=None)
+        with patch("src.data_fetchers.bls_getter.fetch_text", side_effect=err):
+            with pytest.raises(urllib.error.HTTPError):
+                fetch_directory_listing("pr")
 
-    def test_success_with_user_agent(self, requests_mock, sample_bls_html):
+    def test_success_with_user_agent(self, sample_bls_html):
         """Proper User-Agent header gets 200."""
-        requests_mock.get(
-            "https://download.bls.gov/pub/time.series/pr/",
-            text=sample_bls_html,
-        )
-        files = fetch_directory_listing("pr")
+        with patch("src.data_fetchers.bls_getter.fetch_text", return_value=sample_bls_html):
+            files = fetch_directory_listing("pr")
         assert len(files) == 3
         assert files[0]["filename"] == "pr.data.0.Current"
 
 
 class TestSyncSeries:
     @mock_aws
-    def test_sync_new_files(self, requests_mock, sample_bls_html):
+    def test_sync_new_files(self, sample_bls_html):
         """Syncs new files from BLS to S3."""
         s3 = boto3.client("s3", region_name="us-east-1")
         s3.create_bucket(Bucket="fomc-bls-raw")
 
-        requests_mock.get(
-            "https://download.bls.gov/pub/time.series/pr/",
-            text=sample_bls_html,
-        )
-        requests_mock.get(
-            "https://download.bls.gov/pub/time.series/pr/pr.data.0.Current",
-            content=b"data0",
-        )
-        requests_mock.get(
-            "https://download.bls.gov/pub/time.series/pr/pr.data.1.AllData",
-            content=b"data1",
-        )
-        requests_mock.get(
-            "https://download.bls.gov/pub/time.series/pr/pr.series",
-            content=b"series",
-        )
+        def _fetch_bytes(url: str, **_kwargs):
+            if url.endswith("/pr/pr.data.0.Current"):
+                return b"data0"
+            if url.endswith("/pr/pr.data.1.AllData"):
+                return b"data1"
+            if url.endswith("/pr/pr.series"):
+                return b"series"
+            raise AssertionError(f"Unexpected URL: {url}")
 
-        result = sync_series("pr")
+        with (
+            patch("src.data_fetchers.bls_getter.fetch_text", return_value=sample_bls_html),
+            patch("src.data_fetchers.bls_getter.fetch_bytes", side_effect=_fetch_bytes),
+        ):
+            result = sync_series("pr")
         assert len(result["added"]) == 3
         assert len(result["unchanged"]) == 0
 
     @mock_aws
-    def test_skip_unchanged_files(self, requests_mock, sample_bls_html):
+    def test_skip_unchanged_files(self, sample_bls_html):
         """No re-upload when timestamps match."""
         s3 = boto3.client("s3", region_name="us-east-1")
         s3.create_bucket(Bucket="fomc-bls-raw")
@@ -224,12 +208,8 @@ class TestSyncSeries:
             Metadata={"source_modified": "2026-01-15T08:30:00"},
         )
 
-        requests_mock.get(
-            "https://download.bls.gov/pub/time.series/pr/",
-            text=sample_bls_html,
-        )
-
-        result = sync_series("pr")
+        with patch("src.data_fetchers.bls_getter.fetch_text", return_value=sample_bls_html):
+            result = sync_series("pr")
         assert len(result["unchanged"]) == 3
         assert len(result["added"]) == 0
         assert len(result["updated"]) == 0
@@ -237,22 +217,25 @@ class TestSyncSeries:
 
 class TestSyncMultipleSeries:
     @mock_aws
-    def test_sync_multiple_series(self, requests_mock, sample_bls_html):
+    def test_sync_multiple_series(self, sample_bls_html):
         """Syncs multiple series to correct S3 prefixes."""
         s3 = boto3.client("s3", region_name="us-east-1")
         s3.create_bucket(Bucket="fomc-bls-raw")
 
-        for series in ["pr", "cu"]:
-            requests_mock.get(
-                f"https://download.bls.gov/pub/time.series/{series}/",
-                text=sample_bls_html,
-            )
-            for fn in ["pr.data.0.Current", "pr.data.1.AllData", "pr.series"]:
-                requests_mock.get(
-                    f"https://download.bls.gov/pub/time.series/{series}/{fn}",
-                    content=b"data",
-                )
+        def _fetch_text(url: str, **_kwargs):
+            if url.endswith("/pr/") or url.endswith("/cu/"):
+                return sample_bls_html
+            raise AssertionError(f"Unexpected URL: {url}")
 
-        results = sync_all(series_list=["pr", "cu"])
+        def _fetch_bytes(url: str, **_kwargs):
+            if "/pr/" in url or "/cu/" in url:
+                return b"data"
+            raise AssertionError(f"Unexpected URL: {url}")
+
+        with (
+            patch("src.data_fetchers.bls_getter.fetch_text", side_effect=_fetch_text),
+            patch("src.data_fetchers.bls_getter.fetch_bytes", side_effect=_fetch_bytes),
+        ):
+            results = sync_all(series_list=["pr", "cu"])
         assert "pr" in results
         assert "cu" in results

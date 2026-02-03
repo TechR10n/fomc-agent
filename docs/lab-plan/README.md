@@ -16,7 +16,7 @@ These lab plans assume you start from an **empty folder** and build everything s
 1. `docs/lab-plan/lab-00-workshop-setup.md`
 2. `docs/lab-plan/lab-01-aws-basics-and-cli.md`
 3. `docs/lab-plan/lab-02-python-project-bootstrap.md`
-4. `docs/lab-plan/lab-03-localstack-integration.md` (optional but recommended)
+4. `docs/lab-plan/lab-03-aws-skillbuilder.md`
 5. `docs/lab-plan/lab-04-bls-ingestion.md`
 6. `docs/lab-plan/lab-05-datausa-ingestion.md`
 7. `docs/lab-plan/lab-06-analytics-and-export.md`
@@ -27,6 +27,4 @@ These lab plans assume you start from an **empty folder** and build everything s
 
 - Use a dedicated AWS profile for this workshop (don’t overwrite your default).
 - Never commit secrets to git. Avoid putting access keys into project files.
-- Prefer LocalStack while you’re learning to reduce AWS costs and risk.
-- If you deploy to AWS, clean up (delete stacks/buckets) when you’re done.
-
+- Use least-privilege IAM permissions and clean up (delete stacks/buckets) when you’re done.

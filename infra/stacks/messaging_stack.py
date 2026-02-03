@@ -69,6 +69,7 @@ class FomcMessagingStack(Stack):
                     "notebooks/*",
                     "tests/*",
                     "docs/*",
+                    "site/*",
                     "__pycache__/*",
                     "*.pyc",
                 ],

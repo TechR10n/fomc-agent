@@ -1,1 +1,1 @@
-requests
+# No third-party dependencies (stdlib + boto3 in Lambda runtime)

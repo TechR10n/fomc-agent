@@ -1,7 +1,7 @@
 # Lab 04 — BLS Ingestion (Sync a Public Dataset into S3)
 
 **Timebox:** 60–120 minutes  
-**Outcome:** You can sync the BLS “pr” time-series dataset into an S3 bucket (AWS or LocalStack) with idempotency and a sync log.
+**Outcome:** You can sync the BLS “pr” time-series dataset into an S3 bucket (AWS) with idempotency and a sync log.
 
 ## What you’re doing in this lab
 
@@ -16,22 +16,13 @@
 ## You start with
 
 - Lab 02 completed (Python project + venv)
-- Lab 03 completed (if using LocalStack) OR Lab 01 completed (if using AWS)
+- Lab 03 completed (AWS profile + `FOMC_BUCKET_PREFIX` set)
 
-## 04.1 Choose your target: AWS or LocalStack
-
-### Option A: AWS
+## 04.1 Set your environment
 
 ```bash
 export AWS_PROFILE=fomc-workshop
-unset AWS_ENDPOINT_URL
 export AWS_DEFAULT_REGION=us-east-1
-```
-
-### Option B: LocalStack
-
-```bash
-set -a; source .env.local; set +a
 ```
 
 ## 04.2 Create your S3 bucket for BLS raw data
@@ -39,29 +30,20 @@ set -a; source .env.local; set +a
 S3 bucket names must be globally unique in AWS. Pick a unique name:
 
 ```bash
-export BLS_BUCKET="fomc-<yourname>-bls-raw"
+export BLS_BUCKET="${FOMC_BUCKET_PREFIX}-bls-raw"
 ```
 
 Create bucket:
 
-- AWS (us-east-1):
-  ```bash
-  aws s3api create-bucket --bucket "$BLS_BUCKET" --region us-east-1
-  ```
-- LocalStack:
-  ```bash
-  awslocal s3api create-bucket --bucket "$BLS_BUCKET"
-  ```
+```bash
+aws s3api create-bucket --bucket "$BLS_BUCKET" --region us-east-1
+```
 
 Verify:
 
 ```bash
 aws s3 ls | grep "$BLS_BUCKET" || true
-awslocal s3 ls | grep "$BLS_BUCKET" || true
 ```
-
-Instructor note:
-- You only need one of those commands depending on your mode.
 
 ## 04.3 Create the BLS sync module
 
@@ -91,7 +73,7 @@ import re
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 
-import requests
+import urllib.request
 
 from src.helpers.aws_client import get_client
 
@@ -143,18 +125,19 @@ def _parse_bls_timestamp(ts: str) -> datetime:
 
 def _list_remote_files(series_id: str) -> list[dict]:
     url = f"{BLS_BASE_URL}/{series_id}/"
-    resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=30)
-    resp.raise_for_status()
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=30) as resp:  # nosec - workshop URL
+        html = resp.read().decode("utf-8", errors="replace")
     parser = _BlsDirParser()
-    parser.feed(resp.text)
+    parser.feed(html)
     return parser.files
 
 
 def _download(series_id: str, filename: str) -> bytes:
     url = f"{BLS_BASE_URL}/{series_id}/{filename}"
-    resp = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=60)
-    resp.raise_for_status()
-    return resp.content
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=60) as resp:  # nosec - workshop URL
+        return resp.read()
 
 
 def _head_metadata(s3, bucket: str, key: str) -> dict:
@@ -296,20 +279,14 @@ Expected:
 
 Verify objects exist:
 
-- AWS:
-  ```bash
-  aws s3 ls "s3://$BLS_BUCKET/pr/" | head
-  ```
-- LocalStack:
-  ```bash
-  awslocal s3 ls "s3://$BLS_BUCKET/pr/" | head
-  ```
+```bash
+aws s3 ls "s3://$BLS_BUCKET/pr/" | head
+```
 
 ## 04.5 Verify state + log exist
 
 ```bash
 aws s3 ls "s3://$BLS_BUCKET/_sync_state/pr/" || true
-awslocal s3 ls "s3://$BLS_BUCKET/_sync_state/pr/" || true
 ```
 
 Expected:
@@ -327,7 +304,7 @@ Expected:
 
 ## UAT Sign‑Off (Instructor)
 
-- [ ] Student created the BLS raw bucket successfully (AWS or LocalStack)
+- [ ] Student created the BLS raw bucket successfully
 - [ ] `python src/data_fetchers/bls_sync.py` runs without errors
 - [ ] BLS files exist under `s3://$BLS_BUCKET/pr/`
 - [ ] Sync state/log exist under `s3://$BLS_BUCKET/_sync_state/pr/`
@@ -340,4 +317,3 @@ Instructor initials: ________  Date/time: ________
 - Add exponential backoff to HTTP downloads
 - Add a “dry run” mode that prints what would change without uploading
 - Track file sizes and alert if a file shrinks unexpectedly
-

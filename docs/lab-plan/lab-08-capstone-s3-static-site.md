@@ -18,7 +18,7 @@ This is the “demo moment”: you will open a URL in your browser and see the c
 - AWS CLI configured (Lab 01)
 
 Instructor note:
-- LocalStack can simulate S3, but “real” public website hosting is easiest in AWS.
+- Public static website hosting is easiest in AWS.
 
 ## 08.1 Create the website files
 
@@ -154,9 +154,8 @@ Pick a globally unique bucket name:
 ```bash
 export AWS_PROFILE=fomc-workshop
 export AWS_DEFAULT_REGION=us-east-1
-unset AWS_ENDPOINT_URL
 
-export SITE_BUCKET="fomc-<yourname>-site-<yyyymmdd>"
+export SITE_BUCKET="${FOMC_BUCKET_PREFIX}-site"
 ```
 
 Create it (us-east-1):
@@ -273,4 +272,3 @@ aws s3api delete-bucket --bucket "$SITE_BUCKET" --region us-east-1
 - Add CloudFront for HTTPS (S3 website endpoints are HTTP-only)
 - Add a second chart (population-only) and a dropdown to switch views
 - Add a `last_updated` timestamp to the JSON and display it on the page
-

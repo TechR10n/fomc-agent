@@ -58,24 +58,18 @@ python3 --version
 uv --version
 aws --version
 node --version
-docker --version
 ```
 
 If something is missing:
 - **AWS CLI** (macOS): `brew install awscli`
 - **uv** (macOS): `brew install uv`
 - **Node** (macOS): `brew install node`
-- **Docker Desktop**: install from Docker (GUI installer), then re-run `docker --version`
 
-Instructor note:
-- If you don’t want Docker/LocalStack today, you can skip Docker and still finish the capstone using real AWS.
+## 00.5 Pick your AWS CLI profile name (write it down)
 
-## 00.5 Decide your “mode” for the day (write it down)
+Pick a dedicated profile name for this workshop and write it at the top of your lab notebook:
 
-Pick one and write it at the top of your lab notebook:
-
-- **Mode A (recommended):** LocalStack for most labs + AWS only for the capstone static website
-- **Mode B:** AWS for everything (simple to conceptualize, but costs money and needs careful cleanup)
+- Recommended: `fomc-workshop`
 
 ## 00.6 Add a basic `.gitignore` now (save future pain)
 
@@ -109,7 +103,7 @@ git commit -m "Lab 00: workshop setup"
 
 - [ ] Project folder exists and is a git repo
 - [ ] `notes/workshop-log.md` exists with student name/date
-- [ ] Student can run: `python3`, `uv`, `aws`, and (if using LocalStack) `docker`
+- [ ] Student can run: `python3`, `uv`, `aws`, and `node`
 - [ ] `.gitignore` present and includes `.venv/` and `.env*`
 
 Instructor initials: ________  Date/time: ________
@@ -118,4 +112,3 @@ Instructor initials: ________  Date/time: ________
 
 - Install `jq` and practice pretty-printing JSON: `brew install jq`
 - Create a second log file `notes/questions.md` and write down 3 AWS questions you want answered today
-

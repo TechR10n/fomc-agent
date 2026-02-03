@@ -12,6 +12,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
+from src.config import get_bls_bucket, get_bls_key, get_datausa_bucket, get_datausa_key
 from src.helpers.aws_client import get_client
 
 logger = logging.getLogger()
@@ -20,8 +21,12 @@ logger.setLevel(logging.INFO)
 
 def handler(event, context):
     """Process SQS messages triggered by S3 uploads."""
-    bls_bucket = os.environ.get("BLS_BUCKET", "fomc-bls-raw")
-    datausa_bucket = os.environ.get("DATAUSA_BUCKET", "fomc-datausa-raw")
+    bls_bucket = get_bls_bucket()
+    datausa_bucket = get_datausa_bucket()
+    bls_key = get_bls_key()
+    pop_key = get_datausa_key()
+    join_series_id = os.environ.get("ANALYTICS_SERIES_ID", "PRS30006032")
+    join_period = os.environ.get("ANALYTICS_PERIOD", "Q01")
 
     results = []
     errors = []
@@ -36,7 +41,14 @@ def handler(event, context):
                 key = s3_record.get("s3", {}).get("object", {}).get("key", "")
                 logger.info(f"Processing S3 event: {bucket_name}/{key}")
 
-            report = run_reports(bls_bucket, datausa_bucket)
+            report = run_reports(
+                bls_bucket,
+                datausa_bucket,
+                bls_key=bls_key,
+                pop_key=pop_key,
+                join_series_id=join_series_id,
+                join_period=join_period,
+            )
             results.append(report)
             logger.info(f"Report results: {json.dumps(report, default=str)}")
         except Exception as e:
@@ -50,33 +62,46 @@ def handler(event, context):
     }
 
 
-def run_reports(bls_bucket: str, datausa_bucket: str) -> dict:
+def run_reports(
+    bls_bucket: str,
+    datausa_bucket: str,
+    *,
+    bls_key: str,
+    pop_key: str,
+    join_series_id: str,
+    join_period: str,
+) -> dict:
     """Run all three reports using stdlib csv/json."""
     s3 = get_client("s3")
 
     # Load population data
-    pop_data = load_population(s3, datausa_bucket)
+    pop_data = load_population(s3, datausa_bucket, pop_key)
 
     # Load BLS data
-    bls_data = load_bls_data(s3, bls_bucket)
+    bls_data = load_bls_data(s3, bls_bucket, bls_key)
 
     return {
         "report_1": report_population_stats(pop_data),
         "report_2": report_best_year(bls_data),
-        "report_3": report_series_population(bls_data, pop_data),
+        "report_3": report_series_population(
+            bls_data,
+            pop_data,
+            series_id=join_series_id,
+            period=join_period,
+        ),
     }
 
 
-def load_population(s3_client, bucket: str) -> list[dict]:
+def load_population(s3_client, bucket: str, key: str) -> list[dict]:
     """Load population JSON from S3."""
-    response = s3_client.get_object(Bucket=bucket, Key="population.json")
+    response = s3_client.get_object(Bucket=bucket, Key=key)
     data = json.loads(response["Body"].read())
     return data.get("data", [])
 
 
-def load_bls_data(s3_client, bucket: str) -> list[dict]:
+def load_bls_data(s3_client, bucket: str, key: str) -> list[dict]:
     """Load BLS CSV from S3."""
-    response = s3_client.get_object(Bucket=bucket, Key="pr/pr.data.0.Current")
+    response = s3_client.get_object(Bucket=bucket, Key=key)
     content = response["Body"].read().decode("utf-8")
 
     reader = csv.DictReader(io.StringIO(content), delimiter="\t")
@@ -140,21 +165,27 @@ def report_best_year(bls_data: list[dict]) -> list[dict]:
     ]
 
 
-def report_series_population(bls_data: list[dict], pop_data: list[dict]) -> list[dict]:
-    """Report 3: PRS30006032 Q01 values joined with population."""
+def report_series_population(
+    bls_data: list[dict],
+    pop_data: list[dict],
+    *,
+    series_id: str = "PRS30006032",
+    period: str = "Q01",
+) -> list[dict]:
+    """Report 3: Join one BLS series with population."""
     pop_by_year = {int(r["Year"]): int(r["Population"]) for r in pop_data}
 
     results = []
     for row in bls_data:
-        if row.get("series_id") != "PRS30006032" or row.get("period") != "Q01":
+        if row.get("series_id") != series_id or row.get("period") != period:
             continue
         year = int(row.get("year", 0))
         value = row.get("value", "")
         population = pop_by_year.get(year)
         results.append({
-            "series_id": "PRS30006032",
+            "series_id": series_id,
             "year": year,
-            "period": "Q01",
+            "period": period,
             "value": value,
             "Population": population,
         })

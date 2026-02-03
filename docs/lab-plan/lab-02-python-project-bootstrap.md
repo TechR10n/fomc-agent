@@ -1,7 +1,7 @@
 # Lab 02 — Python Project Bootstrap (From Scratch)
 
 **Timebox:** 60–90 minutes  
-**Outcome:** You have a working Python project with tests, and a small helper module that can talk to AWS (or LocalStack later) via boto3.
+**Outcome:** You have a working Python project with tests, and a small helper module that can talk to AWS via boto3.
 
 ## What you’re doing in this lab
 
@@ -35,7 +35,6 @@ description = "Workshop project: S3 ingestion + analytics + static site capstone
 requires-python = ">=3.12"
 dependencies = [
   "boto3",
-  "requests",
   "pandas",
 ]
 
@@ -44,7 +43,6 @@ dev = [
   "pytest",
   "pytest-cov",
   "moto[s3,sqs,lambda,iam]",
-  "requests-mock",
 ]
 EOF
 ```
@@ -76,22 +74,9 @@ DEFAULT_REGION = "us-east-1"
 def get_client(service: str):
     """
     Create a boto3 client for a service.
-
-    If AWS_ENDPOINT_URL is set, route to LocalStack.
     """
-    endpoint_url = os.environ.get("AWS_ENDPOINT_URL")
     region = os.environ.get("AWS_DEFAULT_REGION", DEFAULT_REGION)
-
-    kwargs = {"region_name": region}
-    if endpoint_url:
-        kwargs["endpoint_url"] = endpoint_url
-
-    return boto3.client(service, **kwargs)
-
-
-def is_localstack() -> bool:
-    endpoint = os.environ.get("AWS_ENDPOINT_URL", "")
-    return "localstack" in endpoint or "localhost" in endpoint
+    return boto3.client(service, region_name=region)
 EOF
 ```
 
@@ -180,7 +165,6 @@ def aws_test_env():
     os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
     os.environ["AWS_DEFAULT_REGION"] = "us-east-1"
     os.environ.pop("AWS_PROFILE", None)
-    os.environ.pop("AWS_ENDPOINT_URL", None)
     yield
 EOF
 ```
@@ -192,24 +176,20 @@ cat > tests/unit/helpers/test_aws_client.py <<'EOF'
 import os
 from unittest.mock import patch
 
-from src.helpers.aws_client import get_client, is_localstack
+from src.helpers.aws_client import get_client
 
 
 def test_get_client_defaults():
     with patch.dict(os.environ, {}, clear=True):
         c = get_client("s3")
         assert c.meta.service_model.service_name == "s3"
+        assert c.meta.region_name == "us-east-1"
 
 
-def test_get_client_with_endpoint():
-    with patch.dict(os.environ, {"AWS_ENDPOINT_URL": "http://localhost:4566", "AWS_DEFAULT_REGION": "us-east-1"}):
+def test_get_client_uses_env_region():
+    with patch.dict(os.environ, {"AWS_DEFAULT_REGION": "us-west-2"}, clear=True):
         c = get_client("s3")
-        assert c.meta.endpoint_url == "http://localhost:4566"
-
-
-def test_is_localstack_true():
-    with patch.dict(os.environ, {"AWS_ENDPOINT_URL": "http://localhost.localstack.cloud:4566"}):
-        assert is_localstack() is True
+        assert c.meta.region_name == "us-west-2"
 EOF
 ```
 
@@ -227,7 +207,7 @@ Expected:
 - [ ] Student has a working `.venv` created by `uv`
 - [ ] `python src/helpers/aws_status.py` prints JSON
 - [ ] `python -m pytest -q` passes
-- [ ] Student explains (in words): “What does `AWS_ENDPOINT_URL` do?”
+- [ ] Student explains (in words): AWS credential loading (`AWS_PROFILE` vs env vars vs `~/.aws/config`)
 
 Instructor initials: ________  Date/time: ________
 
@@ -235,4 +215,3 @@ Instructor initials: ________  Date/time: ________
 
 - Add formatting tooling (ruff/black) and run it
 - Expand `aws_status.py` to include object counts in S3 buckets
-

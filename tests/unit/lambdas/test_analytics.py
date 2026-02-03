@@ -19,13 +19,6 @@ from src.lambdas.analytics_processor.handler import (
 )
 
 
-@pytest.fixture(autouse=True)
-def clear_endpoint():
-    with patch.dict(os.environ, {}, clear=False):
-        os.environ.pop("AWS_ENDPOINT_URL", None)
-        yield
-
-
 def _setup_s3_data(sample_population_data, sample_bls_csv):
     """Helper to create S3 buckets with test data."""
     s3 = boto3.client("s3", region_name="us-east-1")

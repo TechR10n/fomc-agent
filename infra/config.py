@@ -1,25 +1,17 @@
-"""CDK environment detection and configuration."""
+"""CDK environment configuration (AWS-only)."""
 
 import os
 
-
-def is_local() -> bool:
-    """Check if deploying to LocalStack."""
-    return os.environ.get("CDK_LOCAL", "").lower() in ("true", "1")
-
+DEFAULT_REGION = "us-east-1"
 
 def get_env_config() -> dict:
     """Get environment-specific configuration."""
-    if is_local():
-        return {
-            "account": "000000000000",
-            "region": "us-east-1",
-            "bucket_prefix": "fomc",
-            "removal_policy": "destroy",
-        }
+    removal_policy = os.environ.get("FOMC_REMOVAL_POLICY", "destroy").lower()
+    if removal_policy not in ("destroy", "retain"):
+        removal_policy = "destroy"
     return {
         "account": os.environ.get("CDK_DEFAULT_ACCOUNT"),
-        "region": os.environ.get("CDK_DEFAULT_REGION", "us-east-1"),
-        "bucket_prefix": "fomc",
-        "removal_policy": "destroy",
+        "region": os.environ.get("CDK_DEFAULT_REGION", DEFAULT_REGION),
+        "bucket_prefix": os.environ.get("FOMC_BUCKET_PREFIX", "fomc"),
+        "removal_policy": removal_policy,
     }

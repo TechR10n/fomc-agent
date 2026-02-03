@@ -5,8 +5,7 @@ description = "FOMC data pipeline: BLS & DataUSA ingestion, analytics, and serve
 requires-python = ">=3.12"
 dependencies = [
     "boto3",
-    "requests",
-    "pyspark",
+    "pandas",
 ]
 
 [project.optional-dependencies]
@@ -15,7 +14,6 @@ dev = [
     "pytest",
     "pytest-cov",
     "moto[s3,sqs,lambda,iam]",
-    "requests-mock",
     "freezegun",
     "matplotlib",
 ]

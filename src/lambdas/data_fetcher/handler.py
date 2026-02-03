@@ -9,13 +9,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 from src.data_fetchers.bls_getter import sync_all as sync_bls
 from src.data_fetchers.datausa_getter import sync_population_data
+from src.config import get_bls_bucket, get_datausa_bucket, get_bls_series_list
 
 
 def handler(event, context):
     """Lambda entry point: fetch BLS and DataUSA data."""
-    bls_bucket = os.environ.get("BLS_BUCKET", "fomc-bls-raw")
-    datausa_bucket = os.environ.get("DATAUSA_BUCKET", "fomc-datausa-raw")
-    bls_series = os.environ.get("BLS_SERIES", "pr").split(",")
+    bls_bucket = get_bls_bucket()
+    datausa_bucket = get_datausa_bucket()
+    bls_series = get_bls_series_list()
 
     results = {"bls": None, "datausa": None, "errors": []}
 

@@ -13,36 +13,27 @@
 ## You start with
 
 - Lab 02 completed (Python project)
-- Lab 03 completed (if using LocalStack) OR Lab 01 completed (if using AWS)
+- Lab 03 completed (AWS profile + `FOMC_BUCKET_PREFIX` set)
 
-## 05.1 Choose your target: AWS or LocalStack
+## 05.1 Set your environment
 
-Same as Lab 04:
-
-- AWS:
-  ```bash
-  export AWS_PROFILE=fomc-workshop
-  unset AWS_ENDPOINT_URL
-  export AWS_DEFAULT_REGION=us-east-1
-  ```
-- LocalStack:
-  ```bash
-  set -a; source .env.local; set +a
-  ```
+```bash
+export AWS_PROFILE=fomc-workshop
+export AWS_DEFAULT_REGION=us-east-1
+```
 
 ## 05.2 Create your S3 bucket for DataUSA raw data
 
 Pick a unique name:
 
 ```bash
-export DATAUSA_BUCKET="fomc-<yourname>-datausa-raw"
+export DATAUSA_BUCKET="${FOMC_BUCKET_PREFIX}-datausa-raw"
 ```
 
-Create it (AWS vs LocalStack):
+Create it:
 
 ```bash
 aws s3api create-bucket --bucket "$DATAUSA_BUCKET" --region us-east-1 || true
-awslocal s3api create-bucket --bucket "$DATAUSA_BUCKET" || true
 ```
 
 ## 05.3 Create the DataUSA sync module
@@ -54,9 +45,9 @@ cat > src/data_fetchers/datausa_sync.py <<'EOF'
 import hashlib
 import json
 import time
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
-
-import requests
 
 from src.helpers.aws_client import get_client
 
@@ -80,10 +71,11 @@ def _fetch_json(url: str = API_URL, retries: int = 3) -> dict:
     last = None
     for attempt in range(retries):
         try:
-            r = requests.get(url, timeout=30)
-            r.raise_for_status()
-            return r.json()
-        except Exception as e:
+            req = urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=30) as resp:  # nosec - workshop URL
+                body = resp.read().decode("utf-8", errors="replace")
+            return json.loads(body)
+        except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError) as e:
             last = e
             if attempt < retries - 1:
                 time.sleep(2 ** attempt)
@@ -183,14 +175,9 @@ Expected:
 
 Verify `population.json` exists:
 
-- AWS:
-  ```bash
-  aws s3 ls "s3://$DATAUSA_BUCKET/" | grep population.json
-  ```
-- LocalStack:
-  ```bash
-  awslocal s3 ls "s3://$DATAUSA_BUCKET/" | grep population.json
-  ```
+```bash
+aws s3 ls "s3://$DATAUSA_BUCKET/" | grep population.json
+```
 
 ## 05.5 Verify idempotency (second run)
 
@@ -205,7 +192,6 @@ Expected:
 
 ```bash
 aws s3 ls "s3://$DATAUSA_BUCKET/_sync_state/" || true
-awslocal s3 ls "s3://$DATAUSA_BUCKET/_sync_state/" || true
 ```
 
 Expected:
@@ -214,7 +200,7 @@ Expected:
 
 ## UAT Sign‑Off (Instructor)
 
-- [ ] Student created the DataUSA raw bucket successfully (AWS or LocalStack)
+- [ ] Student created the DataUSA raw bucket successfully
 - [ ] `python src/data_fetchers/datausa_sync.py` runs without errors
 - [ ] `population.json` exists in the bucket
 - [ ] Second run is `unchanged` (idempotent behavior)
@@ -226,4 +212,3 @@ Instructor initials: ________  Date/time: ________
 
 - Add a “schema check” that validates `Year` and `Population` fields
 - Add a safeguard to keep only the latest N log entries (or rotate logs)
-
