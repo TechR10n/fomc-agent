@@ -202,6 +202,102 @@ def build_timeseries_payload(series_rows: list[dict]) -> dict:
     return {"title": title, "points": points}
 
 
+def build_pipeline_status(sync_results: dict, duration_seconds: float = 0.0) -> dict:
+    """Build a pipeline_status.json payload from sync results.
+
+    ``sync_results`` is the dict returned by the data-fetcher Lambda (or a
+    local equivalent) with shape::
+
+        {
+            "bls": {"pr": {"added": [...], "updated": [...], "unchanged": [...], "deleted": [...]}, ...},
+            "datausa": {"action": "updated", "content_hash": "...", "record_count": N},
+        }
+    """
+    from datetime import datetime, timezone
+
+    series_list = []
+    total_checked = 0
+    total_updated = 0
+    total_unchanged = 0
+
+    bls = sync_results.get("bls", {})
+    for series_id, result in sorted(bls.items()):
+        added = result.get("added", [])
+        updated = result.get("updated", [])
+        unchanged = result.get("unchanged", [])
+        deleted = result.get("deleted", [])
+
+        files = []
+        for f in added:
+            name = f if isinstance(f, str) else f.get("key", f.get("filename", ""))
+            files.append({"name": name, "action": "added"})
+        for f in updated:
+            name = f if isinstance(f, str) else f.get("key", f.get("filename", ""))
+            files.append({"name": name, "action": "updated"})
+        for f in unchanged:
+            name = f if isinstance(f, str) else f.get("key", f.get("filename", ""))
+            files.append({"name": name, "action": "unchanged"})
+        for f in deleted:
+            name = f if isinstance(f, str) else f.get("key", f.get("filename", ""))
+            files.append({"name": name, "action": "deleted"})
+
+        n_updated = len(added) + len(updated)
+        n_unchanged = len(unchanged)
+        n_deleted = len(deleted)
+        n_checked = n_updated + n_unchanged + n_deleted
+
+        total_checked += n_checked
+        total_updated += n_updated
+        total_unchanged += n_unchanged
+
+        series_list.append({
+            "id": series_id,
+            "name": series_id,
+            "url": f"https://download.bls.gov/pub/time.series/{series_id}/",
+            "files_checked": n_checked,
+            "files_updated": n_updated,
+            "files_unchanged": n_unchanged,
+            "files_deleted": n_deleted,
+            "files": files,
+        })
+
+    datausa_raw = sync_results.get("datausa", {})
+    datausa = {
+        "endpoint": "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
+        "action": datausa_raw.get("action", "unknown"),
+        "content_hash": datausa_raw.get("content_hash", ""),
+        "record_count": datausa_raw.get("record_count", 0),
+    }
+
+    return {
+        "last_run": datetime.now(timezone.utc).isoformat(),
+        "trigger": "EventBridge scheduled rule (nightly)",
+        "duration_seconds": round(duration_seconds, 1),
+        "summary": {
+            "series_scanned": len(series_list),
+            "total_files_checked": total_checked,
+            "files_updated": total_updated,
+            "files_unchanged": total_unchanged,
+            "datausa_status": datausa["action"],
+        },
+        "series": series_list,
+        "datausa": datausa,
+    }
+
+
+def export_pipeline_status(
+    sync_results: dict,
+    out_path: str | Path,
+    duration_seconds: float = 0.0,
+) -> Path:
+    """Write pipeline_status.json for the static site."""
+    path = Path(out_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = build_pipeline_status(sync_results, duration_seconds)
+    path.write_text(json.dumps(payload, indent=2, default=str) + "\n", encoding="utf-8")
+    return path.resolve()
+
+
 def export_site_timeseries(series_rows: list[dict], out_path: str | Path) -> Path:
     """Write the static site `timeseries.json` file and return the resolved path."""
     path = Path(out_path)
