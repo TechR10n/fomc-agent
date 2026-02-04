@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Small CDK wrapper that loads `.env.local` before invoking the CDK CLI.
+
+Examples:
+  python tools/cdk.py diff --all
+  python tools/cdk.py deploy --all --require-approval never
+  python tools/cdk.py deploy FomcSiteStack --require-approval never
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import shlex
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_env_file(path: Path) -> None:
+    if not path.exists():
+        raise SystemExit(
+            f"Env file not found: {path}\n"
+            "Create it (gitignored) with at least AWS_PROFILE, AWS_DEFAULT_REGION, and FOMC_BUCKET_PREFIX.\n"
+            "Tip: see `aws_setup.md`."
+        )
+
+    for raw in path.read_text().splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("'").strip('"')
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+def _resolve_cdk_command() -> list[str]:
+    cdk = shutil.which("cdk")
+    if cdk:
+        return [cdk]
+
+    npx = shutil.which("npx")
+    if npx:
+        return [npx, "cdk"]
+
+    raise SystemExit("Could not find `cdk` or `npx` on PATH. Install the AWS CDK CLI first.")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--env-file",
+        default=str(PROJECT_ROOT / ".env.local"),
+        help="Env file to load (default: .env.local)",
+    )
+    parser.add_argument("cdk_args", nargs=argparse.REMAINDER, help="Arguments passed to the CDK CLI")
+    args = parser.parse_args()
+
+    if not args.cdk_args:
+        raise SystemExit("Missing CDK arguments. Example: python tools/cdk.py diff --all")
+
+    _load_env_file(Path(args.env_file))
+    cmd = _resolve_cdk_command() + args.cdk_args
+
+    print(f"[cdk] Running: {shlex.join(cmd)}")
+    subprocess.run(cmd, cwd=PROJECT_ROOT, check=True)
+
+
+if __name__ == "__main__":
+    main()
+

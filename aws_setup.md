@@ -166,6 +166,14 @@ export LOCALSTACK_AUTH_TOKEN=ls-xxxxxxxx
 
 Add it to your shell profile (`~/.zshrc`) so it persists across sessions.
 
+**PyCharm tip (recommended):** Docker Compose automatically reads a project-root `.env` file (gitignored). This makes **one-click** LocalStack runs work even when PyCharm doesn't inherit your shell environment:
+
+```bash
+cat > .env <<'EOF'
+LOCALSTACK_AUTH_TOKEN=ls-xxxxxxxx
+EOF
+```
+
 ### 3.2 Start LocalStack
 
 ```bash
@@ -188,8 +196,8 @@ Fetch data into local S3 (uses real BLS and DataUSA APIs, stores in LocalStack S
 
 ```bash
 source .env.localstack
-python src/data_fetchers/bls_getter.py
-python src/data_fetchers/datausa_getter.py
+python -m src.data_fetchers.bls_getter
+python -m src.data_fetchers.datausa_getter
 ```
 
 Verify data landed:
@@ -203,7 +211,7 @@ Run analytics against local data:
 
 ```bash
 source .env.localstack
-python src/analytics/reports.py
+python -m src.analytics.reports
 ```
 
 ### 3.4 PyCharm Run Configurations (One-Click)
@@ -212,14 +220,34 @@ The project includes shared run configurations in `.run/` that appear automatica
 
 | Configuration | What It Does | Target |
 |---------------|-------------|--------|
+| **LocalStack Up (CLI)** | Starts LocalStack via `docker compose up -d` + waits for health | Docker |
+| **LocalStack Down (CLI)** | Stops LocalStack via `docker compose down` | Docker |
 | **Fetch Data (LocalStack)** | Fetches all BLS series into local S3 | LocalStack |
 | **Fetch DataUSA (LocalStack)** | Fetches population data into local S3 | LocalStack |
+| **Invoke Fetcher Lambda (LocalStack)** | Runs the deployed Lambda handler locally (writes to LocalStack S3) | LocalStack |
+| **Touch DataUSA (LocalStack)** | Re-uploads `population.json` to trigger S3→SQS (fast re-run) | LocalStack |
+| **LocalStack Worker (Analytics)** | Polls LocalStack SQS and runs analytics Lambda handler locally | LocalStack |
 | **Analytics (LocalStack)** | Runs reports against local S3 data | LocalStack |
 | **Fetch Data (AWS)** | Fetches BLS series into real AWS S3 | AWS |
+| **CDK Diff (AWS)** | Runs `cdk diff --all` (loads `.env.local`) | AWS |
+| **CDK Deploy (AWS)** | Runs `cdk deploy --all --require-approval never` (loads `.env.local`) | AWS |
 | **Run Tests** | Runs unit tests (moto mocks, no AWS needed) | Neither |
 | **Docker Compose Up (LocalStack)** | Starts LocalStack container | Docker |
 
-Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set. The AWS config uses your `fomc-agent` profile. No manual env var setup needed — just select a config and click Run.
+Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set. CDK configs load `.env.local` (gitignored) so you don't have to copy AWS profile/bucket-prefix values into the run configuration.
+
+#### Recommended iteration cadence (two-speed loop)
+
+**Fast loop (few times per hour):**
+1. Start LocalStack once (**LocalStack Up (CLI)**) and leave it running.
+2. Run **LocalStack Worker (Analytics)** and leave it running.
+3. Change code in `src/lambdas/analytics_processor/handler.py`.
+4. Trigger a fresh event without re-fetching APIs (**Touch DataUSA (LocalStack)**).
+5. Run **Run Tests** often (fast, no AWS/localstack required).
+
+**Slow loop (few times per day):**
+1. Run **CDK Diff (AWS)**.
+2. Run **CDK Deploy (AWS)** when ready.
 
 ### 3.5 Stop LocalStack
 
@@ -258,6 +286,7 @@ docker compose down -v
 | CDK bootstrap error         | Make sure Node.js is installed (`node --version`) and you ran `cdk bootstrap`   |
 | PyCharm can't find `boto3`  | Ensure interpreter points to `.venv` and run `uv sync`                          |
 | Lambda imports fail locally | Run from project root, not from `src/`                                          |
+| LocalStack token missing in PyCharm | Put `LOCALSTACK_AUTH_TOKEN` in project-root `.env` (gitignored) or restart PyCharm after exporting |
 | LocalStack exits with code 55 | `LOCALSTACK_AUTH_TOKEN` not set — export it before `docker compose up`         |
 | LocalStack buckets missing  | Check `docker compose logs` for init hook errors; re-run `docker compose up -d` |
 | Run configs not showing     | Reopen the project in PyCharm; configs are in `.run/` and auto-detected         |
