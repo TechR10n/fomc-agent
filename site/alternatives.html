@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Alternatives — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Dashboard</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a href="charts.html">Charts</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="design.html">Design</a>
+    <a class="active" href="alternatives.html">Alternatives</a>
+    <a href="diagrams.html">Diagrams</a>
+    <a href="about.html">About</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Alternative Architectures</h1>
+      <p class="subtitle">How you’d implement the same 4-step pipeline on Databricks, GCP, Azure, and beyond.</p>
+    </div>
+
+    <div class="card prose">
+      <h2>The invariant: 4 steps</h2>
+      <p>Cloud vendors differ, but the architecture stays stable:</p>
+      <ol>
+        <li><strong>Ingest Raw</strong> (land source payloads)</li>
+        <li><strong>Parse &amp; Update</strong> (schema + cleaning + upserts)</li>
+        <li><strong>Enrich</strong> (joins + derived datasets)</li>
+        <li><strong>CDC &amp; Triggers</strong> (events + retries + fan-out)</li>
+      </ol>
+    </div>
+
+    <div class="card prose">
+      <h2>Databricks (Lakehouse)</h2>
+      <p class="muted">Great when you want managed Spark + Delta + workspaces, with fewer “glue” services.</p>
+      <ul>
+        <li><strong>Raw:</strong> S3/ADLS/GCS landing zone</li>
+        <li><strong>Parse:</strong> Auto Loader / DLT pipelines into Delta “silver”</li>
+        <li><strong>Enrich:</strong> DLT “gold”, notebooks, or jobs</li>
+        <li><strong>CDC:</strong> Delta Change Data Feed + Workflows for downstream</li>
+      </ul>
+      <div class="diagram-container">
+        <img class="diagram-img" src="diagrams/alt-databricks.svg" alt="Databricks alternative architecture diagram" />
+        <p class="diagram-caption">Databricks mapping of raw → silver → gold with CDC via Delta</p>
+        <details class="code-details">
+          <summary>Show source</summary>
+          <pre><code data-puml="puml/alt-databricks.puml">Loading…</code></pre>
+        </details>
+      </div>
+    </div>
+
+    <div class="card prose">
+      <h2>Google Cloud Platform (GCP)</h2>
+      <p class="muted">Strong eventing + managed data processing into BigQuery.</p>
+      <ul>
+        <li><strong>Raw:</strong> Cloud Storage</li>
+        <li><strong>Parse/Enrich:</strong> Dataflow (Beam) or Dataproc (Spark)</li>
+        <li><strong>CDC:</strong> Pub/Sub + BigQuery streams / Merge patterns</li>
+        <li><strong>Orchestration:</strong> Cloud Scheduler + Workflows</li>
+      </ul>
+      <div class="diagram-container">
+        <img class="diagram-img" src="diagrams/alt-gcp.svg" alt="GCP alternative architecture diagram" />
+        <p class="diagram-caption">GCP mapping of storage + Pub/Sub + Dataflow + BigQuery</p>
+        <details class="code-details">
+          <summary>Show source</summary>
+          <pre><code data-puml="puml/alt-gcp.puml">Loading…</code></pre>
+        </details>
+      </div>
+    </div>
+
+    <div class="card prose">
+      <h2>Microsoft Azure</h2>
+      <p class="muted">Pairs well with ADLS + Event Grid + Databricks/Synapse, depending on workload.</p>
+      <ul>
+        <li><strong>Raw:</strong> ADLS Gen2</li>
+        <li><strong>Parse/Enrich:</strong> Azure Databricks or Synapse Spark</li>
+        <li><strong>CDC:</strong> Event Grid → Service Bus + Delta CDF (if Delta)</li>
+        <li><strong>Orchestration:</strong> Data Factory or Logic Apps</li>
+      </ul>
+      <div class="diagram-container">
+        <img class="diagram-img" src="diagrams/alt-azure.svg" alt="Azure alternative architecture diagram" />
+        <p class="diagram-caption">Azure mapping of ADLS + Event Grid + compute + serving</p>
+        <details class="code-details">
+          <summary>Show source</summary>
+          <pre><code data-puml="puml/alt-azure.puml">Loading…</code></pre>
+        </details>
+      </div>
+    </div>
+
+    <div class="card prose">
+      <h2>What changes across platforms?</h2>
+      <table>
+        <tr><th>Concern</th><th>What to decide</th></tr>
+        <tr><td>Compute</td><td>Lambda/Functions vs Spark vs managed pipelines (DLT/Dataflow).</td></tr>
+        <tr><td>CDC</td><td>Object events, database logs, Delta CDF, or warehouse merges.</td></tr>
+        <tr><td>Governance</td><td>Catalog/lineage, access policies, PII handling, retention.</td></tr>
+        <tr><td>Cost</td><td>Always-on clusters vs serverless, storage formats, partitioning.</td></tr>
+      </table>
+      <p class="muted">For interview visuals, see <a href="diagrams.html">Diagrams</a> (PlantUML source included).</p>
+    </div>
+  </div>
+
+  <script>
+    (async function loadPumlSources() {
+      const blocks = Array.from(document.querySelectorAll("code[data-puml]"));
+      await Promise.all(blocks.map(async (el) => {
+        const path = el.getAttribute("data-puml");
+        try {
+          const resp = await fetch(path, { cache: "no-store" });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          el.textContent = await resp.text();
+        } catch (e) {
+          el.textContent = `Failed to load ${path}: ${e}`;
+        }
+      }));
+    })();
+  </script>
+</body>
+</html>

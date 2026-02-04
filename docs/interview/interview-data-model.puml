@@ -1,0 +1,36 @@
+@startuml interview-data-model
+!theme plain
+title Interview — Data Model (Simplified)\nBLS × Population → Enriched Points
+
+class BlsRow {
+  series_id: string
+  year: int
+  period: string  <<Q01..Q04>>
+  value: decimal
+  footnote_codes: string?
+}
+
+class PopulationRow {
+  Year: int
+  Nation: string
+  Population: int
+}
+
+class EnrichedPoint {
+  year: int
+  series_id: string
+  period: string
+  population: int?
+  bls_value: decimal?
+}
+
+BlsRow "many" --> "1" EnrichedPoint : join on year\n(filter: series_id + period)
+PopulationRow "many" --> "1" EnrichedPoint : join on year
+
+note right of EnrichedPoint
+  Output published as JSON
+  for dashboards / charts.
+end note
+
+@enduml
+

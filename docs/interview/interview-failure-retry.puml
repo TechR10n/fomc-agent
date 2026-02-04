@@ -1,0 +1,53 @@
+@startuml interview-failure-retry
+!theme plain
+title Interview — Failure, Retries, and DLQ\n(At-least-once processing with SQS)
+
+actor "Producer\n(S3 Notification\nor Upstream Step)" as Producer
+queue "SQS Queue\nfomc-analytics-queue" as Q #FFF3E0
+participant "Consumer\n(Lambda / Worker)" as Worker #FFF8E1
+participant "CloudWatch Logs" as Logs #F5F5F5
+queue "DLQ\nfomc-analytics-dlq" as DLQ #FFEBEE
+
+Producer -> Q : SendMessage(event)
+activate Q
+
+Q -> Worker : Invoke (batch_size=1)
+activate Worker
+Worker -> Logs : log start + payload metadata
+
+alt Success path
+  Worker -> Logs : log structured result
+  Worker -> Q : DeleteMessage
+  note over Q
+    Message removed.
+    Processing is complete.
+  end note
+else Failure path (exception or timeout)
+  Worker -> Logs : log error + stack trace
+  note over Q
+    VisibilityTimeout hides the message
+    while the consumer is processing.
+  end note
+  note over Q
+    After VisibilityTimeout expires,
+    the message becomes visible again
+    for retry.
+  end note
+  Q -> Worker : Retry (up to maxReceiveCount=3)
+  activate Worker
+  Worker -> Logs : log retry attempt
+  deactivate Worker
+  alt Still failing after retries
+    Q -> DLQ : MoveMessage (redrive policy)
+    note over DLQ
+      Messages retained for debugging
+      and manual replay.
+    end note
+  end
+end
+
+deactivate Worker
+deactivate Q
+
+@enduml
+

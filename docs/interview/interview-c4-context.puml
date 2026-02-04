@@ -1,0 +1,37 @@
+@startuml interview-c4-context
+!theme plain
+left to right direction
+title Interview — System Context\nFOMC Agent Lab
+
+actor "Analyst / Reviewer" as User #E8F0FE
+cloud "BLS LABSTAT\n(download.bls.gov)" as BLS #F5F5F5
+cloud "DataUSA API\n(honolulu-api.datausa.io)" as DataUSA #F5F5F5
+
+rectangle "FOMC Agent Pipeline" as System #E3F2FD {
+  rectangle "Ingestion\n(raw landing)" as Ingest #E8F5E9
+  rectangle "Parse/Update\n(silver)" as Parse #E8F5E9
+  rectangle "Enrich\n(gold)" as Enrich #E8F5E9
+  rectangle "CDC / Triggers\n(SQS + retries)" as CDC #FFF3E0
+}
+
+database "Object Storage\n(S3 raw/silver/gold)" as S3 #E8F5E9
+queue "Queue\n(SQS)" as SQS #FFF3E0
+rectangle "Static Site\n(Dashboard + Charts)" as Site #F3E5F5
+rectangle "Observability\n(Logs/Metrics)" as Obs #F5F5F5
+
+BLS --> Ingest : source data
+DataUSA --> Ingest : source data
+Ingest --> S3 : land raw bytes
+Parse --> S3 : write tables
+Enrich --> S3 : write derived datasets
+CDC --> SQS : publish work items
+SQS --> Parse : trigger on changes
+SQS --> Enrich : trigger on changes
+Enrich --> Site : publish JSON artifacts
+System --> Obs : logs + metrics
+
+User --> Site : view dashboard
+User --> Obs : inspect failures\n(DLQ, logs)
+
+@enduml
+

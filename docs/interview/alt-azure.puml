@@ -1,0 +1,35 @@
+@startuml alt-azure
+!theme plain
+left to right direction
+title Alternative Architecture — Azure\n(ADLS + Event Grid + Databricks/Synapse)
+
+cloud "BLS LABSTAT" as BLS #F5F5F5
+cloud "DataUSA API" as DataUSA #F5F5F5
+
+component "Timer Trigger\n(Azure Functions)" as Scheduler #E3F2FD
+component "Azure Function\nIngestion" as Ingest #E8F5E9
+database "ADLS Gen2\nRaw Zone" as Raw #E8F5E9
+
+component "Event Grid\nBlob Created" as EG #FFF3E0
+queue "Service Bus\nQueue + DLQ" as SB #FFF3E0
+component "Azure Databricks\nParse & Enrich" as DBX #FFF8E1
+database "Delta Lake\nSilver/Gold" as Delta #E3F2FD
+
+rectangle "Serving" as Serving #F3E5F5 {
+  component "Power BI" as PBI
+  component "Export JSON\n(for static site)" as Export
+}
+
+Scheduler --> Ingest : trigger
+BLS --> Ingest
+DataUSA --> Ingest
+Ingest --> Raw : write objects
+Raw --> EG : event
+EG --> SB : enqueue work
+SB --> DBX : process changes
+DBX --> Delta : upsert silver/gold
+Delta --> PBI : dashboards
+Delta --> Export : chart artifacts
+
+@enduml
+

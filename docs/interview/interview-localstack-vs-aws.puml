@@ -1,0 +1,69 @@
+@startuml interview-localstack-vs-aws
+!theme plain
+left to right direction
+title Interview — LocalStack vs AWS\nSame mental model, different targets
+
+cloud "BLS LABSTAT\n(download.bls.gov)" as BLS #F5F5F5
+cloud "DataUSA API\n(honolulu-api.datausa.io)" as DataUSA #F5F5F5
+
+package "LocalStack (Dev Laptop)" as LS #E8F5E9 {
+  node "Docker" as Docker
+  component "LocalStack\n(s3,sqs,lambda)" as LocalStack
+
+  storage "S3\nfomc-bls-raw" as LS_BLS <<Bucket>>
+  storage "S3\nfomc-datausa-raw" as LS_DataUSA <<Bucket>>
+  queue "SQS\nfomc-analytics-queue" as LS_Q <<Queue>>
+  queue "DLQ\nfomc-analytics-dlq" as LS_DLQ <<Queue>>
+
+  component "Invoke Fetcher\ntools/localstack_invoke_fetcher.py" as LS_Invoke
+  component "Worker\ntools/localstack_worker.py" as LS_Worker
+  component "Touch Event\ntools/localstack_touch_datausa.py" as LS_Touch
+
+  Docker --> LocalStack
+  LocalStack --> LS_BLS
+  LocalStack --> LS_DataUSA
+  LocalStack --> LS_Q
+  LS_Q -[dashed]-> LS_DLQ
+
+  LS_Invoke --> LocalStack : uses AWS_ENDPOINT_URL
+  LS_Worker --> LocalStack : polls SQS
+  LS_Touch --> LS_DataUSA : triggers S3 notification
+}
+
+package "AWS Cloud (Prod-like)" as AWS #E3F2FD {
+  component "EventBridge\nDaily schedule" as EB
+  component "Lambda\nfomc-data-fetcher" as Fetcher
+  storage "S3\n{prefix}-bls-raw" as AWS_BLS <<Bucket>>
+  storage "S3\n{prefix}-datausa-raw" as AWS_DataUSA <<Bucket>>
+  queue "SQS\nfomc-analytics-queue" as AWS_Q <<Queue>>
+  queue "DLQ\nfomc-analytics-dlq" as AWS_DLQ <<Queue>>
+  component "Lambda\nfomc-analytics-processor" as Analytics
+
+  EB --> Fetcher
+  Fetcher --> AWS_BLS
+  Fetcher --> AWS_DataUSA
+  AWS_DataUSA --> AWS_Q : S3 notification (.json)
+  AWS_Q -[dashed]-> AWS_DLQ
+  AWS_Q --> Analytics : event source mapping
+}
+
+BLS --> LS_Invoke : HTTP GET\n(directory + files)
+DataUSA --> LS_Invoke : HTTP GET\n(JSON)
+
+BLS --> Fetcher : HTTP GET\n(directory + files)
+DataUSA --> Fetcher : HTTP GET\n(JSON)
+
+note bottom of LS
+  Fast iteration loop:
+  change Python code → re-run tools
+  without redeploying infrastructure.
+end note
+
+note bottom of AWS
+  Production loop:
+  cdk diff/deploy → scheduled runs
+  + durable event-driven processing.
+end note
+
+@enduml
+

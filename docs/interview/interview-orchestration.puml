@@ -1,0 +1,20 @@
+@startuml interview-orchestration
+!theme plain
+title Interview — Orchestration (Conceptual)\nStep Functions style pipeline
+
+start
+
+:Step 1 — Ingest Raw\n(BLS + API → S3 raw);
+
+if (New raw objects?) then (yes)
+  :Step 4 — CDC\n(emit change events);
+  :Step 2 — Parse & Update\n(raw → silver);
+  :Step 3 — Enrich\n(silver → gold + JSON);
+else (no)
+  :No-op / early exit;
+endif
+
+stop
+
+@enduml
+

@@ -1,0 +1,33 @@
+@startuml alt-gcp
+!theme plain
+left to right direction
+title Alternative Architecture — GCP\n(Cloud Storage + Pub/Sub + Dataflow + BigQuery)
+
+cloud "BLS LABSTAT" as BLS #F5F5F5
+cloud "DataUSA API" as DataUSA #F5F5F5
+
+component "Cloud Scheduler" as Scheduler #E3F2FD
+component "Cloud Run / Cloud Functions\nIngestion" as Ingest #E8F5E9
+database "Cloud Storage\nRaw Zone" as Raw #E8F5E9
+
+queue "Pub/Sub\n(change events)" as PubSub #FFF3E0
+component "Dataflow (Beam)\nParse & Enrich" as Dataflow #FFF8E1
+database "BigQuery\nSilver/Gold Tables" as BQ #E3F2FD
+
+rectangle "Serving" as Serving #F3E5F5 {
+  component "Looker Studio" as Looker
+  component "Export JSON\n(for static site)" as Export
+}
+
+Scheduler --> Ingest : trigger
+BLS --> Ingest
+DataUSA --> Ingest
+Ingest --> Raw : write objects
+Raw --> PubSub : object finalize notification
+PubSub --> Dataflow : fan-out
+Dataflow --> BQ : MERGE / upsert\nsilver + gold
+BQ --> Looker : dashboards
+BQ --> Export : chart artifacts
+
+@enduml
+

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Design — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Dashboard</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a href="charts.html">Charts</a>
+    <a href="architecture.html">Architecture</a>
+    <a class="active" href="design.html">Design</a>
+    <a href="alternatives.html">Alternatives</a>
+    <a href="diagrams.html">Diagrams</a>
+    <a href="about.html">About</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Design Philosophies</h1>
+      <p class="subtitle">The “why” behind the pipeline: raw-first, separable steps, and operational sanity.</p>
+    </div>
+
+    <div class="card prose">
+      <h2>Core Principles</h2>
+      <ol>
+        <li><strong>Raw-first ingestion.</strong> Land the original bytes in “raw” buckets with minimal assumptions.</li>
+        <li><strong>Separation of concerns.</strong> Ingestion, parsing/updating, enrichment, and CDC are distinct responsibilities.</li>
+        <li><strong>Idempotency by default.</strong> Re-running a step should not corrupt state or double-count data.</li>
+        <li><strong>Observable pipelines.</strong> Favor explicit logs/metrics and “evidence artifacts” (status JSON, manifests).</li>
+        <li><strong>Local parity.</strong> A LocalStack loop enables fast iteration without paying AWS “tuition”.</li>
+      </ol>
+    </div>
+
+    <div class="grid-2">
+      <div class="card prose">
+        <h2>Layered Data Model</h2>
+        <p class="muted">A simple lake layout that scales from demo → production.</p>
+        <ul>
+          <li><strong>Raw:</strong> immutable landings of source payloads.</li>
+          <li><strong>Silver:</strong> cleaned, typed, schema’d tables for reuse.</li>
+          <li><strong>Gold:</strong> enriched, derived datasets optimized for serving and dashboards.</li>
+        </ul>
+        <p class="muted">This site primarily demonstrates raw ingestion and event-driven processing; silver/gold are deliberately explicit and separable.</p>
+      </div>
+
+      <div class="card prose">
+        <h2>Operational Guardrails</h2>
+        <ul>
+          <li><strong>Backpressure:</strong> SQS decouples producers from consumers.</li>
+          <li><strong>Retries + DLQ:</strong> at-least-once processing with a safe failure sink.</li>
+          <li><strong>Least privilege:</strong> Lambda roles scoped to specific buckets/queues.</li>
+          <li><strong>Small blast radius:</strong> separate stacks for storage, compute, and site.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card prose">
+      <h2>Repo Map</h2>
+      <table>
+        <tr><th>Area</th><th>What it contains</th></tr>
+        <tr><td><code>src/data_fetchers/</code></td><td>Raw ingestion from BLS + DataUSA (no parsing).</td></tr>
+        <tr><td><code>src/transforms/</code></td><td>Parsing/cleaning steps (raw → silver).</td></tr>
+        <tr><td><code>src/lambdas/</code></td><td>Deployed handlers (ingestion + event-driven analytics).</td></tr>
+        <tr><td><code>infra/stacks/</code></td><td>CDK stacks for buckets, queues, lambdas, and the site.</td></tr>
+        <tr><td><code>tools/</code></td><td>LocalStack helpers: invoke lambdas, poll queues, touch events.</td></tr>
+        <tr><td><code>docs/*.puml</code></td><td>PlantUML architecture and sequence diagrams.</td></tr>
+      </table>
+      <p class="muted">See <a href="diagrams.html">Diagrams</a> for interview-ready visuals and prompts.</p>
+    </div>
+  </div>
+</body>
+</html>

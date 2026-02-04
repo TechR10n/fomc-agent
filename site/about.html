@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>About — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Dashboard</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a href="charts.html">Charts</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="design.html">Design</a>
+    <a href="alternatives.html">Alternatives</a>
+    <a href="diagrams.html">Diagrams</a>
+    <a class="active" href="about.html">About</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>About</h1>
+      <p class="subtitle">Who built this, what it demonstrates, and how to talk about it in an interview.</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="card prose">
+        <h2>About Me</h2>
+        <p class="muted">Edit this section to match your background and story.</p>
+        <ul>
+          <li><strong>Focus:</strong> Serverless data pipelines, event-driven architecture, and pragmatic analytics.</li>
+          <li><strong>Strengths:</strong> AWS + IaC (CDK/Terraform), Python, data modeling, and production guardrails.</li>
+          <li><strong>What I like building:</strong> systems that are observable, testable, and cheap to run.</li>
+        </ul>
+        <p class="muted">Suggested additions: links to GitHub, LinkedIn, a portfolio, or a resume PDF.</p>
+      </div>
+
+      <div class="card prose">
+        <h2>About This Project</h2>
+        <p>
+          <strong>FOMC Agent Lab</strong> is a workshop-style demo that implements a complete pipeline using the
+          requirements in <code>docs/instructions.md</code>.
+        </p>
+        <ul>
+          <li><strong>Ingest:</strong> BLS LABSTAT flat files + DataUSA population API into S3 raw buckets.</li>
+          <li><strong>Process:</strong> parse/update + enrich steps are separated from ingestion.</li>
+          <li><strong>CDC:</strong> S3 notifications → SQS → Lambda for durable, decoupled processing.</li>
+          <li><strong>Publish:</strong> static website + JSON artifacts for dashboards and charts.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card prose">
+      <h2>Interview Talking Points</h2>
+      <div class="grid-2 mt-2">
+        <div>
+          <h3>Why “raw-first” ingestion?</h3>
+          <p>Raw buckets preserve the original data and make every downstream step reproducible and re-runnable.</p>
+        </div>
+        <div>
+          <h3>Why queue-based CDC?</h3>
+          <p>SQS provides backpressure, retries, and a DLQ — turning “events” into reliable work.</p>
+        </div>
+        <div>
+          <h3>How do you test this?</h3>
+          <p>Unit tests mock AWS with <code>moto</code>; LocalStack simulates end-to-end behavior locally.</p>
+        </div>
+        <div>
+          <h3>What would you change for production?</h3>
+          <p>Use schema versioning, data contracts, governance, and a stronger “silver/gold” layout.</p>
+        </div>
+      </div>
+      <p class="muted">See <a href="diagrams.html">Diagrams</a> for PlantUML visuals you can share in Q&amp;A.</p>
+    </div>
+  </div>
+</body>
+</html>

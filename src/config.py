@@ -27,6 +27,16 @@ def get_datausa_key() -> str:
     return os.environ.get("DATAUSA_KEY", "population.json")
 
 
+def get_bls_silver_bucket() -> str:
+    """Get the S3 bucket used for BLS parsed/cleaned (silver) data."""
+    return os.environ.get("BLS_SILVER_BUCKET", f"{get_bucket_prefix()}-bls-silver")
+
+
+def get_datausa_silver_bucket() -> str:
+    """Get the S3 bucket used for DataUSA parsed/cleaned (silver) data."""
+    return os.environ.get("DATAUSA_SILVER_BUCKET", f"{get_bucket_prefix()}-datausa-silver")
+
+
 def get_bls_series_list(default: str = "pr") -> list[str]:
     """Get the BLS series list (comma-separated) for ingestion."""
     raw = os.environ.get("BLS_SERIES", default)
@@ -51,4 +61,3 @@ def get_bls_key(default_series: str = "pr") -> str:
     if not series:
         series = get_bls_series_list(default=default_series)[0]
     return bls_data_key(series_id=series)
-

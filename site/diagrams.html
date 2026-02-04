@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Diagrams — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Dashboard</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a href="charts.html">Charts</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="design.html">Design</a>
+    <a href="alternatives.html">Alternatives</a>
+    <a class="active" href="diagrams.html">Diagrams</a>
+    <a href="about.html">About</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>PlantUML Diagrams</h1>
+      <p class="subtitle">Interview-ready visuals: architecture, sequence, deployment, failures, and alternatives.</p>
+    </div>
+
+    <div class="card prose">
+      <h2>How to regenerate</h2>
+      <p class="muted">These SVGs are generated from PlantUML (<code>.puml</code>) sources.</p>
+      <pre><code># from repo root:
+mkdir -p site/diagrams site/puml
+cp docs/*.puml docs/interview/*.puml site/puml/
+plantuml -tsvg docs/*.puml -o ../site/diagrams
+plantuml -tsvg docs/interview/*.puml -o ../../site/diagrams</code></pre>
+      <p class="muted">Tip: open the <code>.puml</code> sources in <code>docs/</code> to customize labels for your interview.</p>
+    </div>
+
+    <div class="card prose">
+      <h2>Gallery</h2>
+      <p class="muted">Click “Show source” to view the PlantUML that generated each diagram.</p>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Stack Architecture (CDK)</h3>
+      <img class="diagram-img" src="diagrams/architecture-stacks.svg" alt="CDK stack architecture diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/architecture-stacks.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Interview: System Context</h3>
+      <img class="diagram-img" src="diagrams/interview-c4-context.svg" alt="System context diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/interview-c4-context.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Interview: Containers / Components</h3>
+      <img class="diagram-img" src="diagrams/interview-c4-containers.svg" alt="Containers and components diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/interview-c4-containers.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">End-to-End Sequence</h3>
+      <img class="diagram-img" src="diagrams/data-flow-sequence.svg" alt="End-to-end data flow sequence diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/data-flow-sequence.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Interview: Data Model</h3>
+      <img class="diagram-img" src="diagrams/interview-data-model.svg" alt="Data model diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/interview-data-model.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Interview: Failure &amp; Retry (SQS + DLQ)</h3>
+      <img class="diagram-img" src="diagrams/interview-failure-retry.svg" alt="Failure and retry diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/interview-failure-retry.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Interview: Orchestration</h3>
+      <img class="diagram-img" src="diagrams/interview-orchestration.svg" alt="Orchestration diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/interview-orchestration.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Interview: LocalStack vs AWS</h3>
+      <img class="diagram-img" src="diagrams/interview-localstack-vs-aws.svg" alt="LocalStack versus AWS diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/interview-localstack-vs-aws.puml">Loading…</code></pre>
+      </details>
+    </div>
+  </div>
+
+  <script>
+    (async function loadPumlSources() {
+      const blocks = Array.from(document.querySelectorAll("code[data-puml]"));
+      await Promise.all(blocks.map(async (el) => {
+        const path = el.getAttribute("data-puml");
+        try {
+          const resp = await fetch(path, { cache: "no-store" });
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          el.textContent = await resp.text();
+        } catch (e) {
+          el.textContent = `Failed to load ${path}: ${e}`;
+        }
+      }));
+    })();
+  </script>
+</body>
+</html>
