@@ -67,6 +67,7 @@ def load_bls_from_s3(bucket: str | None = None, key: str | None = None) -> pd.Da
     content = response["Body"].read().decode("utf-8")
 
     df = pd.read_csv(StringIO(content), sep="\t", dtype=str)
+    df.columns = df.columns.str.strip()
     for col in df.columns:
         df[col] = df[col].astype(str).str.strip()
 

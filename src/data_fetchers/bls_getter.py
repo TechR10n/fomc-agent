@@ -4,6 +4,7 @@ import fnmatch
 import json
 import os
 import re
+import time
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 
@@ -12,7 +13,7 @@ from src.helpers.aws_client import get_client
 from src.helpers.http_client import fetch_bytes, fetch_text
 
 BLS_BASE_URL = "https://download.bls.gov/pub/time.series"
-USER_AGENT = "fomc-agent/1.0 (data-pipeline; research-use)"
+USER_AGENT = "fomc-agent/1.0 (data-pipeline; contact: ryan.hammang@outlook.com)"
 
 
 def _parse_file_patterns(patterns: str | None, series_id: str) -> list[str] | None:
@@ -67,7 +68,7 @@ class BLSDirectoryParser(HTMLParser):
             filename = match.group(1)
             timestamp_str = match.group(2)
             size_str = match.group(3)
-            if filename in (".", "..", "[To Parent Directory]"):
+            if filename in (".", "..") or "[" in filename or "]" in filename:
                 continue
             size = int(size_str) if size_str != "-" else 0
             self.files.append({
@@ -253,14 +254,23 @@ def sync_series(series_id: str, bucket: str | None = None) -> dict:
 
 
 def sync_all(series_list: list[str] | None = None, bucket: str | None = None) -> dict:
-    """Sync all configured BLS series."""
+    """Sync all configured BLS series.
+
+    Set BLS_SERIES_DELAY_SECONDS to pause between series (default: 2).
+    Set BLS_FILE_PATTERNS to limit which files are downloaded per series.
+    """
     if series_list is None:
         series_list = get_bls_series_list()
     if bucket is None:
         bucket = get_bls_bucket()
+
+    delay = float(os.environ.get("BLS_SERIES_DELAY_SECONDS", "2"))
+
     results = {}
-    for series_id in series_list:
+    for i, series_id in enumerate(series_list):
         results[series_id] = sync_series(series_id, bucket)
+        if delay > 0 and i < len(series_list) - 1:
+            time.sleep(delay)
     return results
 
 
