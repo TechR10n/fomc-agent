@@ -1,0 +1,163 @@
+{
+  "generated_at": "2026-02-04T00:00:00Z",
+  "window_days": 60,
+  "lookahead_days": 14,
+  "events": [
+    {
+      "series": "cu",
+      "file": "cu.data.0.Current",
+      "action": "updated",
+      "event_time": "2026-02-02T13:30:00Z",
+      "source_modified": "2026-02-02T13:30:00Z",
+      "observed_at": "2026-02-03T04:00:00Z",
+      "bytes": 524288
+    },
+    {
+      "series": "cu",
+      "file": "cu.data.1.AllItems",
+      "action": "updated",
+      "event_time": "2026-02-02T13:30:00Z",
+      "source_modified": "2026-02-02T13:30:00Z",
+      "observed_at": "2026-02-03T04:00:00Z",
+      "bytes": 3145728
+    },
+    {
+      "series": "pr",
+      "file": "pr.data.0.Current",
+      "action": "updated",
+      "event_time": "2026-02-01T13:30:00Z",
+      "source_modified": "2026-02-01T13:30:00Z",
+      "observed_at": "2026-02-03T04:00:00Z",
+      "bytes": 245760
+    },
+    {
+      "series": "ce",
+      "file": "ce.data.0.AllCESSeries",
+      "action": "updated",
+      "event_time": "2026-01-20T13:30:00Z",
+      "source_modified": "2026-01-20T13:30:00Z",
+      "observed_at": "2026-01-21T04:00:00Z",
+      "bytes": 8388608
+    },
+    {
+      "series": "cu",
+      "file": "cu.data.2.Summaries",
+      "action": "updated",
+      "event_time": "2026-01-15T13:30:00Z",
+      "source_modified": "2026-01-15T13:30:00Z",
+      "observed_at": "2026-01-16T04:00:00Z",
+      "bytes": 2097152
+    },
+    {
+      "series": "pr",
+      "file": "pr.data.1.AllData",
+      "action": "updated",
+      "event_time": "2026-01-10T13:30:00Z",
+      "source_modified": "2026-01-10T13:30:00Z",
+      "observed_at": "2026-01-11T04:00:00Z",
+      "bytes": 1482752
+    },
+    {
+      "series": "pr",
+      "file": "pr.series",
+      "action": "updated",
+      "event_time": "2026-01-10T13:30:00Z",
+      "source_modified": "2026-01-10T13:30:00Z",
+      "observed_at": "2026-01-11T04:00:00Z",
+      "bytes": 98304
+    },
+    {
+      "series": "cu",
+      "file": "cu.item",
+      "action": "deleted",
+      "event_time": "2026-01-25T04:00:00Z",
+      "source_modified": null,
+      "observed_at": "2026-01-25T04:00:00Z",
+      "bytes": null
+    }
+  ],
+  "scheduled_releases": [
+    {
+      "series": "cu",
+      "release": "Consumer Price Index",
+      "url": "https://www.bls.gov/schedule/news_release/cpi.htm",
+      "scheduled_time": "2026-02-02T13:30:00Z",
+      "scheduled_time_local": "2026-02-02T08:30:00-05:00",
+      "time_zone": "America/New_York"
+    },
+    {
+      "series": "cu",
+      "release": "Consumer Price Index",
+      "url": "https://www.bls.gov/schedule/news_release/cpi.htm",
+      "scheduled_time": "2026-02-12T13:30:00Z",
+      "scheduled_time_local": "2026-02-12T08:30:00-05:00",
+      "time_zone": "America/New_York"
+    },
+    {
+      "series": "ce",
+      "release": "Employment Situation",
+      "url": "https://www.bls.gov/schedule/news_release/empsit.htm",
+      "scheduled_time": "2026-01-20T13:30:00Z",
+      "scheduled_time_local": "2026-01-20T08:30:00-05:00",
+      "time_zone": "America/New_York"
+    },
+    {
+      "series": "pr",
+      "release": "Productivity and Costs",
+      "url": "https://www.bls.gov/schedule/news_release/prod2.htm",
+      "scheduled_time": "2026-02-01T13:30:00Z",
+      "scheduled_time_local": "2026-02-01T08:30:00-05:00",
+      "time_zone": "America/New_York"
+    }
+  ],
+  "releases": [
+    {
+      "series": "ce",
+      "release": "Employment Situation",
+      "url": "https://www.bls.gov/schedule/news_release/empsit.htm",
+      "scheduled_time": "2026-01-20T13:30:00Z",
+      "scheduled_time_local": "2026-01-20T08:30:00-05:00",
+      "time_zone": "America/New_York",
+      "actual_time": "2026-01-20T13:30:00Z",
+      "delay_minutes": 0.0,
+      "actual_files_changed": 1,
+      "actual_bytes_changed": 8388608
+    },
+    {
+      "series": "pr",
+      "release": "Productivity and Costs",
+      "url": "https://www.bls.gov/schedule/news_release/prod2.htm",
+      "scheduled_time": "2026-02-01T13:30:00Z",
+      "scheduled_time_local": "2026-02-01T08:30:00-05:00",
+      "time_zone": "America/New_York",
+      "actual_time": "2026-02-01T13:30:00Z",
+      "delay_minutes": 0.0,
+      "actual_files_changed": 1,
+      "actual_bytes_changed": 245760
+    },
+    {
+      "series": "cu",
+      "release": "Consumer Price Index",
+      "url": "https://www.bls.gov/schedule/news_release/cpi.htm",
+      "scheduled_time": "2026-02-02T13:30:00Z",
+      "scheduled_time_local": "2026-02-02T08:30:00-05:00",
+      "time_zone": "America/New_York",
+      "actual_time": "2026-02-02T13:30:00Z",
+      "delay_minutes": 0.0,
+      "actual_files_changed": 2,
+      "actual_bytes_changed": 3670016
+    },
+    {
+      "series": "cu",
+      "release": "Consumer Price Index",
+      "url": "https://www.bls.gov/schedule/news_release/cpi.htm",
+      "scheduled_time": "2026-02-12T13:30:00Z",
+      "scheduled_time_local": "2026-02-12T08:30:00-05:00",
+      "time_zone": "America/New_York",
+      "actual_time": null,
+      "delay_minutes": null,
+      "actual_files_changed": 0,
+      "actual_bytes_changed": 0
+    }
+  ]
+}

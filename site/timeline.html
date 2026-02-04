@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BLS Timeline — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Dashboard</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a class="active" href="timeline.html">Timeline</a>
+    <a href="charts.html">Charts</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="design.html">Design</a>
+    <a href="alternatives.html">Alternatives</a>
+    <a href="diagrams.html">Diagrams</a>
+    <a href="about.html">About</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>BLS LABSTAT Change Timeline</h1>
+      <p class="subtitle" id="subtitle">Trailing window of changes, using the “Last Modified” timestamps shown on each BLS time-series directory page.</p>
+    </div>
+
+    <div class="grid-3" id="summary-stats">
+      <div class="card stat">
+        <div class="number" id="stat-events">—</div>
+        <div class="label">Change Events</div>
+      </div>
+      <div class="card stat">
+        <div class="number" id="stat-series">—</div>
+        <div class="label">Series Touched</div>
+      </div>
+      <div class="card stat">
+        <div class="number" id="stat-latest">—</div>
+        <div class="label">Latest Change</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:end; gap:1rem; flex-wrap:wrap;">
+        <div>
+          <h2 style="margin-bottom:0.25rem;">Daily activity</h2>
+          <p class="muted" style="margin:0;">Bars show count of file changes per day (by BLS source timestamp).</p>
+        </div>
+        <div>
+          <label class="muted" for="filter-series" style="display:block; margin-bottom:0.25rem;">Filter</label>
+          <select id="filter-series" style="padding:0.5rem 0.75rem; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+            <option value="all">All series</option>
+          </select>
+        </div>
+      </div>
+      <canvas id="timeline-chart"></canvas>
+      <p class="chart-status" id="status-timeline">Loading…</p>
+    </div>
+
+    <div class="card" id="releases-card" style="display:none;">
+      <h2>Expected vs actual releases</h2>
+      <p class="muted">Expected times come from BLS “Schedule of News Releases”. Actual times come from LABSTAT directory “Last Modified” timestamps.</p>
+      <div id="releases"></div>
+    </div>
+
+    <div class="card">
+      <h2>Events</h2>
+      <div id="events"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="timeline.js"></script>
+</body>
+</html>
