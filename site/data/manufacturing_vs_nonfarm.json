@@ -1,0 +1,29 @@
+{
+  "title": "Manufacturing vs Nonfarm Business Productivity",
+  "description": "Manufacturing productivity has historically outpaced the broader economy, driven by automation and offshoring. The divergence tells the automation story.",
+  "y_left": {"label": "Nonfarm Business (Index, 2012=100)", "key": "nonfarm", "color": "#3b82f6"},
+  "y_right": {"label": "Manufacturing (Index, 2012=100)", "key": "manufacturing", "color": "#f59e0b"},
+  "points": [
+    {"year": 2003, "nonfarm": 82.1, "manufacturing": 72.4},
+    {"year": 2004, "nonfarm": 84.8, "manufacturing": 76.8},
+    {"year": 2005, "nonfarm": 86.3, "manufacturing": 80.1},
+    {"year": 2006, "nonfarm": 87.2, "manufacturing": 81.5},
+    {"year": 2007, "nonfarm": 88.5, "manufacturing": 84.2},
+    {"year": 2008, "nonfarm": 89.7, "manufacturing": 83.9},
+    {"year": 2009, "nonfarm": 92.4, "manufacturing": 84.7},
+    {"year": 2010, "nonfarm": 95.1, "manufacturing": 91.6},
+    {"year": 2011, "nonfarm": 95.6, "manufacturing": 91.2},
+    {"year": 2012, "nonfarm": 96.5, "manufacturing": 92.5},
+    {"year": 2013, "nonfarm": 97.3, "manufacturing": 93.8},
+    {"year": 2014, "nonfarm": 98.0, "manufacturing": 95.2},
+    {"year": 2015, "nonfarm": 99.4, "manufacturing": 96.1},
+    {"year": 2016, "nonfarm": 100.0, "manufacturing": 100.0},
+    {"year": 2017, "nonfarm": 101.3, "manufacturing": 100.4},
+    {"year": 2018, "nonfarm": 102.5, "manufacturing": 101.9},
+    {"year": 2019, "nonfarm": 104.2, "manufacturing": 103.1},
+    {"year": 2020, "nonfarm": 107.8, "manufacturing": 109.5},
+    {"year": 2021, "nonfarm": 109.7, "manufacturing": 107.2},
+    {"year": 2022, "nonfarm": 108.3, "manufacturing": 105.1},
+    {"year": 2023, "nonfarm": 112.1, "manufacturing": 110.8}
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "last_run": "2026-02-03T04:00:00Z",
+  "trigger": "EventBridge scheduled rule (nightly)",
+  "duration_seconds": 12.4,
+  "summary": {
+    "series_scanned": 3,
+    "total_files_checked": 47,
+    "files_updated": 3,
+    "files_unchanged": 44,
+    "files_deleted": 0,
+    "datausa_status": "unchanged"
+  },
+  "series": [
+    {
+      "id": "pr",
+      "name": "Major Sector Productivity and Costs",
+      "url": "https://download.bls.gov/pub/time.series/pr/",
+      "files_checked": 12,
+      "files_updated": 1,
+      "files_unchanged": 11,
+      "files_deleted": 0,
+      "latest_source_modified": "2026-02-01T08:30:00Z",
+      "files": [
+        {"name": "pr.data.0.Current", "action": "updated", "source_modified": "2026-02-01T08:30:00Z", "bytes": 245760},
+        {"name": "pr.data.1.AllData", "action": "unchanged", "source_modified": "2026-01-15T08:30:00Z", "bytes": 1482752},
+        {"name": "pr.series", "action": "unchanged", "source_modified": "2026-01-15T08:30:00Z", "bytes": 98304},
+        {"name": "pr.contacts", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 512},
+        {"name": "pr.footnote", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 1024},
+        {"name": "pr.period", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 256},
+        {"name": "pr.measure", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 2048},
+        {"name": "pr.sector", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 1536},
+        {"name": "pr.class", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 512},
+        {"name": "pr.duration", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 256},
+        {"name": "pr.subject", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 1024},
+        {"name": "pr.txt", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 4096}
+      ]
+    },
+    {
+      "id": "cu",
+      "name": "Consumer Price Index — All Urban Consumers",
+      "url": "https://download.bls.gov/pub/time.series/cu/",
+      "files_checked": 24,
+      "files_updated": 2,
+      "files_unchanged": 22,
+      "files_deleted": 0,
+      "latest_source_modified": "2026-02-02T08:30:00Z",
+      "files": [
+        {"name": "cu.data.0.Current", "action": "updated", "source_modified": "2026-02-02T08:30:00Z", "bytes": 524288},
+        {"name": "cu.data.1.AllItems", "action": "updated", "source_modified": "2026-02-02T08:30:00Z", "bytes": 3145728},
+        {"name": "cu.data.2.Summaries", "action": "unchanged", "source_modified": "2026-01-15T08:30:00Z", "bytes": 2097152},
+        {"name": "cu.series", "action": "unchanged", "source_modified": "2026-01-15T08:30:00Z", "bytes": 196608}
+      ]
+    },
+    {
+      "id": "ce",
+      "name": "Employment, Hours, and Earnings — National",
+      "url": "https://download.bls.gov/pub/time.series/ce/",
+      "files_checked": 11,
+      "files_updated": 0,
+      "files_unchanged": 11,
+      "files_deleted": 0,
+      "latest_source_modified": "2026-01-20T08:30:00Z",
+      "files": [
+        {"name": "ce.data.0.AllCESSeries", "action": "unchanged", "source_modified": "2026-01-20T08:30:00Z", "bytes": 8388608},
+        {"name": "ce.series", "action": "unchanged", "source_modified": "2026-01-20T08:30:00Z", "bytes": 262144}
+      ]
+    }
+  ],
+  "datausa": {
+    "endpoint": "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
+    "action": "unchanged",
+    "content_hash": "a3b8f2c1d4e5f6a7",
+    "record_count": 11,
+    "years": "2013–2023"
+  },
+  "analytics": {
+    "reports_generated": 3,
+    "site_json_updated": true,
+    "report_names": [
+      "Population Statistics (2013–2018)",
+      "Best Year by Series",
+      "Series-Population Join (PRS30006032 Q01)"
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Charts — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Home</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a class="active" href="charts.html">Charts</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Time Series Charts</h1>
+      <p class="subtitle">BLS productivity metrics visualized with Chart.js. Data updates automatically when the nightly pipeline runs.</p>
+    </div>
+
+    <div class="card" id="card-timeseries">
+      <h2>Productivity + Population</h2>
+      <canvas id="chart-timeseries"></canvas>
+      <p class="chart-status" id="status-timeseries">Loading…</p>
+    </div>
+
+    <div class="card" id="card-productivity_vs_compensation">
+      <h2>The Great Decoupling</h2>
+      <canvas id="chart-productivity_vs_compensation"></canvas>
+      <p class="chart-status" id="status-productivity_vs_compensation">Loading…</p>
+    </div>
+
+    <div class="card" id="card-productivity_vs_costs">
+      <h2>Productivity vs Unit Labor Costs</h2>
+      <canvas id="chart-productivity_vs_costs"></canvas>
+      <p class="chart-status" id="status-productivity_vs_costs">Loading…</p>
+    </div>
+
+    <div class="card" id="card-manufacturing_vs_nonfarm">
+      <h2>Manufacturing vs Nonfarm Productivity</h2>
+      <canvas id="chart-manufacturing_vs_nonfarm"></canvas>
+      <p class="chart-status" id="status-manufacturing_vs_nonfarm">Loading…</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Architecture — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Home</a>
+    <a class="active" href="architecture.html">Architecture</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a href="charts.html">Charts</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Architecture</h1>
+      <p class="subtitle">How the serverless data pipeline fits together, from scheduled ingestion to static site publishing.</p>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- Diagram 1: End-to-End Pipeline            -->
+    <!-- ────────────────────────────────────────── -->
+    <div class="diagram-container">
+      <svg viewBox="0 0 880 520" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif" font-size="13">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#64748b"/>
+          </marker>
+        </defs>
+
+        <!-- EventBridge -->
+        <rect x="40" y="30" width="160" height="56" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="120" y="53" text-anchor="middle" font-weight="600" fill="#1e40af">EventBridge</text>
+        <text x="120" y="72" text-anchor="middle" fill="#3b82f6" font-size="11">Nightly schedule</text>
+
+        <!-- Arrow: EventBridge → Data Fetcher Lambda -->
+        <line x1="120" y1="86" x2="120" y2="130" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Data Fetcher Lambda -->
+        <rect x="40" y="130" width="160" height="56" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="120" y="153" text-anchor="middle" font-weight="600" fill="#92400e">Lambda</text>
+        <text x="120" y="172" text-anchor="middle" fill="#b45309" font-size="11">Data Fetcher</text>
+
+        <!-- Arrow: Lambda → BLS -->
+        <line x1="200" y1="158" x2="320" y2="80" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <!-- Arrow: Lambda → DataUSA -->
+        <line x1="200" y1="158" x2="320" y2="158" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- BLS API -->
+        <rect x="320" y="44" width="180" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="410" y="67" text-anchor="middle" font-weight="600" fill="#475569">download.bls.gov</text>
+        <text x="410" y="86" text-anchor="middle" fill="#64748b" font-size="11">LABSTAT flat files</text>
+
+        <!-- DataUSA API -->
+        <rect x="320" y="130" width="180" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="410" y="153" text-anchor="middle" font-weight="600" fill="#475569">DataUSA API</text>
+        <text x="410" y="172" text-anchor="middle" fill="#64748b" font-size="11">Population data</text>
+
+        <!-- Arrow: Lambda → S3 Raw -->
+        <line x1="120" y1="186" x2="120" y2="250" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="130" y="224" fill="#64748b" font-size="11">upload</text>
+
+        <!-- S3 Raw Data -->
+        <rect x="40" y="250" width="160" height="70" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="120" y="275" text-anchor="middle" font-weight="600" fill="#166534">S3</text>
+        <text x="120" y="294" text-anchor="middle" fill="#15803d" font-size="11">Raw data buckets</text>
+        <text x="120" y="309" text-anchor="middle" fill="#15803d" font-size="10">+ _sync_state/</text>
+
+        <!-- Arrow: S3 Raw → S3 Event Notification → SQS -->
+        <line x1="200" y1="285" x2="320" y2="285" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="260" y="278" text-anchor="middle" fill="#64748b" font-size="10">S3 event</text>
+
+        <!-- SQS -->
+        <rect x="320" y="257" width="180" height="56" rx="8" fill="#fce7f3" stroke="#ec4899" stroke-width="1.5"/>
+        <text x="410" y="280" text-anchor="middle" font-weight="600" fill="#9d174d">SQS</text>
+        <text x="410" y="299" text-anchor="middle" fill="#be185d" font-size="11">Analytics queue</text>
+
+        <!-- Arrow: SQS → Analytics Lambda -->
+        <line x1="500" y1="285" x2="600" y2="285" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Analytics Lambda -->
+        <rect x="600" y="257" width="180" height="56" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="690" y="280" text-anchor="middle" font-weight="600" fill="#92400e">Lambda</text>
+        <text x="690" y="299" text-anchor="middle" fill="#b45309" font-size="11">Analytics Processor</text>
+
+        <!-- Arrow: Analytics Lambda reads S3 -->
+        <path d="M 660 257 L 660 230 L 200 230 L 200 260" stroke="#64748b" stroke-width="1" stroke-dasharray="5,3" fill="none" marker-end="url(#arrow)"/>
+        <text x="430" y="224" text-anchor="middle" fill="#94a3b8" font-size="10">reads raw data</text>
+
+        <!-- Arrow: Analytics Lambda → S3 Site Data -->
+        <line x1="690" y1="313" x2="690" y2="390" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <text x="700" y="358" fill="#64748b" font-size="11">publish</text>
+
+        <!-- S3 Site -->
+        <rect x="600" y="390" width="180" height="70" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="690" y="415" text-anchor="middle" font-weight="600" fill="#166534">S3</text>
+        <text x="690" y="434" text-anchor="middle" fill="#15803d" font-size="11">Static website</text>
+        <text x="690" y="449" text-anchor="middle" fill="#15803d" font-size="10">JSON + HTML + JS</text>
+
+        <!-- Arrow: S3 Site → Browser -->
+        <line x1="600" y1="425" x2="480" y2="425" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Browser -->
+        <rect x="300" y="397" width="180" height="56" rx="8" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.5"/>
+        <text x="390" y="420" text-anchor="middle" font-weight="600" fill="#5b21b6">Browser</text>
+        <text x="390" y="439" text-anchor="middle" fill="#7c3aed" font-size="11">Chart.js renders data</text>
+
+        <!-- CDK label -->
+        <rect x="40" y="420" width="200" height="56" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="140" y="443" text-anchor="middle" font-weight="600" fill="#475569">AWS CDK</text>
+        <text x="140" y="462" text-anchor="middle" fill="#64748b" font-size="11">All infra defined as Python code</text>
+      </svg>
+      <p class="diagram-caption">Figure 1 — End-to-end pipeline: scheduled ingestion, event-driven analytics, static site publishing</p>
+    </div>
+
+    <div class="card prose">
+      <h2>How the Nightly Run Works</h2>
+      <p>An EventBridge scheduled rule fires once per day (overnight). This triggers the <strong>Data Fetcher Lambda</strong>, which:</p>
+      <ol>
+        <li>Fetches the directory listing for each configured BLS series from <code>download.bls.gov</code></li>
+        <li>Compares each file's modification timestamp against the previously stored <code>source_modified</code> metadata in S3</li>
+        <li>Downloads only files that have changed (or are new) — skipping everything else</li>
+        <li>Fetches current population data from the DataUSA API (with content-hash change detection)</li>
+        <li>Writes updated files to S3, which triggers S3 event notifications</li>
+      </ol>
+      <p>S3 put events flow into an <strong>SQS queue</strong>, which triggers the <strong>Analytics Processor Lambda</strong>. This function reads raw data from S3, runs three reports (population stats, best-year-by-series, and a productivity-population join), and publishes the results as JSON to the site bucket.</p>
+      <p>The static site files (this website) are already in S3. When the JSON data files update, the next browser visit shows the latest data — no deploy step needed for data updates.</p>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- Diagram 2: Change Detection Detail         -->
+    <!-- ────────────────────────────────────────── -->
+    <div class="diagram-container">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif" font-size="13">
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 7" refX="10" refY="3.5" markerWidth="10" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 3.5 L 0 7 z" fill="#64748b"/>
+          </marker>
+        </defs>
+
+        <!-- Lambda -->
+        <rect x="30" y="40" width="140" height="50" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="100" y="62" text-anchor="middle" font-weight="600" fill="#92400e">Data Fetcher</text>
+        <text x="100" y="78" text-anchor="middle" fill="#b45309" font-size="11">Lambda</text>
+
+        <!-- Arrow → Fetch listing -->
+        <line x1="170" y1="65" x2="240" y2="65" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+        <!-- BLS listing -->
+        <rect x="240" y="40" width="170" height="50" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="325" y="62" text-anchor="middle" font-weight="600" fill="#475569">BLS Directory</text>
+        <text x="325" y="78" text-anchor="middle" fill="#64748b" font-size="11">HTML file listing</text>
+
+        <!-- Arrow → Parse -->
+        <line x1="410" y1="65" x2="480" y2="65" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+        <!-- Parse timestamps -->
+        <rect x="480" y="40" width="160" height="50" rx="8" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
+        <text x="560" y="62" text-anchor="middle" font-weight="600" fill="#334155">Parse Timestamps</text>
+        <text x="560" y="78" text-anchor="middle" fill="#64748b" font-size="11">M/D/YYYY H:MM AM</text>
+
+        <!-- Arrow down to compare -->
+        <line x1="560" y1="90" x2="560" y2="130" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow2)"/>
+
+        <!-- Compare box -->
+        <rect x="460" y="130" width="200" height="50" rx="8" fill="#dbeafe" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="560" y="152" text-anchor="middle" font-weight="600" fill="#1e40af">Compare with S3</text>
+        <text x="560" y="168" text-anchor="middle" fill="#3b82f6" font-size="11">source_modified metadata</text>
+
+        <!-- Decision diamond (simplified as rect) -->
+        <!-- Changed path -->
+        <line x1="560" y1="180" x2="560" y2="220" stroke="#64748b" stroke-width="1.5"/>
+
+        <!-- Changed? -->
+        <rect x="490" y="220" width="140" height="36" rx="18" fill="#fff" stroke="#64748b" stroke-width="1.5"/>
+        <text x="560" y="243" text-anchor="middle" fill="#475569" font-size="12">Changed?</text>
+
+        <!-- Yes arrow -->
+        <line x1="490" y1="238" x2="350" y2="238" stroke="#22c55e" stroke-width="1.5" marker-end="url(#arrow2)"/>
+        <text x="420" y="232" text-anchor="middle" fill="#22c55e" font-weight="600" font-size="11">YES</text>
+
+        <!-- Download + Upload -->
+        <rect x="200" y="215" width="150" height="46" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="275" y="234" text-anchor="middle" font-weight="600" fill="#166534">Download</text>
+        <text x="275" y="250" text-anchor="middle" fill="#15803d" font-size="11">Upload to S3</text>
+
+        <!-- No arrow -->
+        <line x1="630" y1="238" x2="700" y2="238" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow2)"/>
+        <text x="665" y="232" text-anchor="middle" fill="#94a3b8" font-weight="600" font-size="11">NO</text>
+
+        <!-- Skip -->
+        <rect x="700" y="218" width="120" height="40" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="760" y="243" text-anchor="middle" fill="#64748b" font-weight="600">Skip</text>
+      </svg>
+      <p class="diagram-caption">Figure 2 — Change detection: the fetcher only downloads files whose BLS timestamp is newer than the stored S3 metadata</p>
+    </div>
+
+    <!-- ────────────────────────────────────────── -->
+    <!-- Diagram 3: CDK Stacks                      -->
+    <!-- ────────────────────────────────────────── -->
+    <div class="diagram-container">
+      <svg viewBox="0 0 880 260" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif" font-size="13">
+
+        <!-- CDK App container -->
+        <rect x="30" y="20" width="820" height="220" rx="10" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="50" y="44" font-weight="700" fill="#475569" font-size="14">CDK App</text>
+
+        <!-- DataStack -->
+        <rect x="60" y="65" width="220" height="150" rx="8" fill="#dcfce7" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="170" y="90" text-anchor="middle" font-weight="700" fill="#166534">DataStack</text>
+        <text x="170" y="115" text-anchor="middle" fill="#15803d" font-size="12">S3: bls-raw bucket</text>
+        <text x="170" y="135" text-anchor="middle" fill="#15803d" font-size="12">S3: datausa-raw bucket</text>
+        <text x="170" y="155" text-anchor="middle" fill="#15803d" font-size="12">S3: analytics-output</text>
+        <text x="170" y="180" text-anchor="middle" fill="#64748b" font-size="11">Bucket policies + CORS</text>
+
+        <!-- PipelineStack -->
+        <rect x="320" y="65" width="240" height="150" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="440" y="90" text-anchor="middle" font-weight="700" fill="#92400e">PipelineStack</text>
+        <text x="440" y="115" text-anchor="middle" fill="#b45309" font-size="12">Lambda: data-fetcher</text>
+        <text x="440" y="135" text-anchor="middle" fill="#b45309" font-size="12">Lambda: analytics-processor</text>
+        <text x="440" y="155" text-anchor="middle" fill="#b45309" font-size="12">SQS: analytics queue + DLQ</text>
+        <text x="440" y="180" text-anchor="middle" fill="#64748b" font-size="11">EventBridge: nightly schedule</text>
+
+        <!-- SiteStack -->
+        <rect x="600" y="65" width="220" height="150" rx="8" fill="#ede9fe" stroke="#8b5cf6" stroke-width="1.5"/>
+        <text x="710" y="90" text-anchor="middle" font-weight="700" fill="#5b21b6">SiteStack</text>
+        <text x="710" y="115" text-anchor="middle" fill="#7c3aed" font-size="12">S3: site bucket</text>
+        <text x="710" y="135" text-anchor="middle" fill="#7c3aed" font-size="12">Static website hosting</text>
+        <text x="710" y="155" text-anchor="middle" fill="#7c3aed" font-size="12">Public read policy</text>
+        <text x="710" y="180" text-anchor="middle" fill="#64748b" font-size="11">HTML + JS + JSON assets</text>
+      </svg>
+      <p class="diagram-caption">Figure 3 — CDK stacks: all infrastructure defined as Python code in three composable stacks</p>
+    </div>
+
+    <div class="card prose">
+      <h2>Infrastructure as Code</h2>
+      <p>The entire AWS deployment is defined in three CDK stacks written in Python:</p>
+      <ul>
+        <li><strong>DataStack</strong> — creates the S3 buckets for raw BLS data, DataUSA data, and analytics output. Configures bucket policies and lifecycle rules.</li>
+        <li><strong>PipelineStack</strong> — deploys two Lambda functions, an SQS queue (with dead-letter queue), S3 event notifications, and an EventBridge rule for nightly scheduled runs. Each Lambda gets a least-privilege IAM role.</li>
+        <li><strong>SiteStack</strong> — creates the S3 bucket configured for static website hosting with a public-read bucket policy. The site files (this website) are uploaded here.</li>
+      </ul>
+      <p>Running <code>cdk deploy --all</code> provisions everything. Running <code>cdk destroy --all</code> tears it all down. No manual AWS console steps required.</p>
+    </div>
+  </div>
+</body>
+</html>

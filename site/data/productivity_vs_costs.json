@@ -1,0 +1,29 @@
+{
+  "title": "Productivity vs Unit Labor Costs (Nonfarm Business)",
+  "description": "When unit labor costs rise faster than productivity, profit margins compress. This spread is a leading indicator for Fed policy decisions.",
+  "y_left": {"label": "Output per Hour (Index, 2012=100)", "key": "output_per_hour", "color": "#3b82f6"},
+  "y_right": {"label": "Unit Labor Costs (Index, 2012=100)", "key": "unit_labor_costs", "color": "#ef4444"},
+  "points": [
+    {"year": 2003, "output_per_hour": 82.1, "unit_labor_costs": 82.4},
+    {"year": 2004, "output_per_hour": 84.8, "unit_labor_costs": 82.9},
+    {"year": 2005, "output_per_hour": 86.3, "unit_labor_costs": 84.6},
+    {"year": 2006, "output_per_hour": 87.2, "unit_labor_costs": 86.8},
+    {"year": 2007, "output_per_hour": 88.5, "unit_labor_costs": 89.4},
+    {"year": 2008, "output_per_hour": 89.7, "unit_labor_costs": 92.1},
+    {"year": 2009, "output_per_hour": 92.4, "unit_labor_costs": 90.8},
+    {"year": 2010, "output_per_hour": 95.1, "unit_labor_costs": 89.7},
+    {"year": 2011, "output_per_hour": 95.6, "unit_labor_costs": 91.0},
+    {"year": 2012, "output_per_hour": 96.5, "unit_labor_costs": 92.8},
+    {"year": 2013, "output_per_hour": 97.3, "unit_labor_costs": 94.1},
+    {"year": 2014, "output_per_hour": 98.0, "unit_labor_costs": 96.3},
+    {"year": 2015, "output_per_hour": 99.4, "unit_labor_costs": 98.5},
+    {"year": 2016, "output_per_hour": 100.0, "unit_labor_costs": 100.0},
+    {"year": 2017, "output_per_hour": 101.3, "unit_labor_costs": 102.8},
+    {"year": 2018, "output_per_hour": 102.5, "unit_labor_costs": 105.1},
+    {"year": 2019, "output_per_hour": 104.2, "unit_labor_costs": 108.3},
+    {"year": 2020, "output_per_hour": 107.8, "unit_labor_costs": 116.9},
+    {"year": 2021, "output_per_hour": 109.7, "unit_labor_costs": 121.4},
+    {"year": 2022, "output_per_hour": 108.3, "unit_labor_costs": 130.2},
+    {"year": 2023, "output_per_hour": 112.1, "unit_labor_costs": 134.8}
+  ]
+}

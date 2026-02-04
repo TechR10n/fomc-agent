@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FOMC Agent Lab — Data Pipeline</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a class="active" href="index.html">Home</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a href="charts.html">Charts</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>FOMC Agent Lab</h1>
+      <p class="subtitle">A serverless data pipeline that ingests U.S. economic data, runs analytics, and publishes results to this static site — all on AWS.</p>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="grid-3">
+      <div class="card stat">
+        <div class="number">8</div>
+        <div class="label">Labs Completed</div>
+      </div>
+      <div class="card stat">
+        <div class="number">6</div>
+        <div class="label">AWS Services Used</div>
+      </div>
+      <div class="card stat">
+        <div class="number">30+</div>
+        <div class="label">BLS Series Available</div>
+      </div>
+    </div>
+
+    <!-- What this project does -->
+    <div class="card prose">
+      <h2>What This Project Demonstrates</h2>
+      <p>This site is the output of a hands-on AWS workshop that builds a complete serverless data pipeline from scratch. The pipeline:</p>
+      <ol>
+        <li><strong>Ingests</strong> time series data from the Bureau of Labor Statistics (BLS) LABSTAT flat files and the DataUSA population API</li>
+        <li><strong>Detects changes</strong> by comparing BLS file timestamps against previously synced metadata — only downloading what's new</li>
+        <li><strong>Stores</strong> raw data in S3 with sync state tracking (JSONL logs + state snapshots)</li>
+        <li><strong>Processes</strong> data through an SQS-triggered Lambda that joins BLS productivity series with population data</li>
+        <li><strong>Publishes</strong> results as JSON files that this static site renders as interactive charts</li>
+      </ol>
+    </div>
+
+    <!-- AWS services -->
+    <div class="card prose">
+      <h2>AWS Services Used</h2>
+      <div class="grid-2 mt-2">
+        <div>
+          <h3>Amazon S3</h3>
+          <p>Raw data storage, sync state management, processed output, and static website hosting for this site.</p>
+        </div>
+        <div>
+          <h3>AWS Lambda</h3>
+          <p>Two functions: a data fetcher (scheduled ingestion) and an analytics processor (event-driven analysis).</p>
+        </div>
+        <div>
+          <h3>Amazon SQS</h3>
+          <p>Decouples S3 put events from analytics processing. Provides reliable, at-least-once delivery with dead-letter queue support.</p>
+        </div>
+        <div>
+          <h3>Amazon EventBridge</h3>
+          <p>Scheduled rule triggers the data fetcher Lambda on a cron schedule to check for BLS updates.</p>
+        </div>
+        <div>
+          <h3>AWS CDK</h3>
+          <p>All infrastructure defined as code in Python — three stacks for data, pipeline, and site resources.</p>
+        </div>
+        <div>
+          <h3>AWS IAM</h3>
+          <p>Least-privilege roles for each Lambda function, scoped to specific S3 buckets and SQS queues.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation cards -->
+    <div class="grid-2">
+      <a href="architecture.html" class="card" style="text-decoration:none; color:inherit;">
+        <h2>Architecture Diagrams</h2>
+        <p class="text-sm">SVG diagrams of the data ingestion flow, analytics processing, and CDK stack structure.</p>
+        <span class="badge badge-blue">SVG Diagrams</span>
+      </a>
+      <a href="pipeline.html" class="card" style="text-decoration:none; color:inherit;">
+        <h2>Pipeline Status</h2>
+        <p class="text-sm">Evidence that the pipeline ran: series scanned, files checked, timestamps compared.</p>
+        <span class="badge badge-green">Live Data</span>
+      </a>
+      <a href="charts.html" class="card" style="text-decoration:none; color:inherit;">
+        <h2>Time Series Charts</h2>
+        <p class="text-sm">Interactive Chart.js visualizations of BLS productivity metrics and population data.</p>
+        <span class="badge badge-amber">4 Charts</span>
+      </a>
+      <a href="bls-guide.html" class="card" style="text-decoration:none; color:inherit;">
+        <h2>BLS LABSTAT Guide</h2>
+        <p class="text-sm">Primer on the BLS flat file database, series ID format, and ideas for economic analysis.</p>
+        <span class="badge badge-gray">Reference</span>
+      </a>
+      <a href="adr.html" class="card" style="text-decoration:none; color:inherit;">
+        <h2>Decision Records</h2>
+        <p class="text-sm">Architectural Decision Records documenting key technical choices and their rationale.</p>
+        <span class="badge badge-gray">ADRs</span>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

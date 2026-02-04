@@ -1,0 +1,109 @@
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  margin: 0; padding: 0;
+  background: #f8fafc; color: #1e293b;
+  line-height: 1.6;
+}
+
+/* ── Layout ── */
+.container { max-width: 960px; margin: 0 auto; padding: 0 1.5rem 3rem; }
+
+/* ── Navigation ── */
+nav {
+  background: #0f172a; color: #e2e8f0;
+  padding: 0.75rem 1.5rem;
+  display: flex; align-items: center; gap: 1.5rem;
+  font-size: 0.9rem;
+  position: sticky; top: 0; z-index: 100;
+}
+nav .brand { font-weight: 700; color: #fff; text-decoration: none; margin-right: auto; }
+nav a { color: #94a3b8; text-decoration: none; transition: color 0.15s; }
+nav a:hover, nav a.active { color: #fff; }
+
+/* ── Page Header ── */
+.page-header { margin: 2rem 0 1.5rem; }
+.page-header h1 { font-size: 1.75rem; margin: 0 0 0.25rem; }
+.page-header .subtitle { color: #64748b; font-size: 1rem; margin: 0; }
+
+/* ── Cards ── */
+.card {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 1.5rem; margin-bottom: 1.25rem;
+}
+.card h2 { margin-top: 0; font-size: 1.15rem; }
+.card h3 { font-size: 1rem; margin-top: 1.25rem; }
+.card p { margin: 0.5rem 0; }
+
+/* ── Prose ── */
+.prose { max-width: 72ch; }
+.prose p { margin: 0.75rem 0; }
+.prose ul, .prose ol { padding-left: 1.5rem; }
+.prose li { margin: 0.35rem 0; }
+.prose h2 { font-size: 1.3rem; margin-top: 2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.35rem; }
+.prose h3 { font-size: 1.1rem; margin-top: 1.5rem; }
+
+/* ── Code ── */
+code {
+  background: #f1f5f9; padding: 0.15rem 0.4rem; border-radius: 5px;
+  font-size: 0.88em; font-family: "SF Mono", Menlo, Consolas, monospace;
+}
+pre {
+  background: #1e293b; color: #e2e8f0; padding: 1rem 1.25rem;
+  border-radius: 8px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5;
+}
+pre code { background: none; padding: 0; color: inherit; }
+
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.9rem; }
+th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #f1f5f9; }
+th { color: #64748b; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px;
+  font-size: 0.78rem; font-weight: 600;
+}
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-blue  { background: #dbeafe; color: #1e40af; }
+.badge-amber { background: #fef3c7; color: #92400e; }
+.badge-gray  { background: #f1f5f9; color: #64748b; }
+.badge-red   { background: #fee2e2; color: #991b1b; }
+
+/* ── SVG Diagrams ── */
+.diagram-container {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 12px;
+  padding: 1.5rem; margin: 1.25rem 0; overflow-x: auto;
+}
+.diagram-container svg { display: block; margin: 0 auto; }
+.diagram-caption { text-align: center; color: #64748b; font-size: 0.85rem; margin-top: 0.75rem; }
+
+/* ── Charts ── */
+canvas { width: 100%; height: 380px; }
+.chart-status { color: #64748b; font-size: 0.85rem; margin-top: 0.5rem; }
+
+/* ── Grid ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+@media (max-width: 700px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* ── Stat Cards ── */
+.stat { text-align: center; padding: 1.25rem; }
+.stat .number { font-size: 2rem; font-weight: 700; color: #0f172a; }
+.stat .label { font-size: 0.85rem; color: #64748b; margin-top: 0.25rem; }
+
+/* ── Muted / Helper ── */
+.muted { color: #94a3b8; font-size: 0.85rem; }
+.text-sm { font-size: 0.9rem; }
+.mt-2 { margin-top: 2rem; }
+
+/* ── Series table on pipeline page ── */
+.series-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; }
+.series-row:last-child { border-bottom: none; }
+.series-name { font-weight: 600; min-width: 3rem; }
+.bar { height: 8px; border-radius: 4px; background: #3b82f6; transition: width 0.3s; }
+.bar-updated { background: #22c55e; }
+.bar-unchanged { background: #e2e8f0; }

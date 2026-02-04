@@ -1,0 +1,16 @@
+{
+  "title": "BLS (PRS30006032 Q01) vs US Population",
+  "points": [
+    {"year": 2013, "population": 316128839, "bls_value": 97.347},
+    {"year": 2014, "population": 318857056, "bls_value": 98.048},
+    {"year": 2015, "population": 321418820, "bls_value": 99.434},
+    {"year": 2016, "population": 323127513, "bls_value": 100.000},
+    {"year": 2017, "population": 325719178, "bls_value": 101.272},
+    {"year": 2018, "population": 327167434, "bls_value": 102.495},
+    {"year": 2019, "population": 328239523, "bls_value": 104.157},
+    {"year": 2020, "population": 331449281, "bls_value": 107.834},
+    {"year": 2021, "population": 331893745, "bls_value": 109.658},
+    {"year": 2022, "population": 333287557, "bls_value": 108.324},
+    {"year": 2023, "population": 334914895, "bls_value": 112.071}
+  ]
+}

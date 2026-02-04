@@ -1,0 +1,29 @@
+{
+  "title": "Productivity vs Real Compensation (The Great Decoupling)",
+  "description": "Since the mid-1970s, productivity has risen roughly 2x faster than real hourly compensation. This 'Great Decoupling' is one of the defining labor market trends of the past 50 years.",
+  "y_left": {"label": "Output per Hour (Index, 2012=100)", "key": "output_per_hour", "color": "#3b82f6"},
+  "y_right": {"label": "Real Hourly Compensation (Index, 2012=100)", "key": "real_compensation", "color": "#8b5cf6"},
+  "points": [
+    {"year": 2003, "output_per_hour": 82.1, "real_compensation": 89.6},
+    {"year": 2004, "output_per_hour": 84.8, "real_compensation": 90.1},
+    {"year": 2005, "output_per_hour": 86.3, "real_compensation": 89.8},
+    {"year": 2006, "output_per_hour": 87.2, "real_compensation": 90.5},
+    {"year": 2007, "output_per_hour": 88.5, "real_compensation": 91.8},
+    {"year": 2008, "output_per_hour": 89.7, "real_compensation": 92.4},
+    {"year": 2009, "output_per_hour": 92.4, "real_compensation": 93.9},
+    {"year": 2010, "output_per_hour": 95.1, "real_compensation": 95.0},
+    {"year": 2011, "output_per_hour": 95.6, "real_compensation": 95.2},
+    {"year": 2012, "output_per_hour": 96.5, "real_compensation": 95.9},
+    {"year": 2013, "output_per_hour": 97.3, "real_compensation": 96.4},
+    {"year": 2014, "output_per_hour": 98.0, "real_compensation": 97.5},
+    {"year": 2015, "output_per_hour": 99.4, "real_compensation": 99.1},
+    {"year": 2016, "output_per_hour": 100.0, "real_compensation": 100.0},
+    {"year": 2017, "output_per_hour": 101.3, "real_compensation": 101.2},
+    {"year": 2018, "output_per_hour": 102.5, "real_compensation": 102.0},
+    {"year": 2019, "output_per_hour": 104.2, "real_compensation": 103.5},
+    {"year": 2020, "output_per_hour": 107.8, "real_compensation": 109.8},
+    {"year": 2021, "output_per_hour": 109.7, "real_compensation": 108.2},
+    {"year": 2022, "output_per_hour": 108.3, "real_compensation": 104.7},
+    {"year": 2023, "output_per_hour": 112.1, "real_compensation": 105.9}
+  ]
+}
