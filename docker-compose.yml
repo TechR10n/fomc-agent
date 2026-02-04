@@ -1,0 +1,15 @@
+services:
+  localstack:
+    container_name: fomc-localstack
+    image: localstack/localstack-pro:latest
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:?Set LOCALSTACK_AUTH_TOKEN before running}
+      - SERVICES=s3,sqs,lambda,iam,cloudwatch
+      - DEFAULT_REGION=us-east-1
+      - DEBUG=0
+    volumes:
+      - "./localstack/init:/etc/localstack/init"
+      - "./volume:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"

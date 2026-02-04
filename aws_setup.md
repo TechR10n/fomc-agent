@@ -152,15 +152,101 @@ This installs `aws-cdk-lib` and `constructs` into your venv.
 
 ---
 
-## 3. Quick Verification Checklist
+## 3. LocalStack (Local AWS)
+
+Run the full pipeline locally without touching your AWS account. Requires Docker and a LocalStack Pro account ([app.localstack.cloud](https://app.localstack.cloud/getting-started)).
+
+### 3.1 Set Your Auth Token
+
+Find your token at [app.localstack.cloud](https://app.localstack.cloud/getting-started) and export it:
+
+```bash
+export LOCALSTACK_AUTH_TOKEN=ls-xxxxxxxx
+```
+
+Add it to your shell profile (`~/.zshrc`) so it persists across sessions.
+
+### 3.2 Start LocalStack
+
+```bash
+docker compose up -d
+```
+
+This starts the `fomc-localstack` container and automatically creates all S3 buckets and SQS queues via the init hook in `localstack/init/ready.d/init-aws.sh`.
+
+Verify it's ready:
+
+```bash
+aws --endpoint-url=http://localhost:4566 s3 ls
+```
+
+You should see all four `fomc-*` buckets.
+
+### 3.3 Run the Pipeline Locally
+
+Fetch data into local S3 (uses real BLS and DataUSA APIs, stores in LocalStack S3):
+
+```bash
+source .env.localstack
+python src/data_fetchers/bls_getter.py
+python src/data_fetchers/datausa_getter.py
+```
+
+Verify data landed:
+
+```bash
+aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-bls-raw/pr/ --recursive | head
+aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-datausa-raw/
+```
+
+Run analytics against local data:
+
+```bash
+source .env.localstack
+python src/analytics/reports.py
+```
+
+### 3.4 PyCharm Run Configurations (One-Click)
+
+The project includes shared run configurations in `.run/` that appear automatically in PyCharm's Run dropdown:
+
+| Configuration | What It Does | Target |
+|---------------|-------------|--------|
+| **Fetch Data (LocalStack)** | Fetches all BLS series into local S3 | LocalStack |
+| **Fetch DataUSA (LocalStack)** | Fetches population data into local S3 | LocalStack |
+| **Analytics (LocalStack)** | Runs reports against local S3 data | LocalStack |
+| **Fetch Data (AWS)** | Fetches BLS series into real AWS S3 | AWS |
+| **Run Tests** | Runs unit tests (moto mocks, no AWS needed) | Neither |
+| **Docker Compose Up (LocalStack)** | Starts LocalStack container | Docker |
+
+Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set. The AWS config uses your `fomc-agent` profile. No manual env var setup needed — just select a config and click Run.
+
+### 3.5 Stop LocalStack
+
+```bash
+docker compose down
+```
+
+Add `-v` to also remove persisted data:
+
+```bash
+docker compose down -v
+```
+
+---
+
+## 4. Quick Verification Checklist
 
 ```
-[ ] aws sts get-caller-identity --profile fomc-agent   # returns your account
+[ ] aws sts get-caller-identity --profile fomc-agent       # returns your account
 [ ] python3 --version                                      # 3.12+
 [ ] uv --version                                           # installed
 [ ] .env.local exists with FOMC_BUCKET_PREFIX set
 [ ] PyCharm interpreter points to .venv/bin/python
 [ ] pytest runs green in PyCharm (right-click tests/)
+[ ] docker compose up -d                                   # LocalStack starts
+[ ] aws --endpoint-url=http://localhost:4566 s3 ls          # shows fomc-* buckets
+[ ] PyCharm shows run configs in the Run dropdown
 ```
 
 ## 4. Common Issues
@@ -172,3 +258,6 @@ This installs `aws-cdk-lib` and `constructs` into your venv.
 | CDK bootstrap error         | Make sure Node.js is installed (`node --version`) and you ran `cdk bootstrap`   |
 | PyCharm can't find `boto3`  | Ensure interpreter points to `.venv` and run `uv sync`                          |
 | Lambda imports fail locally | Run from project root, not from `src/`                                          |
+| LocalStack exits with code 55 | `LOCALSTACK_AUTH_TOKEN` not set — export it before `docker compose up`         |
+| LocalStack buckets missing  | Check `docker compose logs` for init hook errors; re-run `docker compose up -d` |
+| Run configs not showing     | Reopen the project in PyCharm; configs are in `.run/` and auto-detected         |

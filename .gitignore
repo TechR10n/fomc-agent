@@ -345,12 +345,20 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
+!.env.localstack
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# LocalStack persistence
+volume/
+
+# CDK output
+cdk.out/
 
 # Spyder project settings
 .spyderproject

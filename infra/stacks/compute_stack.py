@@ -50,7 +50,7 @@ class FomcComputeStack(Stack):
             environment={
                 "BLS_BUCKET": storage.bls_raw_bucket.bucket_name,
                 "DATAUSA_BUCKET": storage.datausa_raw_bucket.bucket_name,
-                "BLS_SERIES": "pr",
+                "BLS_SERIES": "pr,cu,ce,ln,jt,ci",
             },
         )
 

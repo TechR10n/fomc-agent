@@ -8,13 +8,14 @@ DEFAULT_REGION = "us-east-1"
 
 
 def get_client(service: str):
-    """Create a boto3 client for the given service.
-    """
+    """Create a boto3 client for the given service."""
     region = os.environ.get("AWS_DEFAULT_REGION", DEFAULT_REGION)
-    return boto3.client(service, region_name=region)
+    endpoint = os.environ.get("AWS_ENDPOINT_URL")
+    return boto3.client(service, region_name=region, endpoint_url=endpoint)
 
 
 def get_resource(service: str):
     """Create a boto3 resource for the given service."""
     region = os.environ.get("AWS_DEFAULT_REGION", DEFAULT_REGION)
-    return boto3.resource(service, region_name=region)
+    endpoint = os.environ.get("AWS_ENDPOINT_URL")
+    return boto3.resource(service, region_name=region, endpoint_url=endpoint)
