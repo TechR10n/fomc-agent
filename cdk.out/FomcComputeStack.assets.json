@@ -1,0 +1,36 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "352e51a9de5e2b073e96737d326518c983014dd91f51dd732ef63c262db0763c": {
+      "displayName": "DataFetcherFunction/Code",
+      "source": {
+        "path": "asset.352e51a9de5e2b073e96737d326518c983014dd91f51dd732ef63c262db0763c",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "424808095422-us-east-1-b4288513": {
+          "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
+          "objectKey": "352e51a9de5e2b073e96737d326518c983014dd91f51dd732ef63c262db0763c.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
+        }
+      }
+    },
+    "7c0ad19bca1327b23ab38560509cef78cef20a4621234a3405759c3c59c90a93": {
+      "displayName": "FomcComputeStack Template",
+      "source": {
+        "path": "FomcComputeStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "424808095422-us-east-1-d8faee17": {
+          "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
+          "objectKey": "7c0ad19bca1327b23ab38560509cef78cef20a4621234a3405759c3c59c90a93.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

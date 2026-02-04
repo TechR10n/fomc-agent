@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BLS LABSTAT Guide — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Home</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="pipeline.html">Pipeline</a>
+    <a href="charts.html">Charts</a>
+    <a class="active" href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>BLS LABSTAT Guide</h1>
+      <p class="subtitle">A primer on the Bureau of Labor Statistics public data system and how to use it for economic analysis.</p>
+    </div>
+
+    <div class="card prose">
+      <h2>What is LABSTAT?</h2>
+      <p>LABSTAT is the public database maintained by the U.S. Bureau of Labor Statistics. It contains current and historical data for dozens of surveys covering employment, prices, productivity, compensation, and more. The data is available as flat text files at <a href="https://download.bls.gov/pub/time.series/" target="_blank" rel="noopener">download.bls.gov/pub/time.series/</a>.</p>
+      <p>Each survey is identified by a <strong>two-character prefix</strong> (like <code>pr</code> for productivity, <code>cu</code> for CPI). Within each survey directory, you'll find a consistent set of files:</p>
+    </div>
+
+    <div class="card">
+      <h2>Anatomy of a BLS Series Directory</h2>
+      <p>Every survey directory at <code>download.bls.gov/pub/time.series/{prefix}/</code> follows this structure:</p>
+      <table>
+        <tr><th>File</th><th>Purpose</th></tr>
+        <tr><td><code>{prefix}.txt</code></td><td>Documentation — survey description, table structure, data element definitions</td></tr>
+        <tr><td><code>{prefix}.series</code></td><td>Series catalog — lists every series ID with metadata (seasonal adjustment, sector, measure, etc.)</td></tr>
+        <tr><td><code>{prefix}.data.0.Current</code></td><td>Current data — the most recent observations (tab-delimited)</td></tr>
+        <tr><td><code>{prefix}.data.1.AllData</code></td><td>All data — complete historical archive (can be large)</td></tr>
+        <tr><td><code>{prefix}.period</code></td><td>Period codes — maps period codes (Q01, M01, A01) to labels</td></tr>
+        <tr><td><code>{prefix}.measure</code></td><td>Measure codes — maps numeric measure codes to descriptions</td></tr>
+        <tr><td><code>{prefix}.sector</code></td><td>Sector codes — maps sector codes to industry descriptions</td></tr>
+        <tr><td><code>{prefix}.contacts</code></td><td>Contact info for the survey team</td></tr>
+      </table>
+      <p class="muted">The data files are tab-delimited with columns: <code>series_id</code>, <code>year</code>, <code>period</code>, <code>value</code>, <code>footnote_codes</code></p>
+    </div>
+
+    <div class="card">
+      <h2>Series ID Format</h2>
+      <p>Every BLS time series has a unique ID that encodes its metadata. For example:</p>
+      <pre><code>PRS30006032
+││ ││││││││
+││ ││││││└┘── Duration (32 = index)
+││ ││││└┘──── Measure (60 = output per hour)
+││ ││└┘────── Not used (00)
+││ └┘──────── Sector (30 = nonfarm business)
+│└─────────── Seasonal adj (R = not seasonally adj)
+└──────────── Prefix (P = productivity)</code></pre>
+      <p>Understanding the series ID format lets you programmatically construct queries for exactly the data you need. The <code>{prefix}.series</code> file in each survey directory catalogs all available series IDs.</p>
+    </div>
+
+    <div class="card prose">
+      <h2>Key Survey Prefixes</h2>
+      <p>The BLS publishes over 30 survey databases. Here are the ones most relevant to economic analysis:</p>
+    </div>
+
+    <div class="card">
+      <h3>Productivity &amp; Costs</h3>
+      <table>
+        <tr><th>Prefix</th><th>Survey</th><th>What It Covers</th></tr>
+        <tr><td><code>pr</code></td><td>Major Sector Productivity &amp; Costs</td><td>Output per hour, unit labor costs, real compensation for nonfarm business, manufacturing, and other major sectors</td></tr>
+        <tr><td><code>mp</code></td><td>Multifactor Productivity</td><td>Total factor productivity (strips out capital deepening — pure innovation/efficiency gains)</td></tr>
+        <tr><td><code>ip</code></td><td>Industry Productivity</td><td>Productivity at the detailed industry level (NAICS 3-6 digit)</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Prices</h3>
+      <table>
+        <tr><th>Prefix</th><th>Survey</th><th>What It Covers</th></tr>
+        <tr><td><code>cu</code></td><td>CPI — All Urban Consumers</td><td>Consumer prices by category and metro area. The headline inflation measure.</td></tr>
+        <tr><td><code>cw</code></td><td>CPI — Urban Wage Earners</td><td>CPI-W, used for Social Security COLA adjustments</td></tr>
+        <tr><td><code>wp</code></td><td>Producer Price Index (Commodities)</td><td>Wholesale/producer prices by commodity. Leading indicator for CPI.</td></tr>
+        <tr><td><code>ap</code></td><td>Average Prices</td><td>Average retail prices for specific items (gasoline, electricity, food staples)</td></tr>
+        <tr><td><code>ei</code></td><td>Import/Export Price Indexes</td><td>Price changes for internationally traded goods</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Employment &amp; Compensation</h3>
+      <table>
+        <tr><th>Prefix</th><th>Survey</th><th>What It Covers</th></tr>
+        <tr><td><code>ce</code></td><td>Current Employment Statistics</td><td>Nonfarm payrolls, hours, and earnings by industry (the "jobs report")</td></tr>
+        <tr><td><code>ln</code></td><td>Labor Force Statistics</td><td>Unemployment rate, participation rate, demographics (from CPS)</td></tr>
+        <tr><td><code>la</code></td><td>Local Area Unemployment</td><td>Unemployment by state, county, and metro area</td></tr>
+        <tr><td><code>ci</code></td><td>Employment Cost Index</td><td>Changes in the cost of labor (wages + benefits), by industry and occupation</td></tr>
+        <tr><td><code>cm</code></td><td>Employer Costs (ECEC)</td><td>Employer costs per hour worked — wages vs. benefits breakdown</td></tr>
+        <tr><td><code>jt</code></td><td>Job Openings (JOLTS)</td><td>Job openings, hires, separations, quits rate — labor market tightness</td></tr>
+        <tr><td><code>bd</code></td><td>Business Employment Dynamics</td><td>Gross job gains and losses from establishment openings, closings, expansions, contractions</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Other</h3>
+      <table>
+        <tr><th>Prefix</th><th>Survey</th><th>What It Covers</th></tr>
+        <tr><td><code>cx</code></td><td>Consumer Expenditure Survey</td><td>How households spend their money — by income, age, region</td></tr>
+        <tr><td><code>tu</code></td><td>American Time Use Survey</td><td>How Americans spend their time (work, leisure, childcare, etc.)</td></tr>
+        <tr><td><code>fi</code> / <code>fw</code></td><td>Fatal Occupational Injuries</td><td>Workplace fatality data by industry, occupation, event type</td></tr>
+        <tr><td><code>cs</code> / <code>ch</code></td><td>Occupational Injuries</td><td>Nonfatal workplace injury/illness data</td></tr>
+      </table>
+    </div>
+
+    <div class="card prose">
+      <h2>Ideas for Expanding This Pipeline</h2>
+      <p>This pipeline currently syncs the <code>pr</code> (productivity) series and joins it with population data. Here are ideas for richer analyses, organized from quick wins to deeper projects:</p>
+
+      <h3>Quick Additions (same fetcher, new series)</h3>
+      <ul>
+        <li><strong>Productivity vs. Real Wages</strong> — the "Great Decoupling." Add <code>ci</code> (Employment Cost Index) and chart <code>PRS30006032</code> (output/hour) against CPI-deflated compensation. This is the most discussed chart in labor economics.</li>
+        <li><strong>Productivity vs. Unit Labor Costs</strong> — already in the <code>pr</code> dataset. Compare <code>PRS30006032</code> with <code>PRS30006112</code>. A leading indicator for Fed decisions.</li>
+        <li><strong>Manufacturing vs. Nonfarm Productivity</strong> — both in <code>pr</code>. Compare <code>PRS30006032</code> (nonfarm) with <code>PRS31006032</code> (manufacturing). Tells the automation story.</li>
+        <li><strong>CPI Components Over Time</strong> — add <code>cu</code> and plot major category indexes (food, housing, medical, energy) diverging from the all-items index.</li>
+      </ul>
+
+      <h3>Cross-Domain Analyses (econometrician territory)</h3>
+      <ul>
+        <li><strong>Phillips Curve</strong> — plot unemployment rate (<code>ln</code>: <code>LNS14000000</code>) against CPI inflation (<code>cu</code>: <code>CUUR0000SA0</code>). Classic macroeconomic relationship — and its breakdown since 2010.</li>
+        <li><strong>Beveridge Curve</strong> — plot job openings rate (<code>jt</code>: JOLTS) against unemployment (<code>ln</code>). Shows whether the labor market is matching efficiently.</li>
+        <li><strong>Labor Share of Output</strong> — derive from <code>pr</code> data: <code>(real hourly compensation / output per hour) × 100</code>. Averaged ~64% for decades, then declined to ~57% after 2000.</li>
+        <li><strong>Wage-Price Spiral Detection</strong> — lag analysis between ECI (<code>ci</code>) and CPI (<code>cu</code>). Do wage increases lead price increases, or vice versa?</li>
+        <li><strong>Sectoral Reallocation</strong> — use <code>ce</code> employment by industry over time. Which sectors are growing/shrinking? Combine with <code>ip</code> industry productivity to see if high-productivity sectors are gaining employment share.</li>
+      </ul>
+
+      <h3>Cloud Engineering Extensions</h3>
+      <ul>
+        <li><strong>Scan all 30+ series prefixes</strong> — the fetcher already supports multiple series via <code>BLS_SERIES=pr,cu,ce,ci,ln</code>. Scale up to the full catalog.</li>
+        <li><strong>Add CloudFront</strong> — put this S3 static site behind CloudFront for HTTPS, caching, and a custom domain.</li>
+        <li><strong>Step Functions orchestration</strong> — replace the direct EventBridge → Lambda trigger with a Step Functions state machine that coordinates fetching, waits for all series to complete, then triggers analytics.</li>
+        <li><strong>DynamoDB for sync state</strong> — move sync state from S3 JSON files to DynamoDB for atomic updates and efficient queries.</li>
+        <li><strong>SNS notifications</strong> — send an email/Slack alert when the nightly run detects updated BLS data.</li>
+        <li><strong>Athena for ad hoc queries</strong> — register the raw BLS TSV files as an Athena external table for SQL-based exploration without any ETL.</li>
+      </ul>
+    </div>
+
+    <div class="card prose">
+      <h2>Working with BLS Data: Tips</h2>
+      <ul>
+        <li><strong>User-Agent required.</strong> BLS blocks requests without a descriptive User-Agent header. This pipeline uses <code>fomc-agent/1.0 (data-pipeline; research-use)</code>.</li>
+        <li><strong>Timestamps are Eastern time.</strong> File modification timestamps on the BLS server are in ET format: <code>M/D/YYYY H:MM AM/PM</code>.</li>
+        <li><strong>Quarterly data uses Q01–Q05.</strong> Q01 = Jan–Mar, Q05 = annual average. Monthly data uses M01–M13 (M13 = annual average).</li>
+        <li><strong>Index series have a base year.</strong> Most productivity indexes use 2012=100. CPI uses 1982–84=100. Always check the <code>{prefix}.txt</code> docs.</li>
+        <li><strong>Seasonal adjustment matters.</strong> The first character after the prefix in a series ID indicates seasonal adjustment: <code>S</code> = seasonally adjusted, <code>U</code> = not adjusted. Use adjusted data for trend analysis, unadjusted for actual values.</li>
+        <li><strong>BLS also has a JSON API.</strong> For programmatic access to specific series, the <a href="https://www.bls.gov/developers/" target="_blank" rel="noopener">BLS Public Data API</a> returns JSON. Version 2 (with registration) allows up to 500 requests/day and 50 series per request.</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

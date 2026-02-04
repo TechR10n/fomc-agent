@@ -1,0 +1,209 @@
+@startuml FOMC Agent — Data Flow Sequence
+!theme plain
+
+title FOMC Agent — End-to-End Data Flow\nMessaging, Storage, and Processing
+
+' ──────────────────────────────────────────────
+' Participants
+' ──────────────────────────────────────────────
+participant "EventBridge\n(DailyFetchRule)" as EB #E3F2FD
+participant "fomc-data-fetcher\n(Lambda)" as Fetcher #E3F2FD
+participant "BLS LABSTAT\nhttps://download.bls.gov" as BLS #F5F5F5
+participant "DataUSA API\nhonolulu-api.datausa.io" as DataUSA #F5F5F5
+database "{prefix}-bls-raw\n(S3)" as S3_BLS #E8F5E9
+database "{prefix}-datausa-raw\n(S3)" as S3_DataUSA #E8F5E9
+queue "fomc-analytics-queue\n(SQS)" as SQS #FFF3E0
+queue "fomc-analytics-dlq\n(SQS DLQ)" as DLQ #FFEBEE
+participant "fomc-analytics-processor\n(Lambda)" as Analytics #FFF3E0
+participant "CloudWatch Logs" as CW #F5F5F5
+
+' ──────────────────────────────────────────────
+' Phase 1: Scheduled Trigger
+' ──────────────────────────────────────────────
+== Phase 1: Daily Scheduled Trigger (9:00 AM UTC) ==
+
+EB -> Fetcher : invoke (cron event)
+activate Fetcher
+
+' ──────────────────────────────────────────────
+' Phase 2: BLS Data Ingestion
+' ──────────────────────────────────────────────
+== Phase 2: BLS Data Ingestion ==
+
+Fetcher -> S3_BLS : load_sync_state()\nGET _sync_state/{series}/latest_state.json
+S3_BLS --> Fetcher : previous state (files, timestamps)
+
+Fetcher -> BLS : HTTP GET /{series_id}/\n(User-Agent: fomc-agent/1.0)
+BLS --> Fetcher : HTML directory listing
+
+Fetcher -> Fetcher : BLSDirectoryParser\nparse filenames, timestamps, sizes
+
+loop for each file in directory listing
+  Fetcher -> Fetcher : _matches_patterns(filename, patterns)?
+  alt file matches patterns
+    Fetcher -> S3_BLS : head_object(series/{filename})\nget S3 metadata
+    S3_BLS --> Fetcher : metadata {source_modified}
+
+    alt needs_update (source_time > last sync)
+      Fetcher -> BLS : HTTP GET /{series_id}/{filename}\n(timeout: 60s)
+      BLS --> Fetcher : file bytes
+
+      Fetcher -> S3_BLS : put_object(series/{filename})\nMetadata: {source_modified}
+      note right
+        Writes raw BLS flat file
+        (tab-separated CSV)
+      end note
+
+      Fetcher -> S3_BLS : append_sync_log()\n_sync_state/{series}/sync_log.jsonl
+    else unchanged
+      Fetcher -> S3_BLS : append_sync_log(action="unchanged")
+    end
+  end
+end
+
+loop for each deleted file (in state but not in listing)
+  Fetcher -> S3_BLS : delete_object(series/{filename})
+  Fetcher -> S3_BLS : append_sync_log(action="deleted")
+end
+
+Fetcher -> S3_BLS : save_sync_state()\nPUT _sync_state/{series}/_tmp_state.json\nCOPY to latest_state.json\nDELETE _tmp_state.json
+note right
+  Atomic state update:
+  write temp → copy → delete temp
+end note
+
+' ──────────────────────────────────────────────
+' Phase 3: DataUSA Data Ingestion
+' ──────────────────────────────────────────────
+== Phase 3: DataUSA Population Ingestion ==
+
+Fetcher -> DataUSA : HTTP GET /tesseract/data.jsonrecords\n?cube=acs_yg_total_population_1\n&drilldowns=Year,Nation\n&measures=Population
+DataUSA --> Fetcher : JSON {data: [{Year, Nation, Population}, ...]}
+
+Fetcher -> Fetcher : compute_content_hash()\nSHA-256 of sorted JSON (first 16 chars)
+
+Fetcher -> S3_DataUSA : head_object(population.json)\nget metadata {content_hash}
+S3_DataUSA --> Fetcher : stored content_hash
+
+alt needs_update (new_hash != stored_hash)
+  Fetcher -> S3_DataUSA : put_object(population.json)\nContentType: application/json\nMetadata: {content_hash}
+  note right
+    This upload triggers
+    S3 Event Notification
+  end note
+
+  Fetcher -> S3_DataUSA : save_sync_state()\n{last_sync, content_hash, record_count, year_range}
+  Fetcher -> S3_DataUSA : append_sync_log(action="updated")
+else unchanged (same hash)
+  Fetcher -> S3_DataUSA : append_sync_log(action="unchanged")
+  note right
+    No S3 upload = no event
+    notification = analytics
+    Lambda does NOT run
+  end note
+end
+
+Fetcher --> EB : return {statusCode: 200|207, body: {bls, datausa, errors}}
+deactivate Fetcher
+
+' ──────────────────────────────────────────────
+' Phase 4: S3 → SQS Event Notification
+' ──────────────────────────────────────────────
+== Phase 4: Event-Driven Analytics Trigger ==
+
+S3_DataUSA -> SQS : S3 Event Notification\n(OBJECT_CREATED, suffix=".json")\n\nMessage body:\n{Records: [{s3: {bucket, object: {key}}}]}
+note over SQS
+  visibility_timeout: 6 min
+  Allows Lambda up to 6 min
+  before message reappears
+end note
+
+' ──────────────────────────────────────────────
+' Phase 5: SQS → Analytics Lambda
+' ──────────────────────────────────────────────
+== Phase 5: Analytics Processing ==
+
+SQS -> Analytics : SQS Event Source Mapping\n(batch_size: 1)
+activate Analytics
+
+Analytics -> Analytics : Parse SQS record\nExtract S3 bucket + key\nfrom nested notification JSON
+
+Analytics -> S3_DataUSA : get_object(population.json)\nload_population()
+S3_DataUSA --> Analytics : JSON data
+
+Analytics -> S3_BLS : get_object(pr/pr.data.0.Current)\nload_bls_data()
+S3_BLS --> Analytics : Tab-separated CSV data
+
+Analytics -> Analytics : csv.DictReader(delimiter="\\t")\nParse BLS rows
+
+== Phase 5a: Report Generation ==
+
+group Report 1: Population Statistics (2013-2018)
+  Analytics -> Analytics : Filter years 2013-2018\nCalculate mean + std dev\nof Population values
+end
+
+group Report 2: Best Year per BLS Series
+  Analytics -> Analytics : Filter quarterly periods (Q*)\nSum values per (series_id, year)\nFind max year per series
+end
+
+group Report 3: BLS × Population Join
+  Analytics -> Analytics : Filter BLS by series_id=PRS30006032, period=Q01\nJoin with population by Year\nReturn merged records
+end
+
+Analytics -> CW : logger.info(report results)
+note right
+  Results logged to
+  CloudWatch Logs
+  /aws/lambda/fomc-analytics-processor
+end note
+
+Analytics --> SQS : return {statusCode: 200|207}
+note over SQS
+  On success: message deleted
+  On failure (up to 3 retries):
+  message returns to queue
+end note
+deactivate Analytics
+
+' ──────────────────────────────────────────────
+' Phase 6: Failure Path
+' ──────────────────────────────────────────────
+== Phase 6: Failure Handling ==
+
+SQS -> DLQ : After 3 failed receive attempts\nmessage moves to DLQ
+note over DLQ
+  Retention: 14 days
+  Messages preserved for
+  debugging and replay
+end note
+
+' ──────────────────────────────────────────────
+' Phase 7: Static Site (manual/CI deploy)
+' ──────────────────────────────────────────────
+== Phase 7: Static Site Deployment (Manual / CDK Deploy) ==
+
+actor Developer as Dev
+participant "cdk deploy\nFomcSiteStack" as CDK #F3E5F5
+database "{prefix}-site\n(S3 Website)" as S3_Site #F3E5F5
+actor Browser as User
+
+Dev -> CDK : cdk deploy FomcSiteStack
+CDK -> S3_Site : BucketDeployment\nupload site/ directory\n(HTML, CSS, JS, data/*.json)\nprune: true
+
+note over S3_Site
+  S3 Static Website Hosting
+  index: index.html
+  Public read access enabled
+  URL: http://{prefix}-site.s3-website-us-east-1.amazonaws.com
+end note
+
+User -> S3_Site : HTTP GET /index.html
+S3_Site --> User : HTML + CSS + JS
+User -> S3_Site : HTTP GET /data/timeseries.json
+S3_Site --> User : JSON data
+note right
+  Chart.js renders
+  visualizations client-side
+end note
+
+@enduml

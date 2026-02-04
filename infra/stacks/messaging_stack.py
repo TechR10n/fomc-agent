@@ -1,13 +1,10 @@
-"""SQS messaging stack with S3 event notifications and analytics Lambda."""
+"""Analytics Lambda stack, consuming from the SQS queue created in the storage stack."""
 
 from pathlib import Path
 
 from aws_cdk import Duration, Stack
 from aws_cdk import aws_lambda as _lambda
 from aws_cdk import aws_lambda_event_sources as lambda_events
-from aws_cdk import aws_s3 as s3
-from aws_cdk import aws_s3_notifications as s3n
-from aws_cdk import aws_sqs as sqs
 from constructs import Construct
 
 from infra.stacks.storage_stack import FomcStorageStack
@@ -24,33 +21,6 @@ class FomcMessagingStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         project_root = str(Path(__file__).resolve().parent.parent.parent)
-
-        # Dead letter queue
-        dlq = sqs.Queue(
-            self,
-            "AnalyticsDLQ",
-            queue_name="fomc-analytics-dlq",
-            retention_period=Duration.days(14),
-        )
-
-        # Main processing queue
-        self.queue = sqs.Queue(
-            self,
-            "AnalyticsQueue",
-            queue_name="fomc-analytics-queue",
-            visibility_timeout=Duration.minutes(6),
-            dead_letter_queue=sqs.DeadLetterQueue(
-                max_receive_count=3,
-                queue=dlq,
-            ),
-        )
-
-        # S3 event notification: JSON file uploads to datausa bucket → SQS
-        storage.datausa_raw_bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3n.SqsDestination(self.queue),
-            s3.NotificationKeyFilter(suffix=".json"),
-        )
 
         # Analytics processor Lambda
         self.analytics_processor = _lambda.Function(
@@ -84,7 +54,7 @@ class FomcMessagingStack(Stack):
 
         # SQS triggers Lambda
         self.analytics_processor.add_event_source(
-            lambda_events.SqsEventSource(self.queue, batch_size=1)
+            lambda_events.SqsEventSource(storage.analytics_queue, batch_size=1)
         )
 
         # Grant S3 read permissions

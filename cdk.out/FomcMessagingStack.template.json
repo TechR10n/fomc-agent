@@ -1,0 +1,216 @@
+{
+ "Resources": {
+  "AnalyticsProcessorFunctionServiceRole56EC500C": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FomcMessagingStack/AnalyticsProcessorFunction/ServiceRole/Resource"
+   }
+  },
+  "AnalyticsProcessorFunctionServiceRoleDefaultPolicy8AE8D75F": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "sqs:ReceiveMessage",
+        "sqs:ChangeMessageVisibility",
+        "sqs:GetQueueUrl",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttAnalyticsQueue238D9515ArnD2234C55"
+       }
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:GetObject*",
+        "s3:GetBucket*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AnalyticsProcessorFunctionServiceRoleDefaultPolicy8AE8D75F",
+    "Roles": [
+     {
+      "Ref": "AnalyticsProcessorFunctionServiceRole56EC500C"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "FomcMessagingStack/AnalyticsProcessorFunction/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "AnalyticsProcessorFunctionF4B01001": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-424808095422-us-east-1",
+     "S3Key": "352e51a9de5e2b073e96737d326518c983014dd91f51dd732ef63c262db0763c.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "BLS_BUCKET": {
+       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcblsraw35871BFE745A94C8"
+      },
+      "DATAUSA_BUCKET": {
+       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcdatausarawECE932DE487BE692"
+      }
+     }
+    },
+    "FunctionName": "fomc-analytics-processor",
+    "Handler": "src.lambdas.analytics_processor.handler.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "AnalyticsProcessorFunctionServiceRole56EC500C",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 300
+   },
+   "DependsOn": [
+    "AnalyticsProcessorFunctionServiceRoleDefaultPolicy8AE8D75F",
+    "AnalyticsProcessorFunctionServiceRole56EC500C"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "FomcMessagingStack/AnalyticsProcessorFunction/Resource",
+    "aws:asset:path": "asset.352e51a9de5e2b073e96737d326518c983014dd91f51dd732ef63c262db0763c",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "AnalyticsProcessorFunctionSqsEventSourceFomcStorageStackAnalyticsQueue922449AA9662C73C": {
+   "Type": "AWS::Lambda::EventSourceMapping",
+   "Properties": {
+    "BatchSize": 1,
+    "EventSourceArn": {
+     "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttAnalyticsQueue238D9515ArnD2234C55"
+    },
+    "FunctionName": {
+     "Ref": "AnalyticsProcessorFunctionF4B01001"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "FomcMessagingStack/AnalyticsProcessorFunction/SqsEventSource:FomcStorageStackAnalyticsQueue922449AA/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/2WOwQqDMBBEv6X3uG0Veq+lvRVEP0DWmNqtMRGTtEjw35so9FJYeDOzy7AppNkJDjv8mIS3fSKpAV9Z5D0LUe0lDk2L4G9OcUtasctD/fT1LZSttJu4uOM4kuri+j9dGOEAvtRSxIOVhZbE52g3tTCT1WiMsAbOEcFD7ngvbI5GLGwNw2fdWljM9qnVPoNjGmb3MkTJ5JSlQUC58QuFIOMR2wAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "FomcMessagingStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

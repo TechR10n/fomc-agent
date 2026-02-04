@@ -1,0 +1,36 @@
+{
+  "version": "48.0.0",
+  "files": {
+    "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6": {
+      "displayName": "FomcStorageStack/Custom::S3AutoDeleteObjectsCustomResourceProvider Code",
+      "source": {
+        "path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
+        "packaging": "zip"
+      },
+      "destinations": {
+        "424808095422-us-east-1-54572bcf": {
+          "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
+          "objectKey": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
+        }
+      }
+    },
+    "6afaf0f8c95db7415995b3757f5e0f7e0b55ef5f04c4ccdb11f00014cc22cb5e": {
+      "displayName": "FomcStorageStack Template",
+      "source": {
+        "path": "FomcStorageStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "424808095422-us-east-1-aa81c81f": {
+          "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
+          "objectKey": "6afaf0f8c95db7415995b3757f5e0f7e0b55ef5f04c4ccdb11f00014cc22cb5e.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}

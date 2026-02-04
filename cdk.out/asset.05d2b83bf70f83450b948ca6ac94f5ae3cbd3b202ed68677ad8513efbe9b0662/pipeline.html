@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pipeline Status — FOMC Agent Lab</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="index.html">Home</a>
+    <a href="architecture.html">Architecture</a>
+    <a class="active" href="pipeline.html">Pipeline</a>
+    <a href="charts.html">Charts</a>
+    <a href="bls-guide.html">BLS Guide</a>
+    <a href="adr.html">ADRs</a>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1>Pipeline Status</h1>
+      <p class="subtitle">Evidence of the nightly scheduled run — every BLS series scanned, every file timestamp compared.</p>
+    </div>
+
+    <!-- Summary stats — filled by JS -->
+    <div class="grid-3" id="summary-stats">
+      <div class="card stat">
+        <div class="number" id="stat-checked">—</div>
+        <div class="label">Files Checked</div>
+      </div>
+      <div class="card stat">
+        <div class="number" id="stat-updated">—</div>
+        <div class="label">Files Updated</div>
+      </div>
+      <div class="card stat">
+        <div class="number" id="stat-unchanged">—</div>
+        <div class="label">Files Unchanged</div>
+      </div>
+    </div>
+
+    <div class="card" id="run-meta">
+      <p class="muted">Loading pipeline status…</p>
+    </div>
+
+    <!-- Series detail — filled by JS -->
+    <div id="series-detail"></div>
+
+    <!-- DataUSA status — filled by JS -->
+    <div id="datausa-detail"></div>
+
+    <!-- Analytics status — filled by JS -->
+    <div id="analytics-detail"></div>
+  </div>
+
+  <script>
+    async function loadPipelineStatus() {
+      try {
+        const resp = await fetch("data/pipeline_status.json", { cache: "no-store" });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        renderSummary(data);
+        renderRunMeta(data);
+        renderSeries(data.series);
+        renderDatausa(data.datausa);
+        renderAnalytics(data.analytics);
+      } catch (e) {
+        document.getElementById("run-meta").innerHTML =
+          `<p style="color:#991b1b">Failed to load pipeline status: ${e}</p>`;
+      }
+    }
+
+    function renderSummary(data) {
+      const s = data.summary;
+      document.getElementById("stat-checked").textContent = s.total_files_checked;
+      document.getElementById("stat-updated").textContent = s.files_updated;
+      document.getElementById("stat-unchanged").textContent = s.files_unchanged;
+    }
+
+    function renderRunMeta(data) {
+      const date = new Date(data.last_run);
+      const el = document.getElementById("run-meta");
+      el.innerHTML = `
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <strong>Last Run:</strong> ${date.toLocaleString()}<br>
+            <span class="muted">${data.trigger}</span>
+          </div>
+          <div>
+            <strong>Duration:</strong> ${data.duration_seconds}s<br>
+            <strong>Series Scanned:</strong> ${data.summary.series_scanned}
+          </div>
+        </div>
+      `;
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / 1048576).toFixed(1) + " MB";
+    }
+
+    function actionBadge(action) {
+      if (action === "updated") return '<span class="badge badge-green">updated</span>';
+      if (action === "unchanged") return '<span class="badge badge-gray">unchanged</span>';
+      if (action === "deleted") return '<span class="badge badge-red">deleted</span>';
+      if (action === "added") return '<span class="badge badge-blue">added</span>';
+      return `<span class="badge badge-gray">${action}</span>`;
+    }
+
+    function renderSeries(series) {
+      const container = document.getElementById("series-detail");
+      let html = "";
+      for (const s of series) {
+        const pctUpdated = s.files_checked > 0
+          ? Math.round((s.files_updated / s.files_checked) * 100) : 0;
+        const pctUnchanged = 100 - pctUpdated;
+        html += `
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:0.5rem;">
+              <div>
+                <h2 style="margin-bottom:0.25rem;"><code>${s.id}</code> — ${s.name}</h2>
+                <p class="muted" style="margin:0;">
+                  <a href="${s.url}" target="_blank" rel="noopener">${s.url}</a>
+                </p>
+              </div>
+              <div style="text-align:right;">
+                <span class="badge badge-green">${s.files_updated} updated</span>
+                <span class="badge badge-gray">${s.files_unchanged} unchanged</span>
+              </div>
+            </div>
+
+            <div style="display:flex; height:8px; border-radius:4px; overflow:hidden; margin:1rem 0 0.75rem; background:#f1f5f9;">
+              <div style="width:${pctUpdated}%; background:#22c55e;"></div>
+              <div style="width:${pctUnchanged}%; background:#e2e8f0;"></div>
+            </div>
+
+            <details>
+              <summary style="cursor:pointer; color:#3b82f6; font-size:0.9rem;">
+                Show ${s.files.length} file${s.files.length !== 1 ? "s" : ""} checked
+              </summary>
+              <table style="margin-top:0.5rem;">
+                <tr><th>File</th><th>Status</th><th>Last Modified (BLS)</th><th>Size</th></tr>
+                ${s.files.map(f => `
+                  <tr>
+                    <td><code>${f.name}</code></td>
+                    <td>${actionBadge(f.action)}</td>
+                    <td class="muted">${new Date(f.source_modified).toLocaleDateString()}</td>
+                    <td class="muted">${formatBytes(f.bytes)}</td>
+                  </tr>
+                `).join("")}
+              </table>
+            </details>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    }
+
+    function renderDatausa(d) {
+      document.getElementById("datausa-detail").innerHTML = `
+        <div class="card">
+          <h2>DataUSA — Population Data</h2>
+          <p>${actionBadge(d.action)} ${d.record_count} records (${d.years})</p>
+          <p class="muted">Content hash: <code>${d.content_hash}</code> — only re-uploads when data changes.</p>
+          <p class="muted">Endpoint: <a href="${d.endpoint}" target="_blank" rel="noopener">${d.endpoint}</a></p>
+        </div>
+      `;
+    }
+
+    function renderAnalytics(a) {
+      document.getElementById("analytics-detail").innerHTML = `
+        <div class="card">
+          <h2>Analytics Output</h2>
+          <p><span class="badge badge-green">${a.reports_generated} reports generated</span>
+             ${a.site_json_updated ? '<span class="badge badge-blue">site JSON updated</span>' : ''}</p>
+          <ul>
+            ${a.report_names.map(n => `<li>${n}</li>`).join("")}
+          </ul>
+          <p class="muted">The analytics Lambda processes SQS messages triggered by S3 put events. Reports are written to the site bucket as JSON, which these pages render client-side.</p>
+        </div>
+      `;
+    }
+
+    loadPipelineStatus();
+  </script>
+</body>
+</html>
