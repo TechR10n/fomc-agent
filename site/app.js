@@ -11,11 +11,15 @@ const CHARTS = [
   { file: "data/productivity_vs_compensation.json", id: "productivity_vs_compensation" },
   { file: "data/productivity_vs_costs.json", id: "productivity_vs_costs" },
   { file: "data/manufacturing_vs_nonfarm.json", id: "manufacturing_vs_nonfarm" },
+  { file: "data/unemployment_vs_commute_time.json", id: "unemployment_vs_commute_time" },
+  { file: "data/participation_vs_noncitizen_share.json", id: "participation_vs_noncitizen_share" },
 ];
 
 async function loadChart(config) {
   const status = document.getElementById(`status-${config.id}`);
   const card = document.getElementById(`card-${config.id}`);
+  const canvas = document.getElementById(`chart-${config.id}`);
+  if (!status || !canvas) return;
   try {
     const resp = await fetch(config.file, { cache: "no-store" });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -126,8 +130,7 @@ async function loadChart(config) {
       };
     }
 
-    const ctx = document.getElementById(`chart-${config.id}`);
-    new Chart(ctx, chartConfig);
+    new Chart(canvas, chartConfig);
     status.textContent = `Loaded ${points.length} points from ${config.file}`;
   } catch (e) {
     status.textContent = `Failed to load ${config.file}: ${e}`;

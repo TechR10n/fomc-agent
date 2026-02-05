@@ -9,6 +9,7 @@
 <body>
   <nav>
     <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="executive-summary.html">Executive Summary</a>
     <a href="index.html">Dashboard</a>
     <a class="active" href="pipeline.html">Pipeline</a>
     <a href="timeline.html">Timeline</a>
@@ -165,7 +166,7 @@
     function renderDatausa(d) {
       document.getElementById("datausa-detail").innerHTML = `
         <div class="card">
-          <h2>DataUSA — Population Data</h2>
+          <h2>DataUSA — Raw Datasets</h2>
           <p>${actionBadge(d.action)} ${d.record_count} records (${d.years})</p>
           <p class="muted">Content hash: <code>${d.content_hash}</code> — only re-uploads when data changes.</p>
           <p class="muted">Endpoint: <a href="${d.endpoint}" target="_blank" rel="noopener">${d.endpoint}</a></p>

@@ -1,14 +1,14 @@
 @startuml alt-databricks
 !theme plain
 left to right direction
-title Alternative Architecture — Databricks Lakehouse\n(raw → silver → gold + CDC)
+title Alternative Architecture — Databricks Lakehouse\n(raw → processed → curated + CDC)
 
 cloud "BLS LABSTAT" as BLS #F5F5F5
 cloud "DataUSA API" as DataUSA #F5F5F5
 
 database "Object Storage\n(S3 / ADLS / GCS)\nRaw Zone" as Raw #E8F5E9
-database "Delta Lake\nSilver Tables" as Silver #E3F2FD
-database "Delta Lake\nGold Tables" as Gold #FFF8E1
+database "Delta Lake\nProcessed Tables" as Processed #E3F2FD
+database "Delta Lake\nCurated Tables" as Curated #FFF8E1
 
 component "Workflows / Jobs\nIngestion Task" as Ingest #E8F5E9
 component "Auto Loader / DLT\nParse & Update" as Parse #E3F2FD
@@ -24,12 +24,11 @@ BLS --> Ingest
 DataUSA --> Ingest
 Ingest --> Raw : land raw payloads
 Raw --> Parse : incremental load
-Parse --> Silver : typed tables
-Silver --> Enrich
-Enrich --> Gold : curated datasets
-Gold --> CDF : change feed
+Parse --> Processed : typed tables
+Processed --> Enrich
+Enrich --> Curated : curated datasets
+Curated --> CDF : change feed
 CDF --> DBSQL : incremental views
-Gold --> Export : chart artifacts
+Curated --> Export : chart artifacts
 
 @enduml
-

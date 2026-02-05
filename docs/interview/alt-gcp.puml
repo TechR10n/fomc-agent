@@ -12,7 +12,7 @@ database "Cloud Storage\nRaw Zone" as Raw #E8F5E9
 
 queue "Pub/Sub\n(change events)" as PubSub #FFF3E0
 component "Dataflow (Beam)\nParse & Enrich" as Dataflow #FFF8E1
-database "BigQuery\nSilver/Gold Tables" as BQ #E3F2FD
+database "BigQuery\nProcessed/Curated Tables" as BQ #E3F2FD
 
 rectangle "Serving" as Serving #F3E5F5 {
   component "Looker Studio" as Looker
@@ -25,9 +25,8 @@ DataUSA --> Ingest
 Ingest --> Raw : write objects
 Raw --> PubSub : object finalize notification
 PubSub --> Dataflow : fan-out
-Dataflow --> BQ : MERGE / upsert\nsilver + gold
+Dataflow --> BQ : MERGE / upsert\nprocessed + curated
 BQ --> Looker : dashboards
 BQ --> Export : chart artifacts
 
 @enduml
-

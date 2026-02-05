@@ -9,6 +9,7 @@
 <body>
   <nav>
     <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="executive-summary.html">Executive Summary</a>
     <a href="index.html">Dashboard</a>
     <a href="pipeline.html">Pipeline</a>
     <a href="timeline.html">Timeline</a>
@@ -45,10 +46,10 @@
         <p class="muted">A simple lake layout that scales from demo → production.</p>
         <ul>
           <li><strong>Raw:</strong> immutable landings of source payloads.</li>
-          <li><strong>Silver:</strong> cleaned, typed, schema’d tables for reuse.</li>
-          <li><strong>Gold:</strong> enriched, derived datasets optimized for serving and dashboards.</li>
+          <li><strong>Processed:</strong> cleaned, typed, schema’d tables for reuse.</li>
+          <li><strong>Curated:</strong> enriched, derived datasets optimized for serving and dashboards.</li>
         </ul>
-        <p class="muted">This site primarily demonstrates raw ingestion and event-driven processing; silver/gold are deliberately explicit and separable.</p>
+        <p class="muted">This site primarily demonstrates raw ingestion and event-driven processing; processed/curated are deliberately explicit and separable.</p>
       </div>
 
       <div class="card prose">
@@ -67,7 +68,7 @@
       <table>
         <tr><th>Area</th><th>What it contains</th></tr>
         <tr><td><code>src/data_fetchers/</code></td><td>Raw ingestion from BLS + DataUSA (no parsing).</td></tr>
-        <tr><td><code>src/transforms/</code></td><td>Parsing/cleaning steps (raw → silver).</td></tr>
+        <tr><td><code>src/transforms/</code></td><td>Parsing/cleaning steps (raw → processed).</td></tr>
         <tr><td><code>src/lambdas/</code></td><td>Deployed handlers (ingestion + event-driven analytics).</td></tr>
         <tr><td><code>infra/stacks/</code></td><td>CDK stacks for buckets, queues, lambdas, and the site.</td></tr>
         <tr><td><code>tools/</code></td><td>LocalStack helpers: invoke lambdas, poll queues, touch events.</td></tr>

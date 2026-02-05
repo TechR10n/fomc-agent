@@ -9,6 +9,7 @@
 <body>
   <nav>
     <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="executive-summary.html">Executive Summary</a>
     <a href="index.html">Dashboard</a>
     <a href="pipeline.html">Pipeline</a>
     <a class="active" href="timeline.html">Timeline</a>
@@ -64,6 +65,41 @@
       <h2>Expected vs actual releases</h2>
       <p class="muted">Expected times come from BLS “Schedule of News Releases”. Actual times come from LABSTAT directory “Last Modified” timestamps.</p>
       <div id="releases"></div>
+    </div>
+
+    <div class="card" id="aws-correlation-card">
+      <h2>Correlation — source changes vs SQS/Lambda activity</h2>
+      <p class="muted">To make correlations intuitive, each series is normalized to its own maximum over the window (0–100%). Hover for raw values.</p>
+      <canvas id="aws-correlation-chart"></canvas>
+      <p class="chart-status" id="status-aws-correlation">Loading…</p>
+    </div>
+
+    <div class="card" id="aws-metrics-card">
+      <div style="display:flex; justify-content:space-between; align-items:end; gap:1rem; flex-wrap:wrap;">
+        <div>
+          <h2 style="margin-bottom:0.25rem;">AWS metrics</h2>
+          <p class="muted" style="margin:0;">CloudWatch metrics for SQS, Lambda, and other platform services (daily granularity).</p>
+        </div>
+        <div>
+          <label class="muted" for="aws-metric-select" style="display:block; margin-bottom:0.25rem;">Metric</label>
+          <select id="aws-metric-select" style="padding:0.5rem 0.75rem; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+            <option value="">Loading…</option>
+          </select>
+        </div>
+      </div>
+      <canvas id="aws-metrics-chart"></canvas>
+      <p class="chart-status" id="status-aws-metrics">Loading…</p>
+      <details class="code-details" style="margin-top:1rem;">
+        <summary>Show latest values</summary>
+        <div id="aws-metrics-table"></div>
+      </details>
+    </div>
+
+    <div class="card" id="cost-card">
+      <h2>Cost analysis — predicted vs actual</h2>
+      <p class="muted">Actual costs come from AWS Cost Explorer. Predicted costs use Cost Explorer forecast.</p>
+      <canvas id="cost-chart"></canvas>
+      <p class="chart-status" id="status-cost">Loading…</p>
     </div>
 
     <div class="card">

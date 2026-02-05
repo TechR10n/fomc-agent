@@ -9,6 +9,7 @@
 <body>
   <nav>
     <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="executive-summary.html">Executive Summary</a>
     <a class="active" href="index.html">Dashboard</a>
     <a href="pipeline.html">Pipeline</a>
     <a href="timeline.html">Timeline</a>
@@ -69,7 +70,7 @@
         </div>
         <div class="pill-row">
           <span class="pill">BLS LABSTAT flat files</span>
-          <span class="pill">DataUSA population API</span>
+          <span class="pill">DataUSA Tesseract cubes</span>
           <span class="pill">S3 raw buckets</span>
         </div>
 
@@ -100,34 +101,34 @@ cat /tmp/fetcher.json</code></pre>
           <div>
             <div class="kicker">Step 2</div>
             <h2>Parse &amp; Update</h2>
-            <p class="muted">Convert raw objects into clean, queryable “silver” tables and update the current view.</p>
+            <p class="muted">Convert raw objects into clean, queryable “processed” tables and update the current view.</p>
           </div>
-          <span class="badge badge-blue">silver</span>
+          <span class="badge badge-blue">processed</span>
         </div>
         <div class="pill-row">
           <span class="pill">Schema + cleaning</span>
           <span class="pill">Idempotent upserts</span>
-          <span class="pill">S3 silver buckets</span>
+          <span class="pill">S3 processed buckets</span>
         </div>
 
         <div class="only-localstack">
           <h3>LocalStack demo</h3>
           <p class="muted">Ingest once, then iterate quickly on parsing without re-downloading the sources.</p>
           <pre><code>source .env.localstack
-python -m src.transforms.to_silver
+python -m src.transforms.to_processed
 
-aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-bls-silver/pr/ --recursive | head
-aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-datausa-silver/</code></pre>
+aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-bls-processed/pr/ --recursive | head
+aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-datausa-processed/</code></pre>
         </div>
 
         <div class="only-aws">
           <h3>AWS demo</h3>
           <p class="muted">For the demo, you can run parsing locally against AWS S3 (production would run this as a separate job/Lambda).</p>
           <pre><code>source .env.local
-python -m src.transforms.to_silver
+python -m src.transforms.to_processed
 
-aws s3 ls s3://$FOMC_BUCKET_PREFIX-bls-silver/pr/ --recursive --profile "$AWS_PROFILE" | head
-aws s3 ls s3://$FOMC_BUCKET_PREFIX-datausa-silver/ --profile "$AWS_PROFILE"</code></pre>
+aws s3 ls s3://$FOMC_BUCKET_PREFIX-bls-processed/pr/ --recursive --profile "$AWS_PROFILE" | head
+aws s3 ls s3://$FOMC_BUCKET_PREFIX-datausa-processed/ --profile "$AWS_PROFILE"</code></pre>
         </div>
       </div>
 
@@ -138,7 +139,7 @@ aws s3 ls s3://$FOMC_BUCKET_PREFIX-datausa-silver/ --profile "$AWS_PROFILE"</cod
             <h2>Enrich</h2>
             <p class="muted">Join and derive analytics-ready datasets (e.g., BLS series × population by year).</p>
           </div>
-          <span class="badge badge-amber">gold</span>
+          <span class="badge badge-amber">curated</span>
         </div>
         <div class="pill-row">
           <span class="pill">Joins</span>
@@ -159,7 +160,7 @@ python -m src.analytics.reports</code></pre>
           <pre><code># Enrichment is typically a separate compute step:
 # - Lambda (stdlib CSV/JSON) for small workloads
 # - Glue / EMR / Athena for bigger workloads
-# - Outputs written to a "gold" bucket or directly to a serving store</code></pre>
+# - Outputs written to a "curated" bucket or directly to a serving store</code></pre>
         </div>
       </div>
 

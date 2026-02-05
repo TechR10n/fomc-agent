@@ -13,7 +13,7 @@ database "ADLS Gen2\nRaw Zone" as Raw #E8F5E9
 component "Event Grid\nBlob Created" as EG #FFF3E0
 queue "Service Bus\nQueue + DLQ" as SB #FFF3E0
 component "Azure Databricks\nParse & Enrich" as DBX #FFF8E1
-database "Delta Lake\nSilver/Gold" as Delta #E3F2FD
+database "Delta Lake\nProcessed/Curated" as Delta #E3F2FD
 
 rectangle "Serving" as Serving #F3E5F5 {
   component "Power BI" as PBI
@@ -27,9 +27,8 @@ Ingest --> Raw : write objects
 Raw --> EG : event
 EG --> SB : enqueue work
 SB --> DBX : process changes
-DBX --> Delta : upsert silver/gold
+DBX --> Delta : upsert processed/curated
 Delta --> PBI : dashboards
 Delta --> Export : chart artifacts
 
 @enduml
-

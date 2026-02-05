@@ -1,2 +1,1 @@
-"""Data transformation steps (raw → silver → gold)."""
-
+"""Data transformation steps (raw → processed → curated)."""

@@ -26,8 +26,8 @@ class FomcStorageStack(Stack):
         bucket_names = [
             f"{prefix}-bls-raw",
             f"{prefix}-datausa-raw",
-            f"{prefix}-bls-silver",
-            f"{prefix}-datausa-silver",
+            f"{prefix}-bls-processed",
+            f"{prefix}-datausa-processed",
         ]
 
         self.buckets = {}
@@ -43,8 +43,8 @@ class FomcStorageStack(Stack):
 
         self.bls_raw_bucket = self.buckets[f"{prefix}-bls-raw"]
         self.datausa_raw_bucket = self.buckets[f"{prefix}-datausa-raw"]
-        self.bls_silver_bucket = self.buckets[f"{prefix}-bls-silver"]
-        self.datausa_silver_bucket = self.buckets[f"{prefix}-datausa-silver"]
+        self.bls_processed_bucket = self.buckets[f"{prefix}-bls-processed"]
+        self.datausa_processed_bucket = self.buckets[f"{prefix}-datausa-processed"]
 
         # SQS queues — co-located with buckets to avoid cross-stack cycles
         dlq = sqs.Queue(

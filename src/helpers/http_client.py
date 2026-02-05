@@ -7,10 +7,53 @@ pulling in third-party dependencies like `requests`.
 from __future__ import annotations
 
 import json
+import random
 import time
 import urllib.error
 import urllib.request
 from typing import Any
+
+_DEFAULT_RETRYABLE_HTTP_STATUS: set[int] = {429, 500, 502, 503, 504}
+
+
+def _parse_retry_after_seconds(value: str | None) -> float | None:
+    """Parse a Retry-After header into seconds (best effort).
+
+    Many APIs use an integer number of seconds. Some use an HTTP date, but we
+    intentionally keep this stdlib-only and minimal; non-numeric values are
+    ignored.
+    """
+    if not value:
+        return None
+    raw = str(value).strip()
+    if not raw:
+        return None
+    try:
+        seconds = float(raw)
+    except ValueError:
+        return None
+    if seconds < 0:
+        return None
+    return seconds
+
+
+def _sleep_seconds(
+    *,
+    attempt: int,
+    backoff_seconds: float,
+    retry_after_seconds: float | None = None,
+    max_backoff_seconds: float = 60.0,
+) -> None:
+    base = max(0.0, float(backoff_seconds)) * (2**max(0, attempt))
+    candidate = max(base, retry_after_seconds or 0.0)
+
+    # Add jitter to reduce synchronized retries.
+    if candidate > 0:
+        candidate *= random.uniform(0.8, 1.2)
+
+    sleep_for = min(max_backoff_seconds, candidate)
+    if sleep_for > 0:
+        time.sleep(sleep_for)
 
 
 def fetch_bytes(
@@ -20,10 +63,13 @@ def fetch_bytes(
     timeout: int = 30,
     retries: int = 3,
     backoff_seconds: float = 1.0,
+    retryable_statuses: set[int] | None = None,
+    max_backoff_seconds: float = 60.0,
 ) -> bytes:
     """Fetch bytes from a URL with basic retries."""
     if retries < 1:
         retries = 1
+    retryable = retryable_statuses or _DEFAULT_RETRYABLE_HTTP_STATUS
 
     last_error: Exception | None = None
     for attempt in range(retries):
@@ -34,7 +80,18 @@ def fetch_bytes(
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
             last_error = e
             if attempt < retries - 1:
-                time.sleep(backoff_seconds * (2**attempt))
+                retry_after = None
+                if isinstance(e, urllib.error.HTTPError):
+                    status = int(getattr(e, "code", 0) or 0)
+                    if status and status not in retryable:
+                        break
+                    retry_after = _parse_retry_after_seconds(e.headers.get("Retry-After"))
+                _sleep_seconds(
+                    attempt=attempt,
+                    backoff_seconds=backoff_seconds,
+                    retry_after_seconds=retry_after,
+                    max_backoff_seconds=max_backoff_seconds,
+                )
     assert last_error is not None
     raise last_error
 
@@ -47,6 +104,8 @@ def fetch_text(
     retries: int = 3,
     backoff_seconds: float = 1.0,
     encoding: str = "utf-8",
+    retryable_statuses: set[int] | None = None,
+    max_backoff_seconds: float = 60.0,
 ) -> str:
     """Fetch text from a URL with basic retries."""
     return fetch_bytes(
@@ -55,6 +114,8 @@ def fetch_text(
         timeout=timeout,
         retries=retries,
         backoff_seconds=backoff_seconds,
+        retryable_statuses=retryable_statuses,
+        max_backoff_seconds=max_backoff_seconds,
     ).decode(encoding, errors="replace")
 
 
@@ -65,6 +126,8 @@ def fetch_json(
     timeout: int = 30,
     retries: int = 3,
     backoff_seconds: float = 1.0,
+    retryable_statuses: set[int] | None = None,
+    max_backoff_seconds: float = 60.0,
 ) -> Any:
     """Fetch JSON from a URL with basic retries (including decode errors)."""
     if retries < 1:
@@ -83,7 +146,18 @@ def fetch_json(
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
             last_error = e
             if attempt < retries - 1:
-                time.sleep(backoff_seconds * (2**attempt))
+                retry_after = None
+                if isinstance(e, urllib.error.HTTPError):
+                    status = int(getattr(e, "code", 0) or 0)
+                    retryable = retryable_statuses or _DEFAULT_RETRYABLE_HTTP_STATUS
+                    if status and status not in retryable:
+                        break
+                    retry_after = _parse_retry_after_seconds(e.headers.get("Retry-After"))
+                _sleep_seconds(
+                    attempt=attempt,
+                    backoff_seconds=backoff_seconds,
+                    retry_after_seconds=retry_after,
+                    max_backoff_seconds=max_backoff_seconds,
+                )
     assert last_error is not None
     raise last_error
-

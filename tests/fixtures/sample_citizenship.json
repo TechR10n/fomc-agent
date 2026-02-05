@@ -1,0 +1,18 @@
+{
+  "data": [
+    {"Year": 2019, "Nation": "United States", "Citizenship Status": "U.S. citizen", "Population": 304500000},
+    {"Year": 2019, "Nation": "United States", "Citizenship Status": "Not a U.S. citizen", "Population": 22500000},
+
+    {"Year": 2020, "Nation": "United States", "Citizenship Status": "U.S. citizen", "Population": 305000000},
+    {"Year": 2020, "Nation": "United States", "Citizenship Status": "Not a U.S. citizen", "Population": 23000000},
+
+    {"Year": 2021, "Nation": "United States", "Citizenship Status": "U.S. citizen", "Population": 305800000},
+    {"Year": 2021, "Nation": "United States", "Citizenship Status": "Not a U.S. citizen", "Population": 23500000},
+
+    {"Year": 2022, "Nation": "United States", "Citizenship Status": "U.S. citizen", "Population": 306800000},
+    {"Year": 2022, "Nation": "United States", "Citizenship Status": "Not a U.S. citizen", "Population": 24000000},
+
+    {"Year": 2023, "Nation": "United States", "Citizenship Status": "U.S. citizen", "Population": 307600000},
+    {"Year": 2023, "Nation": "United States", "Citizenship Status": "Not a U.S. citizen", "Population": 24500000}
+  ]
+}

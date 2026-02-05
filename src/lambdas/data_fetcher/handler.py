@@ -8,7 +8,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 from src.data_fetchers.bls_getter import sync_all as sync_bls
-from src.data_fetchers.datausa_getter import sync_population_data
+from src.data_fetchers.datausa_getter import sync_all as sync_datausa
 from src.config import get_bls_bucket, get_datausa_bucket, get_bls_series_list
 
 
@@ -28,7 +28,9 @@ def handler(event, context):
 
     # Fetch DataUSA data
     try:
-        results["datausa"] = sync_population_data(bucket=datausa_bucket)
+        results["datausa"] = sync_datausa(bucket=datausa_bucket)
+        for err in results["datausa"].get("errors", []):
+            results["errors"].append({"source": "datausa", **err})
     except Exception as e:
         results["errors"].append({"source": "datausa", "error": str(e)})
 

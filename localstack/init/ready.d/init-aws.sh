@@ -34,8 +34,8 @@ ensure_queue() {
 echo "==> Ensuring S3 buckets..."
 ensure_bucket "fomc-bls-raw"
 ensure_bucket "fomc-datausa-raw"
-ensure_bucket "fomc-bls-silver"
-ensure_bucket "fomc-datausa-silver"
+ensure_bucket "fomc-bls-processed"
+ensure_bucket "fomc-datausa-processed"
 
 echo "==> Ensuring SQS queues..."
 DLQ_URL="$(ensure_queue "fomc-analytics-dlq" '{"MessageRetentionPeriod":"1209600"}')"

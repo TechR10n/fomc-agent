@@ -9,6 +9,7 @@
 <body>
   <nav>
     <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="executive-summary.html">Executive Summary</a>
     <a href="index.html">Dashboard</a>
     <a href="pipeline.html">Pipeline</a>
     <a href="timeline.html">Timeline</a>
@@ -44,13 +45,13 @@
       <p class="muted">Great when you want managed Spark + Delta + workspaces, with fewer “glue” services.</p>
       <ul>
         <li><strong>Raw:</strong> S3/ADLS/GCS landing zone</li>
-        <li><strong>Parse:</strong> Auto Loader / DLT pipelines into Delta “silver”</li>
-        <li><strong>Enrich:</strong> DLT “gold”, notebooks, or jobs</li>
+        <li><strong>Parse:</strong> Auto Loader / DLT pipelines into Delta “processed”</li>
+        <li><strong>Enrich:</strong> DLT “curated”, notebooks, or jobs</li>
         <li><strong>CDC:</strong> Delta Change Data Feed + Workflows for downstream</li>
       </ul>
       <div class="diagram-container">
         <img class="diagram-img" src="diagrams/alt-databricks.svg" alt="Databricks alternative architecture diagram" />
-        <p class="diagram-caption">Databricks mapping of raw → silver → gold with CDC via Delta</p>
+        <p class="diagram-caption">Databricks mapping of raw → processed → curated with CDC via Delta</p>
         <details class="code-details">
           <summary>Show source</summary>
           <pre><code data-puml="puml/alt-databricks.puml">Loading…</code></pre>

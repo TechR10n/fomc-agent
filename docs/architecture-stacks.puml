@@ -20,14 +20,14 @@ package "FomcStorageStack" as storage_stack <<CloudFormation Stack>> #E8F5E9 {
     card "_sync_state/\nlatest_state.json\nsync_log.jsonl" as datausa_sync
   }
 
-  storage "{prefix}-bls-silver" as bls_silver <<S3 Bucket>> {
+  storage "{prefix}-bls-processed" as bls_processed <<S3 Bucket>> {
   }
 
-  storage "{prefix}-datausa-silver" as datausa_silver <<S3 Bucket>> {
+  storage "{prefix}-datausa-processed" as datausa_processed <<S3 Bucket>> {
   }
 
-  note right of bls_silver
-    Silver buckets reserved
+  note right of bls_processed
+    Processed buckets reserved
     for future transforms
   end note
 

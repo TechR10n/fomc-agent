@@ -8,8 +8,8 @@ start
 
 if (New raw objects?) then (yes)
   :Step 4 — CDC\n(emit change events);
-  :Step 2 — Parse & Update\n(raw → silver);
-  :Step 3 — Enrich\n(silver → gold + JSON);
+  :Step 2 — Parse & Update\n(raw → processed);
+  :Step 3 — Enrich\n(processed → curated + JSON);
 else (no)
   :No-op / early exit;
 endif
@@ -17,4 +17,3 @@ endif
 stop
 
 @enduml
-

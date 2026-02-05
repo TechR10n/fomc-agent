@@ -11,12 +11,12 @@ rectangle "Ingest (raw)" as Ingest #E8F5E9 {
   component "_sync_state\n(manifests/logs)" as Sync
 }
 
-rectangle "Parse & Update (silver)" as Parse #E3F2FD {
+rectangle "Parse & Update (processed)" as Parse #E3F2FD {
   component "parser job\n(Lambda/Glue/Job)" as Parser
   component "schema/contracts" as Schema
 }
 
-rectangle "Enrich (gold)" as Enrich #FFF8E1 {
+rectangle "Enrich (curated)" as Enrich #FFF8E1 {
   component "enricher job\n(Lambda/Glue/Spark)" as Enricher
   component "report builder\n(JSON artifacts)" as Reports
 }
@@ -28,8 +28,8 @@ rectangle "CDC & Triggers" as CDC #FFF3E0 {
 }
 
 database "S3 Raw\n(bls-raw, datausa-raw)" as Raw #E8F5E9
-database "S3 Silver\n(bls-silver, datausa-silver)" as Silver #E8F5E9
-database "S3 Gold / Serving" as Gold #E8F5E9
+database "S3 Processed\n(bls-processed, datausa-processed)" as Processed #E8F5E9
+database "S3 Curated / Serving" as Curated #E8F5E9
 database "S3 Static Site" as Site #F3E5F5
 
 BLS --> Fetcher
@@ -42,13 +42,12 @@ Filters --> Q : enqueue work
 Q -[dashed]-> DLQ : after retries
 
 Q --> Parser : trigger (raw changed)
-Parser --> Silver : write clean tables
+Parser --> Processed : write clean tables
 Schema -[dotted]-> Parser : validates
 
-Q --> Enricher : trigger (silver/gold)
-Enricher --> Gold : write enriched dataset
+Q --> Enricher : trigger (processed/curated)
+Enricher --> Curated : write enriched dataset
 Enricher --> Reports
 Reports --> Site : publish JSON\nfor charts
 
 @enduml
-

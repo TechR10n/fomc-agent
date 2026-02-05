@@ -1,0 +1,9 @@
+{
+  "data": [
+    {"Year": 2019, "Nation": "United States", "Mean Transportation Time to Work": 27.6},
+    {"Year": 2020, "Nation": "United States", "Mean Transportation Time to Work": 27.7},
+    {"Year": 2021, "Nation": "United States", "Mean Transportation Time to Work": 27.6},
+    {"Year": 2022, "Nation": "United States", "Mean Transportation Time to Work": 27.4},
+    {"Year": 2023, "Nation": "United States", "Mean Transportation Time to Work": 27.5}
+  ]
+}

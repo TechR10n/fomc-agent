@@ -9,12 +9,12 @@ cloud "DataUSA API\n(honolulu-api.datausa.io)" as DataUSA #F5F5F5
 
 rectangle "FOMC Agent Pipeline" as System #E3F2FD {
   rectangle "Ingestion\n(raw landing)" as Ingest #E8F5E9
-  rectangle "Parse/Update\n(silver)" as Parse #E8F5E9
-  rectangle "Enrich\n(gold)" as Enrich #E8F5E9
+  rectangle "Parse/Update\n(processed)" as Parse #E8F5E9
+  rectangle "Enrich\n(curated)" as Enrich #E8F5E9
   rectangle "CDC / Triggers\n(SQS + retries)" as CDC #FFF3E0
 }
 
-database "Object Storage\n(S3 raw/silver/gold)" as S3 #E8F5E9
+database "Object Storage\n(S3 raw/processed/curated)" as S3 #E8F5E9
 queue "Queue\n(SQS)" as SQS #FFF3E0
 rectangle "Static Site\n(Dashboard + Charts)" as Site #F3E5F5
 rectangle "Observability\n(Logs/Metrics)" as Obs #F5F5F5
@@ -34,4 +34,3 @@ User --> Site : view dashboard
 User --> Obs : inspect failures\n(DLQ, logs)
 
 @enduml
-

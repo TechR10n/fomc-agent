@@ -27,14 +27,29 @@ def get_datausa_key() -> str:
     return os.environ.get("DATAUSA_KEY", "population.json")
 
 
-def get_bls_silver_bucket() -> str:
-    """Get the S3 bucket used for BLS parsed/cleaned (silver) data."""
-    return os.environ.get("BLS_SILVER_BUCKET", f"{get_bucket_prefix()}-bls-silver")
+def get_datausa_datasets(default: str = "population") -> list[str]:
+    """Get the DataUSA dataset ids to ingest (comma-separated)."""
+    raw = os.environ.get("DATAUSA_DATASETS", default)
+    parts = [p.strip() for p in raw.split(",")]
+    return [p for p in parts if p]
 
 
-def get_datausa_silver_bucket() -> str:
-    """Get the S3 bucket used for DataUSA parsed/cleaned (silver) data."""
-    return os.environ.get("DATAUSA_SILVER_BUCKET", f"{get_bucket_prefix()}-datausa-silver")
+def get_bls_processed_bucket() -> str:
+    """Get the S3 bucket used for BLS parsed/cleaned (processed) data."""
+    return (
+        os.environ.get("BLS_PROCESSED_BUCKET")
+        or os.environ.get("BLS_SILVER_BUCKET")
+        or f"{get_bucket_prefix()}-bls-processed"
+    )
+
+
+def get_datausa_processed_bucket() -> str:
+    """Get the S3 bucket used for DataUSA parsed/cleaned (processed) data."""
+    return (
+        os.environ.get("DATAUSA_PROCESSED_BUCKET")
+        or os.environ.get("DATAUSA_SILVER_BUCKET")
+        or f"{get_bucket_prefix()}-datausa-processed"
+    )
 
 
 def get_bls_series_list(default: str = "pr") -> list[str]:

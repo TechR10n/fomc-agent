@@ -9,6 +9,7 @@
 <body>
   <nav>
     <a class="brand" href="index.html">FOMC Agent Lab</a>
+    <a href="executive-summary.html">Executive Summary</a>
     <a href="index.html">Dashboard</a>
     <a href="pipeline.html">Pipeline</a>
     <a href="timeline.html">Timeline</a>
@@ -65,7 +66,7 @@
         <!-- DataUSA API -->
         <rect x="320" y="130" width="180" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
         <text x="410" y="153" text-anchor="middle" font-weight="600" fill="#475569">DataUSA API</text>
-        <text x="410" y="172" text-anchor="middle" fill="#64748b" font-size="11">Population data</text>
+        <text x="410" y="172" text-anchor="middle" fill="#64748b" font-size="11">Tesseract cubes</text>
 
         <!-- Arrow: Lambda → S3 Raw -->
         <line x1="120" y1="186" x2="120" y2="250" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
@@ -131,11 +132,11 @@
         <li>Fetches the directory listing for each configured BLS series from <code>download.bls.gov</code></li>
         <li>Compares each file's modification timestamp against the previously stored <code>source_modified</code> metadata in S3</li>
         <li>Downloads only files that have changed (or are new) — skipping everything else</li>
-        <li>Fetches current population data from the DataUSA API (with content-hash change detection)</li>
+        <li>Fetches configured DataUSA Tesseract cubes (e.g., population, commute time, citizenship) with min-sync-interval + content-hash change detection</li>
         <li>Writes updated files to S3, which triggers S3 event notifications</li>
       </ol>
-      <p>S3 put events flow into an <strong>SQS queue</strong>, which triggers the <strong>Analytics Processor Lambda</strong>. This function reads raw data from S3, runs three reports (population stats, best-year-by-series, and a productivity-population join), and publishes the results as JSON to the site bucket.</p>
-      <p>The static site files (this website) are already in S3. When the JSON data files update, the next browser visit shows the latest data — no deploy step needed for data updates.</p>
+      <p>S3 put events flow into an <strong>SQS queue</strong>, which triggers the <strong>Analytics Processor Lambda</strong>. This function reads raw data from S3, runs the workshop reports, and logs the results. A separate enrichment step can publish curated JSON artifacts that the static site renders client-side.</p>
+      <p>The static site files (this website) are already in S3. When the JSON data files update in the site bucket, the next browser visit shows the latest dashboards — no app deploy required.</p>
     </div>
 
     <!-- ────────────────────────────────────────── -->

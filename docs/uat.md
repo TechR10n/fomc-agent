@@ -143,11 +143,11 @@ cat /tmp/pipeline-out.json | python -m json.tool
 
 ```bash
 aws s3 ls "s3://$BLS_BUCKET/pr/" | head
-aws s3 ls "s3://$DATAUSA_BUCKET/" | grep population.json
+aws s3 ls "s3://$DATAUSA_BUCKET/" | egrep "population.json|commute_time.json|citizenship.json" || true
 ```
 
 - [ ] BLS objects exist under `pr/`
-- [ ] `population.json` exists in DataUSA bucket
+- [ ] DataUSA dataset objects exist in the DataUSA bucket (at minimum `population.json`)
 
 ### UAT-4.3: Verify analytics Lambda ran
 
@@ -178,10 +178,20 @@ python src/analytics/reports.py | head -80
 
 ## UAT-6: Static Website (S3)
 
-Generate the website data file (writes `site/data/timeseries.json`):
+Generate the website data files (writes `site/data/timeseries.json` and additional curated JSON artifacts):
 
 ```bash
 python src/analytics/reports.py >/dev/null
+```
+
+Generate additional dashboard data:
+
+```bash
+# BLS release timeline (Timeline page)
+python tools/build_bls_timeline.py --days 60 --lookahead-days 14 --out site/data/bls_timeline.json
+
+# AWS metrics + cost forecast (Timeline page)
+python tools/build_aws_observability.py --days 30 --forecast-days 30 --out site/data/aws_observability.json
 ```
 
 Deploy the site stack:
