@@ -11,6 +11,7 @@
       <env name="BLS_BUCKET" value="fomc-bls-raw" />
       <env name="DATAUSA_BUCKET" value="fomc-datausa-raw" />
       <env name="BLS_SERIES" value="pr,cu,ce,ln,jt,ci" />
+      <env name="DATAUSA_DATASETS" value="population,commute_time,citizenship" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -24,7 +25,16 @@
     <option name="MODULE_MODE" value="false" />
     <option name="REDIRECT_INPUT" value="false" />
     <option name="INPUT_FILE" value="" />
+    <EXTENSION ID="net.ashald.envfile">
+      <option name="IS_ENABLED" value="true" />
+      <option name="IS_SUBST" value="false" />
+      <option name="IS_PATH_MACRO_SUPPORTED" value="true" />
+      <option name="IS_IGNORE_MISSING_FILES" value="true" />
+      <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+      <ENTRIES>
+        <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" PATH="$PROJECT_DIR$/.env.localstack" />
+      </ENTRIES>
+    </EXTENSION>
     <method v="2" />
   </configuration>
 </component>
-

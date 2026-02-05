@@ -1,16 +1,19 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="LocalStack Up (CLI)" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="Build BLS Timeline (AWS)" type="PythonConfigurationType" factoryName="Python">
     <module name="fomc-agent" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
-    <envs />
+    <envs>
+      <env name="AWS_DEFAULT_REGION" value="us-east-1" />
+      <env name="AWS_PROFILE" value="fomc-agent" />
+    </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/localstack_up.py" />
-    <option name="PARAMETERS" value="" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/build_bls_timeline.py" />
+    <option name="PARAMETERS" value="--days 60 --out site/data/bls_timeline.json" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
@@ -23,10 +26,9 @@
       <option name="IS_IGNORE_MISSING_FILES" value="true" />
       <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
       <ENTRIES>
-        <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" PATH="$PROJECT_DIR$/.env.localstack" />
+        <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" PATH="$PROJECT_DIR$/.env.local" />
       </ENTRIES>
     </EXTENSION>
     <method v="2" />
   </configuration>
 </component>
-

@@ -1,16 +1,22 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="LocalStack Up (CLI)" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="Build BLS Timeline (LocalStack)" type="PythonConfigurationType" factoryName="Python">
     <module name="fomc-agent" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
-    <envs />
+    <envs>
+      <env name="AWS_ENDPOINT_URL" value="http://localhost:4566" />
+      <env name="AWS_DEFAULT_REGION" value="us-east-1" />
+      <env name="AWS_ACCESS_KEY_ID" value="test" />
+      <env name="AWS_SECRET_ACCESS_KEY" value="test" />
+      <env name="BLS_BUCKET" value="fomc-bls-raw" />
+    </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/localstack_up.py" />
-    <option name="PARAMETERS" value="" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/build_bls_timeline.py" />
+    <option name="PARAMETERS" value="--days 60 --out site/data/bls_timeline.json" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
@@ -29,4 +35,3 @@
     <method v="2" />
   </configuration>
 </component>
-

@@ -222,19 +222,50 @@ The project includes shared run configurations in `.run/` that appear automatica
 |---------------|-------------|--------|
 | **LocalStack Up (CLI)** | Starts LocalStack via `docker compose up -d` + waits for health | Docker |
 | **LocalStack Down (CLI)** | Stops LocalStack via `docker compose down` | Docker |
-| **Fetch Data (LocalStack)** | Fetches all BLS series into local S3 | LocalStack |
-| **Fetch DataUSA (LocalStack)** | Fetches population data into local S3 | LocalStack |
+| **Docker Compose Up (LocalStack)** | Starts LocalStack container | Docker |
+| **Seed LocalStack** | Uploads fixture data into LocalStack S3 (fast demo) | LocalStack |
+| **Fetch Data (LocalStack)** | Fetches all BLS series into LocalStack S3 | LocalStack |
+| **Fetch DataUSA (LocalStack)** | Fetches DataUSA datasets into LocalStack S3 | LocalStack |
 | **Invoke Fetcher Lambda (LocalStack)** | Runs the deployed Lambda handler locally (writes to LocalStack S3) | LocalStack |
-| **Touch DataUSA (LocalStack)** | Re-uploads `population.json` to trigger S3→SQS (fast re-run) | LocalStack |
+| **Parse to Processed (LocalStack)** | Converts raw data into processed CSVs in LocalStack S3 | LocalStack |
 | **LocalStack Worker (Analytics)** | Polls LocalStack SQS and runs analytics Lambda handler locally | LocalStack |
-| **Analytics (LocalStack)** | Runs reports against local S3 data | LocalStack |
+| **Touch DataUSA (LocalStack)** | Re-uploads `population.json` to trigger S3→SQS (fast re-run) | LocalStack |
+| **Analytics (LocalStack)** | Generates `site/data/*.json` charts from LocalStack S3 | LocalStack |
+| **Build BLS Timeline (LocalStack)** | Generates `site/data/bls_timeline.json` from LocalStack sync logs | LocalStack |
+| **LocalStack Full Refresh** | Runs the full LocalStack pipeline in order (ingest → parse → charts → timeline) | LocalStack |
+| **LocalStack CDC Demo** | One-shot CDC demo (worker + touch, exits) | LocalStack |
+| **LocalStack CDC Demo (Live)** | Starts worker, triggers CDC, and keeps worker running | LocalStack |
+| **LocalStack Worker Stop** | Stops the live LocalStack worker if running | LocalStack |
+| **LocalStack Full Refresh + CDC Live** | Full refresh, then start CDC live worker | LocalStack |
 | **Fetch Data (AWS)** | Fetches BLS series into real AWS S3 | AWS |
+| **Fetch DataUSA (AWS)** | Fetches DataUSA datasets into real AWS S3 | AWS |
+| **Parse to Processed (AWS)** | Converts raw data into processed CSVs in AWS S3 | AWS |
+| **Analytics (AWS)** | Generates `site/data/*.json` charts from AWS S3 | AWS |
+| **Build BLS Timeline (AWS)** | Generates `site/data/bls_timeline.json` from AWS sync logs | AWS |
+| **Build AWS Observability (AWS)** | Generates `site/data/aws_observability.json` for the Timeline page | AWS |
 | **CDK Diff (AWS)** | Runs `cdk diff --all` (loads `.env.local`) | AWS |
 | **CDK Deploy (AWS)** | Runs `cdk deploy --all --require-approval never` (loads `.env.local`) | AWS |
 | **Run Tests** | Runs unit tests (moto mocks, no AWS needed) | Neither |
-| **Docker Compose Up (LocalStack)** | Starts LocalStack container | Docker |
 
-Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set. CDK configs load `.env.local` (gitignored) so you don't have to copy AWS profile/bucket-prefix values into the run configuration.
+Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set. Run configs also include an EnvFile entry (if you install the EnvFile plugin) to load `.env.localstack` or `.env.local` automatically.
+
+#### Chart Refresh Order (so the site renders complete data)
+
+**LocalStack (fast demo):**
+1. **LocalStack Up (CLI)** (or **Docker Compose Up (LocalStack)**)
+2. **Invoke Fetcher Lambda (LocalStack)** (or **Fetch Data (LocalStack)** + **Fetch DataUSA (LocalStack)**)
+3. **Parse to Processed (LocalStack)**
+4. **Analytics (LocalStack)**
+5. **Build BLS Timeline (LocalStack)**
+
+**AWS (full cloud data + timeline):**
+1. **CDK Deploy (AWS)** (run **CDK Diff (AWS)** first if you want a preview)
+2. **Fetch Data (AWS)**
+3. **Fetch DataUSA (AWS)**
+4. **Parse to Processed (AWS)**
+5. **Analytics (AWS)**
+6. **Build BLS Timeline (AWS)**
+7. **Build AWS Observability (AWS)**
 
 #### Recommended iteration cadence (two-speed loop)
 

@@ -19,6 +19,8 @@ import io
 import json
 from typing import Any
 
+from botocore.exceptions import ClientError
+
 from src.config import (
     get_bls_bucket,
     get_bls_key,
@@ -30,6 +32,14 @@ from src.config import (
     get_datausa_processed_bucket,
 )
 from src.helpers.aws_client import get_client
+
+
+def _error_code(exc: ClientError) -> str:
+    return str(exc.response.get("Error", {}).get("Code", "")).strip()
+
+
+def _is_missing_key(exc: ClientError) -> bool:
+    return _error_code(exc) in {"404", "NoSuchKey", "NotFound"}
 
 
 def _clean_row(row: dict[str, Any]) -> dict[str, Any]:
@@ -201,12 +211,23 @@ def to_processed_multi(
     """
     s3 = get_client("s3")
 
-    out: dict[str, Any] = {"bls": {}, "datausa": {}}
+    out: dict[str, Any] = {"bls": {}, "datausa": {}, "errors": []}
 
     # DataUSA: JSON → CSV (generic jsonrecords)
     for dataset_id, raw_key in datausa_keys:
-        obj = s3.get_object(Bucket=datausa_raw_bucket, Key=raw_key)
-        payload = json.loads(obj["Body"].read())
+        try:
+            obj = s3.get_object(Bucket=datausa_raw_bucket, Key=raw_key)
+            payload = json.loads(obj["Body"].read())
+        except ClientError as exc:
+            if _is_missing_key(exc):
+                out["errors"].append({
+                    "source": "datausa",
+                    "dataset_id": dataset_id,
+                    "raw": f"s3://{datausa_raw_bucket}/{raw_key}",
+                    "error": "missing_raw_key",
+                })
+                continue
+            raise
 
         if dataset_id == "population":
             rows = _build_population_processed_rows(payload)
@@ -233,8 +254,18 @@ def to_processed_multi(
 
     # BLS: TSV → CSV
     for raw_key in bls_keys:
-        obj = s3.get_object(Bucket=bls_raw_bucket, Key=raw_key)
-        text = obj["Body"].read().decode("utf-8", errors="replace")
+        try:
+            obj = s3.get_object(Bucket=bls_raw_bucket, Key=raw_key)
+            text = obj["Body"].read().decode("utf-8", errors="replace")
+        except ClientError as exc:
+            if _is_missing_key(exc):
+                out["errors"].append({
+                    "source": "bls",
+                    "raw": f"s3://{bls_raw_bucket}/{raw_key}",
+                    "error": "missing_raw_key",
+                })
+                continue
+            raise
         rows = _read_tsv_dicts(text)
         fieldnames = list(rows[0].keys()) if rows else ["series_id", "year", "period", "value"]
         out_key = f"{raw_key}.csv"

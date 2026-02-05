@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="LocalStack Up (CLI)" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="LocalStack Full Refresh" type="PythonConfigurationType" factoryName="Python">
     <module name="fomc-agent" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -9,7 +9,7 @@
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/localstack_up.py" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/localstack_full_refresh.py" />
     <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
@@ -29,4 +29,3 @@
     <method v="2" />
   </configuration>
 </component>
-
