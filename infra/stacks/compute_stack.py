@@ -60,6 +60,7 @@ class FomcComputeStack(Stack):
                 "DATAUSA_BUCKET": storage.datausa_raw_bucket.bucket_name,
                 "BLS_SERIES": config["bls_series"],
                 "DATAUSA_DATASETS": config["datausa_datasets"],
+                "DATAUSA_BASE_URL": config["datausa_base_url"],
                 "FOMC_DEPLOYMENT_ID": deployment_id,
             },
         )

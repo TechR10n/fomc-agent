@@ -4,23 +4,28 @@ Safe by default: this script only performs deletions when --yes is provided.
 Supports LocalStack via AWS_ENDPOINT_URL.
 
 Examples:
-  # Delete legacy "silver" buckets from AWS (derived from FOMC_BUCKET_PREFIX)
+  # Delete explicit buckets from AWS
+  source .env.shared
   source .env.local
-  python tools/delete_s3_buckets.py --legacy-silver --yes
+  python tools/delete_s3_buckets.py --bucket my-prefix-bls-raw --bucket my-prefix-datausa-raw --yes
 
-  # Delete explicit buckets (AWS or LocalStack)
+  # Delete explicit buckets from LocalStack
+  source .env.shared
   source .env.localstack
-  python tools/delete_s3_buckets.py --bucket fomc-bls-silver --bucket fomc-datausa-silver --yes
+  python tools/delete_s3_buckets.py --bucket my-prefix-bls-raw --bucket my-prefix-datausa-raw --yes
 """
 
 from __future__ import annotations
 
 import argparse
-import os
 import sys
 from collections.abc import Iterable
+from pathlib import Path
 
 from botocore.exceptions import ClientError
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.helpers.aws_client import get_client
 
@@ -107,26 +112,9 @@ def delete_bucket(s3, *, bucket: str) -> None:
     s3.delete_bucket(Bucket=bucket)
 
 
-def _resolve_legacy_silver_buckets(bucket_prefix: str) -> list[str]:
-    prefix = bucket_prefix.strip()
-    if not prefix:
-        raise ValueError("bucket_prefix is empty")
-    return [f"{prefix}-bls-silver", f"{prefix}-datausa-silver"]
-
-
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bucket", action="append", default=[], help="S3 bucket to delete (repeatable)")
-    parser.add_argument(
-        "--legacy-silver",
-        action="store_true",
-        help="Also delete legacy *-silver buckets derived from FOMC_BUCKET_PREFIX",
-    )
-    parser.add_argument(
-        "--bucket-prefix",
-        default=None,
-        help="Bucket prefix to use for --legacy-silver (defaults to env FOMC_BUCKET_PREFIX)",
-    )
     parser.add_argument(
         "--ignore-missing",
         action="store_true",
@@ -149,18 +137,12 @@ def main(argv: list[str] | None = None) -> int:
     buckets: list[str] = []
     buckets.extend([str(b).strip() for b in (args.bucket or []) if str(b).strip()])
 
-    if args.legacy_silver:
-        bucket_prefix = args.bucket_prefix or os.environ.get("FOMC_BUCKET_PREFIX")
-        if not bucket_prefix:
-            raise SystemExit("--legacy-silver requires --bucket-prefix or env FOMC_BUCKET_PREFIX")
-        buckets.extend(_resolve_legacy_silver_buckets(bucket_prefix))
-
     # Dedupe while keeping order.
     seen: set[str] = set()
     buckets = [b for b in buckets if not (b in seen or seen.add(b))]
 
     if not buckets:
-        raise SystemExit("No buckets provided. Use --bucket and/or --legacy-silver.")
+        raise SystemExit("No buckets provided. Use --bucket.")
 
     if not args.yes:
         print("Planned deletions (dry-run):")
@@ -202,4 +184,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

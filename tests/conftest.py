@@ -8,6 +8,28 @@ import pytest
 from moto import mock_aws
 
 
+@pytest.fixture(autouse=True)
+def default_project_env(monkeypatch):
+    """Provide deterministic default env vars for tests."""
+    defaults = {
+        "AWS_ACCESS_KEY_ID": "testing",
+        "AWS_SECRET_ACCESS_KEY": "testing",
+        "AWS_SECURITY_TOKEN": "testing",
+        "AWS_SESSION_TOKEN": "testing",
+        "AWS_DEFAULT_REGION": "us-east-1",
+        "FOMC_BUCKET_PREFIX": "fomc",
+        "FOMC_ANALYTICS_QUEUE_NAME": "fomc-analytics-queue",
+        "FOMC_ANALYTICS_DLQ_NAME": "fomc-analytics-dlq",
+        "FOMC_REMOVAL_POLICY": "retain",
+        "FOMC_FETCH_INTERVAL_HOURS": "1",
+        "BLS_SERIES": "pr,cu,ce,ln,jt,ci",
+        "DATAUSA_DATASETS": "population,commute_time,citizenship",
+        "DATAUSA_BASE_URL": "https://api.datausa.io/tesseract",
+    }
+    for key, value in defaults.items():
+        monkeypatch.setenv(key, value)
+
+
 @pytest.fixture
 def aws_credentials():
     """Mock AWS credentials for moto."""

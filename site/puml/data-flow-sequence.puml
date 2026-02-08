@@ -11,8 +11,8 @@ participant "BLS LABSTAT\ndownload.bls.gov" as BLS #F5F5F5
 participant "DataUSA API\napi.datausa.io" as DataUSA #F5F5F5
 database "S3\n{prefix}-bls-raw" as S3_BLS #E8F5E9
 database "S3\n{prefix}-datausa-raw" as S3_DATAUSA #E8F5E9
-queue "SQS\nfomc-analytics-queue" as Q #FFF3E0
-queue "SQS DLQ\nfomc-analytics-dlq" as DLQ #FFEBEE
+queue "SQS\n{FOMC_ANALYTICS_QUEUE_NAME}" as Q #FFF3E0
+queue "SQS DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as DLQ #FFEBEE
 participant "Lambda\nfomc-analytics-processor" as Analytics #FFF3E0
 participant "CloudWatch Logs" as Logs #F5F5F5
 

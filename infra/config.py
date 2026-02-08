@@ -11,6 +11,7 @@ REQUIRED_KEYS = (
     "FOMC_FETCH_INTERVAL_HOURS",
     "BLS_SERIES",
     "DATAUSA_DATASETS",
+    "DATAUSA_BASE_URL",
 )
 
 
@@ -64,6 +65,7 @@ def get_env_config() -> dict:
         "fetch_interval_hours": _required_positive_int("FOMC_FETCH_INTERVAL_HOURS"),
         "bls_series": _required("BLS_SERIES"),
         "datausa_datasets": _required("DATAUSA_DATASETS"),
+        "datausa_base_url": _required("DATAUSA_BASE_URL"),
         "site_domain": site_domain,
         "site_aliases": site_aliases,
         "site_cert_arn": os.environ.get("FOMC_SITE_CERT_ARN", "").strip(),

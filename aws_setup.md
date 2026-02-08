@@ -44,33 +44,51 @@ aws sts get-caller-identity --profile fomc-agent
 
 You should see your account ID, user ARN, and user ID.
 
-### 1.3 Create `.env.local`
+### 1.3 Update `.env.shared` (Single Source of Truth)
 
-This file is gitignored and holds project-specific environment variables:
+Shared non-secret settings now live in `.env.shared` and are used by:
+- LocalStack
+- Local AWS/CDK runs
+- GitHub Actions variable sync (`./tools/set_repo_vars.sh`)
+
+Set at least:
 
 ```bash
-cat > .env.local <<'EOF'
+# edit .env.shared
 AWS_DEFAULT_REGION=us-east-1
-AWS_PROFILE=fomc-agent
 FOMC_BUCKET_PREFIX=fomc-yourname-20260204
+FOMC_ANALYTICS_QUEUE_NAME=fomc-analytics-queue
+FOMC_ANALYTICS_DLQ_NAME=fomc-analytics-dlq
 FOMC_REMOVAL_POLICY=destroy
-# Optional: EventBridge fetch cadence (default hourly)
 FOMC_FETCH_INTERVAL_HOURS=1
-EOF
+BLS_SERIES=pr,cu,ce,ln,jt,ci
+DATAUSA_DATASETS=population,commute_time,citizenship
+DATAUSA_BASE_URL=https://api.datausa.io/tesseract
 ```
 
 Replace `yourname-20260204` with something unique to avoid S3 bucket name collisions.
 
-### 1.4 Bootstrap CDK (one-time per account/region)
+### 1.4 Create `.env.local` (AWS Local Overrides)
+
+`.env.local` is gitignored and should contain local-only overrides such as your profile:
+
+```bash
+cat > .env.local <<'EOF'
+AWS_PROFILE=fomc-agent
+EOF
+```
+
+### 1.5 Bootstrap CDK (one-time per account/region)
 
 CDK needs a bootstrap stack to manage assets:
 
 ```bash
+source .env.shared
 source .env.local
 npx cdk bootstrap aws://$(aws sts get-caller-identity --profile fomc-agent --query Account --output text)/us-east-1 --profile fomc-agent
 ```
 
-### 1.5 Verify S3 Access
+### 1.6 Verify S3 Access
 
 Quick sanity check:
 
@@ -80,7 +98,7 @@ aws s3 ls --profile fomc-agent
 
 No errors means you're good. An empty list is fine if the account is new.
 
-### 1.6 Site URL (AWS-managed)
+### 1.7 Site URL (AWS-managed)
 
 Deploy `FomcSiteStack` and use the `SiteUrl` CloudFormation output to access the site.
 
@@ -128,13 +146,11 @@ For running scripts and tests inside PyCharm:
 1. **Run > Edit Configurations > Edit Configuration Templates > Python**
 2. Under **Environment variables**, add:
    ```
-   AWS_DEFAULT_REGION=us-east-1
    AWS_PROFILE=fomc-agent
-   FOMC_BUCKET_PREFIX=fomc-yourname-20260204
-   FOMC_REMOVAL_POLICY=destroy
-   FOMC_FETCH_INTERVAL_HOURS=1
    ```
-3. Alternatively, check **EnvFile** plugin and point it to `.env.local`
+3. Alternatively, check **EnvFile** plugin and point it to:
+   - `.env.shared` first
+   - `.env.local` second (AWS runs) or `.env.localstack` second (LocalStack runs)
 
 ### 2.5 Run Tests
 
@@ -149,9 +165,9 @@ All unit tests use `moto` to mock AWS, so they run without real credentials.
 
 | Plugin | Why |
 |--------|-----|
-| **EnvFile** | Load `.env.local` into run configurations automatically |
+| **EnvFile** | Load `.env.shared` plus `.env.local`/`.env.localstack` automatically |
 | **AWS Toolkit** | Browse S3 buckets, view Lambda functions, read CloudWatch logs |
-| **.env files support** | Syntax highlighting for `.env.local` |
+| **.env files support** | Syntax highlighting for `.env.shared` |
 
 ### 2.7 CDK and Infrastructure Files
 
@@ -178,7 +194,7 @@ If you use LocalStack Pro features, find your token at [app.localstack.cloud](ht
 LOCALSTACK_AUTH_TOKEN=ls-xxxxxxxx
 ```
 
-This repo's `docker-compose.yml` now loads `.env.localstack` directly for the LocalStack container, so `docker compose up -d` and the provided local helper scripts use the same LocalStack env settings.
+This repo's `docker-compose.yml` loads `.env.shared` and `.env.localstack` for the LocalStack container, so shared settings and LocalStack overrides stay aligned.
 
 ### 3.2 Start LocalStack
 
@@ -194,13 +210,14 @@ Verify it's ready:
 aws --endpoint-url=http://localhost:4566 s3 ls
 ```
 
-You should see all four buckets derived from `FOMC_BUCKET_PREFIX` in `.env.localstack`.
+You should see all four buckets derived from `FOMC_BUCKET_PREFIX` in `.env.shared`.
 
 ### 3.3 Run the Pipeline Locally
 
 Fetch data into local S3 (uses real BLS and DataUSA APIs, stores in LocalStack S3):
 
 ```bash
+source .env.shared
 source .env.localstack
 python -m src.data_fetchers.bls_getter
 python -m src.data_fetchers.datausa_getter
@@ -216,6 +233,7 @@ aws --endpoint-url=http://localhost:4566 s3 ls "s3://${FOMC_BUCKET_PREFIX}-datau
 Run analytics against local data:
 
 ```bash
+source .env.shared
 source .env.localstack
 python -m src.analytics.reports
 ```
@@ -229,7 +247,6 @@ The project includes shared run configurations in `.run/` that appear automatica
 | **LocalStack Up (CLI)** | Starts LocalStack via `docker compose up -d` + waits for health | Docker |
 | **LocalStack Down (CLI)** | Stops LocalStack via `docker compose down` | Docker |
 | **Docker Compose Up (LocalStack)** | Starts LocalStack container | Docker |
-| **Seed LocalStack** | Uploads fixture data into LocalStack S3 (fast demo) | LocalStack |
 | **Fetch Data (LocalStack)** | Fetches all BLS series into LocalStack S3 | LocalStack |
 | **Fetch DataUSA (LocalStack)** | Fetches DataUSA datasets into LocalStack S3 | LocalStack |
 | **Invoke Fetcher Lambda (LocalStack)** | Runs the deployed Lambda handler locally (writes to LocalStack S3) | LocalStack |
@@ -249,11 +266,11 @@ The project includes shared run configurations in `.run/` that appear automatica
 | **Analytics (AWS)** | Generates `site/data/*.json` charts from AWS S3 | AWS |
 | **Build BLS Timeline (AWS)** | Generates `site/data/bls_timeline.json` from AWS sync logs | AWS |
 | **Build AWS Observability (AWS)** | Generates `site/data/aws_observability.json` for the Timeline page | AWS |
-| **CDK Diff (AWS)** | Runs `cdk diff --all` (loads `.env.local`) | AWS |
-| **CDK Deploy (AWS)** | Runs `cdk deploy --all --require-approval never` (loads `.env.local`) | AWS |
+| **CDK Diff (AWS)** | Runs `cdk diff --all` (loads `.env.shared` + `.env.local`) | AWS |
+| **CDK Deploy (AWS)** | Runs `cdk deploy --all --require-approval never` (loads `.env.shared` + `.env.local`) | AWS |
 | **Run Tests** | Runs unit tests (moto mocks, no AWS needed) | Neither |
 
-Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set. Run configs also include an EnvFile entry (if you install the EnvFile plugin) to load `.env.localstack` or `.env.local` automatically.
+Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set in `.env.localstack`. Run configs include EnvFile entries (if you install the EnvFile plugin) that load `.env.shared` first, then `.env.localstack` or `.env.local`.
 
 #### Chart Refresh Order (so the site renders complete data)
 
@@ -291,6 +308,7 @@ Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set. Run
 Before pushing changes, run one full local validation pass:
 
 ```bash
+source .env.shared
 source .env.localstack
 python tools/localstack_full_refresh.py
 python tools/check_s3_assets.py --env-file .env.localstack --strict
@@ -326,20 +344,34 @@ This repo now includes `.github/workflows/ci-deploy.yml`:
 
 ### 4.2 Required/Optional GitHub Repository Variables
 
-Use `.env.localstack` as the single source of truth for non-secret deploy settings, then sync them to GitHub:
+Use `.env.shared` as the single source of truth for non-secret deploy settings, then sync them to GitHub:
 
 ```bash
-python tools/sync_github_vars.py
+./tools/set_repo_vars.sh
+```
+
+Prerequisite: GitHub CLI installed and authenticated (`gh auth login`).
+
+Optional:
+
+```bash
+# preview changes without applying
+./tools/set_repo_vars.sh --dry-run
 ```
 
 The script sets:
 
-- Required: `FOMC_BUCKET_PREFIX`
-- Defaulted if missing in `.env.localstack`:
-  - `AWS_REGION` (`AWS_DEFAULT_REGION` fallback, then `us-east-1`)
-  - `FOMC_REMOVAL_POLICY` (`retain`)
-- Optional (set when present, removed when blank):
+- Required:
+  - `AWS_DEFAULT_REGION`
+  - `FOMC_BUCKET_PREFIX`
+  - `FOMC_ANALYTICS_QUEUE_NAME`
+  - `FOMC_ANALYTICS_DLQ_NAME`
+  - `FOMC_REMOVAL_POLICY`
   - `FOMC_FETCH_INTERVAL_HOURS`
+  - `BLS_SERIES`
+  - `DATAUSA_DATASETS`
+  - `DATAUSA_BASE_URL`
+- Optional (set when present, removed when blank):
   - `FOMC_SITE_DOMAIN`
   - `FOMC_SITE_CERT_ARN`
   - `FOMC_SITE_ALIASES`
@@ -363,15 +395,16 @@ Then every push to `main` deploys via GitHub Actions.
 [ ] aws sts get-caller-identity --profile fomc-agent       # returns your account
 [ ] python3 --version                                      # 3.12+
 [ ] uv --version                                           # installed
-[ ] .env.local exists (for local AWS profile/region settings)
-[ ] .env.localstack has desired FOMC_* deploy values (single source for LocalStack + GitHub vars)
+[ ] .env.shared has desired shared values (single source for LocalStack + AWS + GitHub vars)
+[ ] .env.local exists (for local AWS profile overrides, e.g. AWS_PROFILE)
+[ ] .env.localstack exists (LocalStack endpoint/credentials)
 [ ] PyCharm interpreter points to .venv/bin/python
 [ ] pytest runs green in PyCharm (right-click tests/)
 [ ] docker compose up -d                                   # LocalStack starts
 [ ] aws --endpoint-url=http://localhost:4566 s3 ls          # shows prefix-derived buckets
 [ ] PyCharm shows run configs in the Run dropdown
 [ ] GitHub secret AWS_DEPLOY_ROLE_ARN is set
-[ ] python tools/sync_github_vars.py                         # sync non-secret GitHub vars from .env.localstack
+[ ] ./tools/set_repo_vars.sh                                 # sync non-secret GitHub vars from .env.shared
 ```
 
 ## 6. Common Issues

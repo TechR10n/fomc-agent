@@ -5,7 +5,7 @@ skinparam shadowing false
 title FOMC Agent - LocalStack + Synth Developer Flow
 
 actor "Developer" as Dev
-participant ".env.localstack" as Env
+participant ".env.shared + .env.localstack" as Env
 participant "tools/cdk.py synth --all" as Synth
 participant "CDK CLI" as CDK
 participant "app.py" as App
@@ -24,7 +24,7 @@ participant "python -m http.server (site/)" as Web
 actor "Browser" as Browser
 
 == 1) Synthesize infra templates (no AWS calls) ==
-Dev -> Env : source .env.localstack
+Dev -> Env : source .env.shared + .env.localstack
 Dev -> Synth : run
 Synth -> CDK : invoke synth
 CDK -> App : load stack definitions

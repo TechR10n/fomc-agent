@@ -4,7 +4,6 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="AWS_DEFAULT_REGION" value="us-east-1" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
@@ -25,6 +24,7 @@
       <option name="IS_IGNORE_MISSING_FILES" value="true" />
       <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
       <ENTRIES>
+        <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" PATH="$PROJECT_DIR$/.env.shared" />
         <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" PATH="$PROJECT_DIR$/.env.local" />
       </ENTRIES>
     </EXTENSION>

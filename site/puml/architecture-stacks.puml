@@ -20,8 +20,8 @@ package "AWS Account (CDK deployment target)" as aws #F8F9FA {
     storage "S3 Bucket\n{prefix}-bls-processed" as bls_processed <<AWS::S3::Bucket>>
     storage "S3 Bucket\n{prefix}-datausa-processed" as datausa_processed <<AWS::S3::Bucket>>
 
-    queue "SQS Queue\nfomc-analytics-queue" as analytics_queue <<AWS::SQS::Queue>>
-    queue "SQS DLQ\nfomc-analytics-dlq" as analytics_dlq <<AWS::SQS::Queue>>
+    queue "SQS Queue\n{FOMC_ANALYTICS_QUEUE_NAME}" as analytics_queue <<AWS::SQS::Queue>>
+    queue "SQS DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as analytics_dlq <<AWS::SQS::Queue>>
     rectangle "S3 Notification Rule\nOBJECT_CREATED + suffix=.json" as s3_notif <<S3 NotificationConfiguration>>
 
     analytics_queue -[dashed]-> analytics_dlq : after 3 failed receives

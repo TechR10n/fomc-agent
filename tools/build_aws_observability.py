@@ -7,7 +7,9 @@ render as:
   - Cost Explorer actuals + forecast (predicted vs actual cost)
 
 Usage:
-  source .env.localstack   # optional (for LocalStack)
+  source .env.shared
+  source .env.local        # optional AWS local override
+  # or: source .env.localstack
   python tools/build_aws_observability.py --days 30 --forecast-days 30 --out site/data/aws_observability.json
 """
 
@@ -36,4 +38,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

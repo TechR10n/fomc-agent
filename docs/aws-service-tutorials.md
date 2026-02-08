@@ -8,12 +8,14 @@ Assumptions:
 
 - You are in the repo root.
 - Dependencies are installed (`uv sync --all-extras`).
-- `.env.local` exists (see `aws_setup.md`).
+- `.env.shared` exists (see `aws_setup.md`).
+- `.env.local` exists if you use `AWS_PROFILE` locally.
 - You have deployed the stacks at least once.
 
 Load environment variables:
 
 ```bash
+source .env.shared
 source .env.local
 ```
 
@@ -85,8 +87,8 @@ aws s3 ls "s3://$DATAUSA_PROCESSED_BUCKET/" | head
 
 ### How this project uses SQS
 
-- Queue: `fomc-analytics-queue`
-- DLQ: `fomc-analytics-dlq`
+- Queue: `${FOMC_ANALYTICS_QUEUE_NAME}`
+- DLQ: `${FOMC_ANALYTICS_DLQ_NAME}`
 - Trigger path: DataUSA raw bucket `.json` uploads -> S3 notification -> SQS message.
 - Consumer: analytics Lambda reads SQS messages and runs report generation.
 
@@ -100,7 +102,7 @@ Implementation locations:
 1. Confirm queues exist:
 
 ```bash
-aws sqs list-queues --queue-name-prefix fomc-analytics
+aws sqs list-queues --queue-name-prefix "${FOMC_ANALYTICS_QUEUE_NAME%%-*}"
 ```
 
 2. Upload a JSON file to trigger S3 -> SQS:
@@ -113,7 +115,7 @@ aws s3 cp /tmp/population.json "s3://$DATAUSA_BUCKET/population.json"
 3. Read approximate queue metrics:
 
 ```bash
-QUEUE_URL="$(aws sqs get-queue-url --queue-name fomc-analytics-queue --query QueueUrl --output text)"
+QUEUE_URL="$(aws sqs get-queue-url --queue-name "$FOMC_ANALYTICS_QUEUE_NAME" --query QueueUrl --output text)"
 aws sqs get-queue-attributes \
   --queue-url "$QUEUE_URL" \
   --attribute-names ApproximateNumberOfMessages ApproximateNumberOfMessagesNotVisible
@@ -164,7 +166,7 @@ aws logs tail "/aws/lambda/fomc-analytics-processor" --since 15m
 
 ### How this project uses EventBridge
 
-- A scheduled rule triggers `fomc-data-fetcher` every `FOMC_FETCH_INTERVAL_HOURS` (hourly by default).
+- A scheduled rule triggers `fomc-data-fetcher` every `FOMC_FETCH_INTERVAL_HOURS`.
 
 Implementation location:
 
@@ -185,10 +187,11 @@ aws events describe-rule --name "$RULE_NAME" --query '{Name:Name,ScheduleExpress
 aws events list-targets-by-rule --rule "$RULE_NAME"
 ```
 
-3. Change interval (example: every 2 hours) and redeploy:
+3. Change interval (example: every 2 hours) in `.env.shared`, then redeploy:
 
 ```bash
-export FOMC_FETCH_INTERVAL_HOURS=2
+# Edit .env.shared and set:
+# FOMC_FETCH_INTERVAL_HOURS=2
 python tools/cdk.py deploy FomcComputeStack --require-approval never
 ```
 

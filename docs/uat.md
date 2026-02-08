@@ -34,15 +34,14 @@ uv sync --all-extras
 # 2) Activate the virtualenv
 source .venv/bin/activate
 
-# 3) Choose your AWS profile + region
+# 3) Configure shared + local env files
+#    - Put shared FOMC/AWS settings in .env.shared
+#    - Put local-only AWS_PROFILE in .env.local
+source .env.shared
+source .env.local
+
+# 4) Verify/override AWS profile if needed
 export AWS_PROFILE=fomc-workshop
-export AWS_DEFAULT_REGION=us-east-1
-
-# 4) Choose a globally-unique bucket prefix
-export FOMC_BUCKET_PREFIX="fomc-<yourname>-<yyyymmdd>"
-
-# Optional (workshop convenience; allows `cdk destroy` to delete buckets/objects)
-export FOMC_REMOVAL_POLICY=destroy  # alternatives: retain
 
 # 5) Verify AWS auth works
 aws sts get-caller-identity
@@ -83,8 +82,8 @@ python src/helpers/aws_status.py
 ### UAT-3.1: Synth + bootstrap
 
 ```bash
-cdk synth
-cdk bootstrap
+python tools/cdk.py synth --all
+npx cdk bootstrap
 ```
 
 - [ ] Both commands exit with code 0
@@ -92,7 +91,7 @@ cdk bootstrap
 ### UAT-3.2: Deploy stacks
 
 ```bash
-cdk deploy --all --require-approval never
+python tools/cdk.py deploy --all --require-approval never
 ```
 
 - [ ] Deploy completes without errors
@@ -122,10 +121,10 @@ aws lambda get-function --function-name fomc-analytics-processor >/dev/null
 Verify SQS queue:
 
 ```bash
-aws sqs list-queues --queue-name-prefix fomc-analytics-queue | python -m json.tool
+aws sqs list-queues --queue-name-prefix "$FOMC_ANALYTICS_QUEUE_NAME" | python -m json.tool
 ```
 
-Verify EventBridge schedule (hourly by default):
+Verify EventBridge schedule:
 
 ```bash
 RULE_NAME="$(aws events list-rules --name-prefix FomcComputeStack-FetchScheduleRule --query 'Rules[0].Name' --output text)"
@@ -206,7 +205,7 @@ python tools/build_aws_observability.py --days 30 --forecast-days 30 --out site/
 Deploy the site stack:
 
 ```bash
-cdk deploy FomcSiteStack --require-approval never
+python tools/cdk.py deploy FomcSiteStack --require-approval never
 ```
 
 - [ ] CDK output includes `SiteUrl` and `SiteCloudFrontDomain`
@@ -217,7 +216,7 @@ cdk deploy FomcSiteStack --require-approval never
 ## UAT-7: Cleanup
 
 ```bash
-cdk destroy --all --force
+python tools/cdk.py destroy --all --force
 ```
 
 - [ ] Stacks delete successfully

@@ -8,7 +8,9 @@ The timeline time is driven by the BLS directory listing timestamp
 (`source_modified`), not the pipeline run time.
 
 Usage:
-  source .env.localstack   # optional (for LocalStack)
+  source .env.shared
+  source .env.local        # optional AWS local override
+  # or: source .env.localstack
   python tools/build_bls_timeline.py --days 60 --out site/data/bls_timeline.json
 """
 

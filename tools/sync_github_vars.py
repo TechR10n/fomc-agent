@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Sync GitHub Actions repository variables from `.env.localstack`.
+"""Sync GitHub Actions repository variables from `.env.shared`.
 
 This keeps shared deploy settings in one place:
-- LocalStack uses `.env.localstack` directly.
+- LocalStack and AWS tooling load `.env.shared`.
 - GitHub Actions repository variables are updated from the same file.
 """
 
@@ -17,9 +17,18 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # Required/optional non-secret repository variables used by ci-deploy.yml.
-REQUIRED_REPO_VARS = ("FOMC_BUCKET_PREFIX",)
-OPTIONAL_REPO_VARS = (
+REQUIRED_REPO_VARS = (
+    "AWS_DEFAULT_REGION",
+    "FOMC_BUCKET_PREFIX",
+    "FOMC_ANALYTICS_QUEUE_NAME",
+    "FOMC_ANALYTICS_DLQ_NAME",
+    "FOMC_REMOVAL_POLICY",
     "FOMC_FETCH_INTERVAL_HOURS",
+    "BLS_SERIES",
+    "DATAUSA_DATASETS",
+    "DATAUSA_BASE_URL",
+)
+OPTIONAL_REPO_VARS = (
     "FOMC_SITE_DOMAIN",
     "FOMC_SITE_CERT_ARN",
     "FOMC_SITE_ALIASES",
@@ -53,11 +62,10 @@ def _load_env_file(path: Path) -> dict[str, str]:
 
 
 def _resolve_repo_values(env: dict[str, str]) -> dict[str, str]:
-    values: dict[str, str] = {
-        "AWS_REGION": env.get("AWS_REGION", "") or env.get("AWS_DEFAULT_REGION", "us-east-1"),
-        "FOMC_BUCKET_PREFIX": env.get("FOMC_BUCKET_PREFIX", "").strip(),
-        "FOMC_REMOVAL_POLICY": env.get("FOMC_REMOVAL_POLICY", "retain").strip() or "retain",
-    }
+    values: dict[str, str] = {}
+
+    for key in REQUIRED_REPO_VARS:
+        values[key] = env.get(key, "").strip()
 
     for key in OPTIONAL_REPO_VARS:
         values[key] = env.get(key, "").strip()
@@ -67,8 +75,15 @@ def _resolve_repo_values(env: dict[str, str]) -> dict[str, str]:
         raise SystemExit(
             "Missing required setting(s) in env file: "
             + ", ".join(missing)
-            + "\nUpdate `.env.localstack` and retry."
+            + "\nUpdate `.env.shared` and retry."
         )
+
+    if values["FOMC_REMOVAL_POLICY"] not in {"destroy", "retain"}:
+        raise SystemExit("FOMC_REMOVAL_POLICY must be 'destroy' or 'retain'.")
+
+    interval_raw = values["FOMC_FETCH_INTERVAL_HOURS"]
+    if not interval_raw.isdigit() or int(interval_raw) <= 0:
+        raise SystemExit("FOMC_FETCH_INTERVAL_HOURS must be a positive integer.")
 
     return values
 
@@ -123,8 +138,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--env-file",
-        default=str(PROJECT_ROOT / ".env.localstack"),
-        help="Source env file (default: .env.localstack)",
+        default=str(PROJECT_ROOT / ".env.shared"),
+        help="Source env file (default: .env.shared)",
     )
     parser.add_argument(
         "--repo",
@@ -154,8 +169,7 @@ def main() -> None:
         print(f"Target repository: {args.repo}")
 
     # Always-set variables.
-    always_set = ("AWS_REGION", "FOMC_BUCKET_PREFIX", "FOMC_REMOVAL_POLICY")
-    for key in always_set:
+    for key in REQUIRED_REPO_VARS:
         _gh_set_variable(key, repo_values[key], repo=args.repo, dry_run=args.dry_run)
 
     # Optional variables are either set or deleted so stale values do not linger.

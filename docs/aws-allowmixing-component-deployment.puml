@@ -23,8 +23,8 @@ node "AWS Account" as account #F8F9FA {
       database "S3\n{prefix}-datausa-raw" as datausa_raw <<AWS::S3::Bucket>>
       database "S3\n{prefix}-bls-processed" as bls_processed <<AWS::S3::Bucket>>
       database "S3\n{prefix}-datausa-processed" as datausa_processed <<AWS::S3::Bucket>>
-      queue "SQS\nfomc-analytics-queue" as q <<AWS::SQS::Queue>>
-      queue "SQS DLQ\nfomc-analytics-dlq" as dlq <<AWS::SQS::Queue>>
+      queue "SQS\n{FOMC_ANALYTICS_QUEUE_NAME}" as q <<AWS::SQS::Queue>>
+      queue "SQS DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as dlq <<AWS::SQS::Queue>>
     }
 
     node "FomcMessagingStack" as messaging #FFF3E0 {

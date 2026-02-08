@@ -59,6 +59,7 @@ def load_localstack_env() -> None:
             "AWS_ENDPOINT_URL",
             "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY",
+            "AWS_S3_ADDRESSING_STYLE",
             "FOMC_BUCKET_PREFIX",
             "FOMC_ANALYTICS_QUEUE_NAME",
             "FOMC_ANALYTICS_DLQ_NAME",

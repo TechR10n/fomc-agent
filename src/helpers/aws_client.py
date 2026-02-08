@@ -8,15 +8,16 @@ from urllib.parse import urlparse
 import boto3
 from botocore.config import Config
 
-DEFAULT_REGION = "us-east-1"
+
+def _required_env(name: str) -> str:
+    value = os.environ.get(name, "").strip()
+    if not value:
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
 
 
 def _region() -> str:
-    return (
-        os.environ.get("AWS_DEFAULT_REGION")
-        or os.environ.get("AWS_REGION")
-        or DEFAULT_REGION
-    )
+    return _required_env("AWS_DEFAULT_REGION")
 
 
 def _service_endpoint(service: str) -> str | None:
@@ -39,12 +40,14 @@ def _is_local_endpoint(endpoint: str | None) -> bool:
 def _local_auth_kwargs(endpoint: str | None) -> dict[str, str]:
     if not _is_local_endpoint(endpoint):
         return {}
-    return {
-        "aws_access_key_id": os.environ.get("AWS_ACCESS_KEY_ID", "test"),
-        "aws_secret_access_key": os.environ.get("AWS_SECRET_ACCESS_KEY", "test"),
-        # LocalStack accepts any token value; keep deterministic default.
-        "aws_session_token": os.environ.get("AWS_SESSION_TOKEN", "test"),
+    kwargs = {
+        "aws_access_key_id": _required_env("AWS_ACCESS_KEY_ID"),
+        "aws_secret_access_key": _required_env("AWS_SECRET_ACCESS_KEY"),
     }
+    session_token = os.environ.get("AWS_SESSION_TOKEN", "").strip()
+    if session_token:
+        kwargs["aws_session_token"] = session_token
+    return kwargs
 
 
 def _service_config(service: str, endpoint: str | None) -> Config | None:
@@ -52,9 +55,6 @@ def _service_config(service: str, endpoint: str | None) -> Config | None:
         return None
 
     addressing = os.environ.get("AWS_S3_ADDRESSING_STYLE", "").strip().lower()
-    if not addressing and _is_local_endpoint(endpoint):
-        addressing = "path"
-
     if addressing in {"path", "virtual", "auto"}:
         return Config(s3={"addressing_style": addressing})
     return None

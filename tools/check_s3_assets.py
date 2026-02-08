@@ -4,14 +4,14 @@
 This script:
 - Verifies expected buckets exist (raw, processed, site).
 - Checks key presence for raw/processed data outputs.
-- Warns about legacy *-silver buckets and can delete them on request.
 
 Usage (AWS):
+  source .env.shared
   source .env.local
   python tools/check_s3_assets.py
-  python tools/check_s3_assets.py --delete-legacy
 
 Usage (LocalStack):
+  source .env.shared
   source .env.localstack
   python tools/check_s3_assets.py
 """
@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import subprocess
 import sys
 from collections.abc import Iterable
 from pathlib import Path
@@ -145,36 +144,13 @@ def _print_error(message: str) -> None:
     print(f"[ERROR] {message}")
 
 
-def _delete_legacy_buckets(buckets: list[str], *, yes: bool) -> None:
-    if not buckets:
-        print("No legacy buckets found to delete.")
-        return
-
-    print("Legacy buckets to delete:")
-    for bucket in buckets:
-        print(f"  - s3://{bucket}")
-
-    if not yes:
-        answer = input("Delete these buckets now? Type 'yes' to confirm: ").strip().lower()
-        if answer != "yes":
-            print("Skipped deletion.")
-            return
-
-    cmd = [sys.executable, str(PROJECT_ROOT / "tools/delete_s3_buckets.py"), "--yes", "--ignore-missing"]
-    for bucket in buckets:
-        cmd.extend(["--bucket", bucket])
-    subprocess.run(cmd, check=True)
-
-
 def parse_args(argv: list[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--env-file", default=None, help="Optional env file to load (e.g., .env.local)")
     parser.add_argument(
-        "--delete-legacy",
-        action="store_true",
-        help="Offer to delete legacy *-silver buckets (derived from FOMC_BUCKET_PREFIX).",
+        "--env-file",
+        default=None,
+        help="Optional env file to load (e.g., .env.shared or .env.localstack)",
     )
-    parser.add_argument("--yes", action="store_true", help="Skip confirmation prompts for deletion.")
     parser.add_argument(
         "--strict",
         action="store_true",
@@ -232,7 +208,7 @@ def main(argv: list[str] | None = None) -> int:
 
     all_buckets, list_err = _list_buckets(s3)
     if list_err:
-        _print_warn(f"Could not list buckets (skipping extra/legacy checks): {list_err}")
+        _print_warn(f"Could not list buckets (skipping extra bucket checks): {list_err}")
         warnings += 1
     else:
         extra = sorted(
@@ -281,39 +257,6 @@ def main(argv: list[str] | None = None) -> int:
     _print_header("Objects (Processed)")
     check_keys("BLS processed", expected_buckets["BLS processed"], processed_bls_keys)
     check_keys("DataUSA processed", expected_buckets["DataUSA processed"], processed_datausa_keys)
-
-    _print_header("Legacy Buckets")
-    legacy_candidates = _dedupe(
-        [
-            f"{prefix}-bls-silver",
-            f"{prefix}-datausa-silver",
-            os.environ.get("BLS_SILVER_BUCKET", ""),
-            os.environ.get("DATAUSA_SILVER_BUCKET", ""),
-        ]
-    )
-    legacy_candidates = [b for b in legacy_candidates if b]
-
-    legacy_found: list[str] = []
-    if all_buckets:
-        legacy_found = [b for b in legacy_candidates if b in all_buckets]
-    else:
-        for bucket in legacy_candidates:
-            exists, err = _bucket_exists(s3, bucket)
-            if err:
-                _print_warn(f"Legacy check: could not access s3://{bucket} ({err})")
-                warnings += 1
-            elif exists:
-                legacy_found.append(bucket)
-
-    if legacy_found:
-        _print_warn("Legacy buckets detected:")
-        for b in legacy_found:
-            print(f"  - s3://{b}")
-        warnings += 1
-        if args.delete_legacy:
-            _delete_legacy_buckets(legacy_found, yes=args.yes)
-    else:
-        _print_ok("No legacy *-silver buckets detected.")
 
     _print_header("Summary")
     print(f"Warnings: {warnings}")

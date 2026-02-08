@@ -97,6 +97,9 @@ def main() -> None:
             "FOMC_ANALYTICS_DLQ_NAME",
             "FOMC_REMOVAL_POLICY",
             "FOMC_FETCH_INTERVAL_HOURS",
+            "BLS_SERIES",
+            "DATAUSA_DATASETS",
+            "DATAUSA_BASE_URL",
         ]
     )
     _ensure_deploy_marker(args.cdk_args)

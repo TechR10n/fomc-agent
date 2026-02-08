@@ -37,7 +37,7 @@ alt push to main AND validate passed
   STS -> Role : trust policy check (repo + branch)
   Role --> STS : allow
   STS --> Deploy : temporary AWS credentials
-  Deploy -> Deploy : write .env.local from repo vars
+  Deploy -> Deploy : write .env.shared from repo vars
   Deploy -> CDK : deploy --all --require-approval never
   CDK -> CFN : update stacks
   CFN -> Stacks : create/update resources

@@ -4,12 +4,12 @@ skinparam shadowing false
 
 title FOMC Agent - Hourly AWS Runtime Sequence\n(Target behavior: ingest -> enrich -> site data publish)
 
-participant "EventBridge Rule\nFetchScheduleRule\n(rate: 1 hour)" as EB #E3F2FD
+participant "EventBridge Rule\nFetchScheduleRule\n(rate: FOMC_FETCH_INTERVAL_HOURS)" as EB #E3F2FD
 participant "Lambda\nfomc-data-fetcher" as Fetcher #E3F2FD
 database "S3\n{prefix}-bls-raw" as BLSRaw #E8F5E9
 database "S3\n{prefix}-datausa-raw" as DataRaw #E8F5E9
-queue "SQS\nfomc-analytics-queue" as Q #FFF3E0
-queue "SQS DLQ\nfomc-analytics-dlq" as DLQ #FFEBEE
+queue "SQS\n{FOMC_ANALYTICS_QUEUE_NAME}" as Q #FFF3E0
+queue "SQS DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as DLQ #FFEBEE
 participant "Lambda\nfomc-analytics-processor" as Analytics #FFF3E0
 database "S3\n{prefix}-bls-processed" as BLSProcessed #E8F5E9
 database "S3\n{prefix}-datausa-processed" as DataProcessed #E8F5E9
@@ -22,7 +22,7 @@ participant "DataUSA API\napi.datausa.io" as DataUSA #F5F5F5
 actor "Browser User" as User
 
 == Hourly trigger ==
-EB -> Fetcher : invoke once per hour
+EB -> Fetcher : invoke every FOMC_FETCH_INTERVAL_HOURS hour(s)
 activate Fetcher
 Fetcher -> BLS : sync changed BLS files
 BLS --> Fetcher : files + modified timestamps

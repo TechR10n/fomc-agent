@@ -63,16 +63,11 @@
 
     <div class="card prose">
       <h2>Run it (LocalStack)</h2>
-      <p>For interviews, the fastest path is to seed fixture data (no external API calls), then generate dashboards:</p>
+      <p>For interviews, run the end-to-end LocalStack refresh and generate dashboards in one pass:</p>
       <pre><code>docker compose up -d
+source .env.shared
 source .env.localstack
-python scripts/seed_localstack.py
-
-# optional: parse raw → processed
-python -m src.transforms.to_processed --bls-series pr,ln --datausa-datasets population,commute_time,citizenship
-
-# generate site JSON under site/data/
-.venv/bin/python src/analytics/reports.py</code></pre>
+python tools/localstack_full_refresh.py</code></pre>
       <p class="muted">Open <code>site/index.html</code> locally, or deploy the <code>FomcSiteStack</code> to S3 for a hosted static site.</p>
     </div>
 

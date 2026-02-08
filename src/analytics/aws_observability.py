@@ -15,7 +15,13 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Literal
 
-from src.config import get_bls_bucket, get_bucket_prefix, get_datausa_bucket
+from src.config import (
+    get_analytics_dlq_name,
+    get_analytics_queue_name,
+    get_bls_bucket,
+    get_bucket_prefix,
+    get_datausa_bucket,
+)
 from src.helpers.aws_client import get_client
 
 CloudWatchStat = Literal["Average", "Sum", "Minimum", "Maximum", "SampleCount"]
@@ -31,7 +37,10 @@ class MetricDef:
 
 
 DEFAULT_LAMBDA_FUNCTIONS = ["fomc-data-fetcher", "fomc-analytics-processor"]
-DEFAULT_SQS_QUEUES = ["fomc-analytics-queue", "fomc-analytics-dlq"]
+
+
+def _default_sqs_queues() -> list[str]:
+    return [get_analytics_queue_name(), get_analytics_dlq_name()]
 
 
 LAMBDA_METRICS: list[MetricDef] = [
@@ -284,7 +293,7 @@ def build_aws_observability_payload(
     if lambda_functions is None:
         lambda_functions = _parse_csv(os.environ.get("FOMC_OBS_LAMBDA_FUNCTIONS")) or DEFAULT_LAMBDA_FUNCTIONS
     if sqs_queues is None:
-        sqs_queues = _parse_csv(os.environ.get("FOMC_OBS_SQS_QUEUES")) or DEFAULT_SQS_QUEUES
+        sqs_queues = _parse_csv(os.environ.get("FOMC_OBS_SQS_QUEUES")) or _default_sqs_queues()
 
     bls_bucket = get_bls_bucket()
     datausa_bucket = get_datausa_bucket()

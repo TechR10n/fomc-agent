@@ -12,8 +12,8 @@ package "LocalStack (Dev Laptop)" as LS #E8F5E9 {
 
   storage "S3\nfomc-bls-raw" as LS_BLS <<Bucket>>
   storage "S3\nfomc-datausa-raw" as LS_DataUSA <<Bucket>>
-  queue "SQS\nfomc-analytics-queue" as LS_Q <<Queue>>
-  queue "DLQ\nfomc-analytics-dlq" as LS_DLQ <<Queue>>
+  queue "SQS\n{FOMC_ANALYTICS_QUEUE_NAME}" as LS_Q <<Queue>>
+  queue "DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as LS_DLQ <<Queue>>
 
   component "Invoke Fetcher\ntools/localstack_invoke_fetcher.py" as LS_Invoke
   component "Worker\ntools/localstack_worker.py" as LS_Worker
@@ -35,8 +35,8 @@ package "AWS Cloud (Prod-like)" as AWS #E3F2FD {
   component "Lambda\nfomc-data-fetcher" as Fetcher
   storage "S3\n{prefix}-bls-raw" as AWS_BLS <<Bucket>>
   storage "S3\n{prefix}-datausa-raw" as AWS_DataUSA <<Bucket>>
-  queue "SQS\nfomc-analytics-queue" as AWS_Q <<Queue>>
-  queue "DLQ\nfomc-analytics-dlq" as AWS_DLQ <<Queue>>
+  queue "SQS\n{FOMC_ANALYTICS_QUEUE_NAME}" as AWS_Q <<Queue>>
+  queue "DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as AWS_DLQ <<Queue>>
   component "Lambda\nfomc-analytics-processor" as Analytics
 
   EB --> Fetcher

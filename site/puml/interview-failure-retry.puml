@@ -3,10 +3,10 @@
 title Interview — Failure, Retries, and DLQ\n(At-least-once processing with SQS)
 
 actor "Producer\n(S3 Notification\nor Upstream Step)" as Producer
-queue "SQS Queue\nfomc-analytics-queue" as Q #FFF3E0
+queue "SQS Queue\n{FOMC_ANALYTICS_QUEUE_NAME}" as Q #FFF3E0
 participant "Consumer\n(Lambda / Worker)" as Worker #FFF8E1
 participant "CloudWatch Logs" as Logs #F5F5F5
-queue "DLQ\nfomc-analytics-dlq" as DLQ #FFEBEE
+queue "DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as DLQ #FFEBEE
 
 Producer -> Q : SendMessage(event)
 activate Q

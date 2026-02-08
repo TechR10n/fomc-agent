@@ -7,6 +7,7 @@ LocalStack or AWS without Spark/pandas. It demonstrates separation between:
   2) Parsing/cleaning (raw → processed)
 
 Usage:
+  source .env.shared
   source .env.localstack
   python -m src.transforms.to_processed
 """
