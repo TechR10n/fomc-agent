@@ -42,10 +42,14 @@ class FomcSiteStack(Stack):
             enforce_ssl=True,
         )
 
+        # Keep the bucket private; allow reads only via CloudFront.
+        origin_access_identity = cloudfront.OriginAccessIdentity(self, "SiteOAI")
+        bucket.grant_read(origin_access_identity)
+
         distribution_args: dict = {
             "default_root_object": "index.html",
             "default_behavior": cloudfront.BehaviorOptions(
-                origin=origins.S3BucketOrigin(bucket),
+                origin=origins.S3Origin(bucket, origin_access_identity=origin_access_identity),
                 viewer_protocol_policy=cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
                 compress=True,
             ),

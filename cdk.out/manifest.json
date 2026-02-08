@@ -18,7 +18,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-deploy-role-424808095422-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-cfn-exec-role-424808095422-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-424808095422-us-east-1/7b5ab5e24e64fd88106b171085bf09d2496a850e3c882a1b612f2394a9add502.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-424808095422-us-east-1/ffd2e3642ab7074847bcbc8e8ceac8e313928816638aa47de022b7cb817163e7.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -34,100 +34,34 @@
         "FomcStorageStack.assets"
       ],
       "metadata": {
-        "/FomcStorageStack/fomc-ryan-20260204-bls-raw/Resource": [
+        "/FomcStorageStack/fomc-bls-raw/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204blsraw86F95944"
+            "data": "fomcblsraw35871BFE"
           }
         ],
-        "/FomcStorageStack/fomc-ryan-20260204-bls-raw/Policy/Resource": [
+        "/FomcStorageStack/fomc-datausa-raw/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204blsrawPolicyD7DBE9A7"
+            "data": "fomcdatausarawECE932DE"
           }
         ],
-        "/FomcStorageStack/fomc-ryan-20260204-bls-raw/AutoDeleteObjectsCustomResource/Default": [
+        "/FomcStorageStack/fomc-datausa-raw/Notifications/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204blsrawAutoDeleteObjectsCustomResource2D3F158F"
+            "data": "fomcdatausarawNotifications5AD88046"
           }
         ],
-        "/FomcStorageStack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
-          {
-            "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
-            "data": true
-          }
-        ],
-        "/FomcStorageStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
+        "/FomcStorageStack/fomc-bls-processed/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
+            "data": "fomcblsprocessed792F45CD"
           }
         ],
-        "/FomcStorageStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
+        "/FomcStorageStack/fomc-datausa-processed/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-datausa-raw/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204datausarawB077860D"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-datausa-raw/Policy/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204datausarawPolicyBD9BC6B5"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-datausa-raw/AutoDeleteObjectsCustomResource/Default": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204datausarawAutoDeleteObjectsCustomResourceEC399E44"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-datausa-raw/Notifications/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204datausarawNotificationsD9207EF6"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-bls-processed/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204blsprocessedD04B5C26"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-bls-processed/Policy/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204blsprocessedPolicy65ACDAC3"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-bls-processed/AutoDeleteObjectsCustomResource/Default": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204blsprocessedAutoDeleteObjectsCustomResource66BD08F1"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-datausa-processed/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204datausaprocessed796161B4"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-datausa-processed/Policy/Resource": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204datausaprocessedPolicy155071B3"
-          }
-        ],
-        "/FomcStorageStack/fomc-ryan-20260204-datausa-processed/AutoDeleteObjectsCustomResource/Default": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "fomcryan20260204datausaprocessedAutoDeleteObjectsCustomResource4A46263C"
+            "data": "fomcdatausaprocessedCFD31A80"
           }
         ],
         "/FomcStorageStack/AnalyticsDLQ/Resource": [
@@ -172,28 +106,28 @@
             "data": "CDKMetadata"
           }
         ],
-        "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"fomcryan20260204blsraw86F95944\",\"Arn\"]}": [
+        "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"fomcblsraw35871BFE\",\"Arn\"]}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputFnGetAttfomcryan20260204blsraw86F95944Arn18A3C266"
+            "data": "ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
           }
         ],
-        "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"fomcryan20260204datausarawB077860D\",\"Arn\"]}": [
+        "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"fomcdatausarawECE932DE\",\"Arn\"]}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputFnGetAttfomcryan20260204datausarawB077860DArnDD20ABD0"
+            "data": "ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
           }
         ],
-        "/FomcStorageStack/Exports/Output{\"Ref\":\"fomcryan20260204blsraw86F95944\"}": [
+        "/FomcStorageStack/Exports/Output{\"Ref\":\"fomcblsraw35871BFE\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputReffomcryan20260204blsraw86F959447D10868E"
+            "data": "ExportsOutputReffomcblsraw35871BFE745A94C8"
           }
         ],
-        "/FomcStorageStack/Exports/Output{\"Ref\":\"fomcryan20260204datausarawB077860D\"}": [
+        "/FomcStorageStack/Exports/Output{\"Ref\":\"fomcdatausarawECE932DE\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputReffomcryan20260204datausarawB077860D3743473F"
+            "data": "ExportsOutputReffomcdatausarawECE932DE487BE692"
           }
         ],
         "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"AnalyticsQueue238D9515\",\"Arn\"]}": [
@@ -234,7 +168,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-deploy-role-424808095422-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-cfn-exec-role-424808095422-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-424808095422-us-east-1/3f43edcc3899c973ef3f87471407229dc9ce49ceb421f72e9ad2a52624c42bc1.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-424808095422-us-east-1/a63bd3a3915b192e7116fb1e293fbab4ba2100b726394b77c8f4840a8eda7cbc.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -256,16 +190,16 @@
             "type": "aws:cdk:warning",
             "data": "AWS Lambda has changed their authorization strategy, which may cause client invocations using the 'Qualifier' parameter of the lambda function to fail with Access Denied errors.\nIf you are using a lambda Version or Alias, make sure to call 'grantInvoke' or 'addPermission' on the Version or Alias, not the underlying Function\nSee: https://github.com/aws/aws-cdk/issues/19273 [ack: @aws-cdk/aws-lambda:addPermissionsToVersionOrAlias]",
             "trace": [
-              "Annotations.addMessage (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/core/lib/annotations.js:1:2066)",
-              "Annotations.addWarningV2 (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/core/lib/annotations.js:1:984)",
-              "WrappedClass.warnInvokeFunctionPermissions (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/aws-lambda/lib/function-base.js:1:3630)",
-              "get currentVersion (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/aws-lambda/lib/function.js:1:8525)",
-              "new Trigger (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/triggers/lib/trigger.js:1:1624)",
-              "Kernel._Kernel_create (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:549:25)",
-              "Kernel.create (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:219:93)",
-              "KernelHost.processRequest (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:15484:36)",
-              "KernelHost.run (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:15444:22)",
-              "Immediate._onImmediate (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:15445:45)",
+              "Annotations.addMessage (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/core/lib/annotations.js:1:2066)",
+              "Annotations.addWarningV2 (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/core/lib/annotations.js:1:984)",
+              "WrappedClass.warnInvokeFunctionPermissions (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/aws-lambda/lib/function-base.js:1:3630)",
+              "get currentVersion (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/aws-lambda/lib/function.js:1:8525)",
+              "new Trigger (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/triggers/lib/trigger.js:1:1624)",
+              "Kernel._Kernel_create (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:549:25)",
+              "Kernel.create (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:219:93)",
+              "KernelHost.processRequest (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:15484:36)",
+              "KernelHost.run (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:15444:22)",
+              "Immediate._onImmediate (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:15445:45)",
               "process.processImmediate (node:internal/timers:504:21)"
             ]
           }
@@ -291,7 +225,7 @@
         "/FomcComputeStack/DataFetcherFunction/CurrentVersion/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "DataFetcherFunctionCurrentVersionCA89113125e883f522e56e97d0aa31f6a8e96dec"
+            "data": "DataFetcherFunctionCurrentVersionCA8911313c9168d6f86b267c4eb753f809db9b1d"
           }
         ],
         "/FomcComputeStack/FetchScheduleRule/Resource": [
@@ -368,7 +302,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-deploy-role-424808095422-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-cfn-exec-role-424808095422-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-424808095422-us-east-1/3cf317adaf7b82e445ad81793d36b2aff4511fc18c435a1a78f920597ccd2dc0.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-424808095422-us-east-1/be49b3812140f847417dff5430dbea7d1474b3a827636e883143195fc8041fcf.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -390,16 +324,16 @@
             "type": "aws:cdk:warning",
             "data": "AWS Lambda has changed their authorization strategy, which may cause client invocations using the 'Qualifier' parameter of the lambda function to fail with Access Denied errors.\nIf you are using a lambda Version or Alias, make sure to call 'grantInvoke' or 'addPermission' on the Version or Alias, not the underlying Function\nSee: https://github.com/aws/aws-cdk/issues/19273 [ack: @aws-cdk/aws-lambda:addPermissionsToVersionOrAlias]",
             "trace": [
-              "Annotations.addMessage (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/core/lib/annotations.js:1:2066)",
-              "Annotations.addWarningV2 (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/core/lib/annotations.js:1:984)",
-              "WrappedClass.warnInvokeFunctionPermissions (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/aws-lambda/lib/function-base.js:1:3630)",
-              "get currentVersion (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/aws-lambda/lib/function.js:1:8525)",
-              "new Trigger (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-sTbWGn/node_modules/aws-cdk-lib/triggers/lib/trigger.js:1:1624)",
-              "Kernel._Kernel_create (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:549:25)",
-              "Kernel.create (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:219:93)",
-              "KernelHost.processRequest (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:15484:36)",
-              "KernelHost.run (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:15444:22)",
-              "Immediate._onImmediate (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpel64glx7/lib/program.js:15445:45)",
+              "Annotations.addMessage (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/core/lib/annotations.js:1:2066)",
+              "Annotations.addWarningV2 (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/core/lib/annotations.js:1:984)",
+              "WrappedClass.warnInvokeFunctionPermissions (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/aws-lambda/lib/function-base.js:1:3630)",
+              "get currentVersion (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/aws-lambda/lib/function.js:1:8525)",
+              "new Trigger (/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/jsii-kernel-B95grn/node_modules/aws-cdk-lib/triggers/lib/trigger.js:1:1624)",
+              "Kernel._Kernel_create (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:549:25)",
+              "Kernel.create (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:219:93)",
+              "KernelHost.processRequest (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:15484:36)",
+              "KernelHost.run (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:15444:22)",
+              "Immediate._onImmediate (/private/var/folders/ps/w0lhnvdx18q56b22jssvm70w0000gn/T/tmpx2z4s573/lib/program.js:15445:45)",
               "process.processImmediate (node:internal/timers:504:21)"
             ]
           }
@@ -431,7 +365,7 @@
         "/FomcMessagingStack/AnalyticsProcessorFunction/CurrentVersion/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "AnalyticsProcessorFunctionCurrentVersionDE25155Da2c1adbc93d94cd5b6600a6797aae903"
+            "data": "AnalyticsProcessorFunctionCurrentVersionDE25155Df25e00b94c442bb3712404db36a0c079"
           }
         ],
         "/FomcMessagingStack/AnalyticsScheduleRule/Resource": [
@@ -508,7 +442,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-deploy-role-424808095422-us-east-1",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-cfn-exec-role-424808095422-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-424808095422-us-east-1/ec1196872762a61a144ce558b5710fd9b2f10c383aec98265b68c01f38b74864.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-424808095422-us-east-1/90aa2251b57c63e026c9c0835e5a795b4e57bb685b605ffe9b0f035a31136f0c.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -536,28 +470,10 @@
             "data": "SiteBucketPolicy3AC1D0F8"
           }
         ],
-        "/FomcSiteStack/SiteBucket/AutoDeleteObjectsCustomResource/Default": [
+        "/FomcSiteStack/SiteOAI/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "SiteBucketAutoDeleteObjectsCustomResource9585E968"
-          }
-        ],
-        "/FomcSiteStack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
-          {
-            "type": "aws:cdk:is-custom-resource-handler-customResourceProvider",
-            "data": true
-          }
-        ],
-        "/FomcSiteStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092"
-          }
-        ],
-        "/FomcSiteStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+            "data": "SiteOAI1F7E9870"
           }
         ],
         "/FomcSiteStack/SiteDistribution/Resource": [

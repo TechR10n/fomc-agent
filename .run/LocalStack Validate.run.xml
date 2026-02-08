@@ -1,17 +1,16 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Parse to Processed (LocalStack)" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="LocalStack Validate" type="PythonConfigurationType" factoryName="Python">
     <module name="fomc-agent" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
-    <envs>
-    </envs>
+    <envs />
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="IS_MODULE_SDK" value="true" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
-    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/transforms/to_processed.py" />
-    <option name="PARAMETERS" value="--bls-series pr,cu,ce,ln,jt,ci --datausa-datasets population,commute_time,citizenship" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/localstack_validate.py" />
+    <option name="PARAMETERS" value="" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

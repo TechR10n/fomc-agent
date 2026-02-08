@@ -55,14 +55,14 @@
        "Effect": "Allow",
        "Resource": [
         {
-         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcryan20260204blsraw86F95944Arn18A3C266"
+         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
         },
         {
          "Fn::Join": [
           "",
           [
            {
-            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcryan20260204blsraw86F95944Arn18A3C266"
+            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
            },
            "/*"
           ]
@@ -86,14 +86,14 @@
        "Effect": "Allow",
        "Resource": [
         {
-         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcryan20260204datausarawB077860DArnDD20ABD0"
+         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
         },
         {
          "Fn::Join": [
           "",
           [
            {
-            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcryan20260204datausarawB077860DArnDD20ABD0"
+            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
            },
            "/*"
           ]
@@ -120,19 +120,20 @@
    "Properties": {
     "Code": {
      "S3Bucket": "cdk-hnb659fds-assets-424808095422-us-east-1",
-     "S3Key": "92d19f75617b594225995714911023c2dac34dfc9bd462525f9350d2a0aa7342.zip"
+     "S3Key": "23c585c0156faee4bcf9ffd85b99e852e38624cf7cebd6d27a9b512720213b5c.zip"
     },
     "Environment": {
      "Variables": {
       "BLS_BUCKET": {
-       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcryan20260204blsraw86F959447D10868E"
+       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcblsraw35871BFE745A94C8"
       },
       "BLS_SERIES": "pr,cu,ce,ln,jt,ci",
+      "DATAUSA_BASE_URL": "https://api.datausa.io/tesseract",
       "DATAUSA_BUCKET": {
-       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcryan20260204datausarawB077860D3743473F"
+       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcdatausarawECE932DE487BE692"
       },
       "DATAUSA_DATASETS": "population,commute_time,citizenship",
-      "FOMC_DEPLOYMENT_ID": ""
+      "FOMC_DEPLOYMENT_ID": "20260208T220034Z"
      }
     },
     "FunctionName": "fomc-data-fetcher",
@@ -153,12 +154,12 @@
    ],
    "Metadata": {
     "aws:cdk:path": "FomcComputeStack/DataFetcherFunction/Resource",
-    "aws:asset:path": "asset.92d19f75617b594225995714911023c2dac34dfc9bd462525f9350d2a0aa7342",
+    "aws:asset:path": "asset.23c585c0156faee4bcf9ffd85b99e852e38624cf7cebd6d27a9b512720213b5c",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
   },
-  "DataFetcherFunctionCurrentVersionCA89113125e883f522e56e97d0aa31f6a8e96dec": {
+  "DataFetcherFunctionCurrentVersionCA8911313c9168d6f86b267c4eb753f809db9b1d": {
    "Type": "AWS::Lambda::Version",
    "Properties": {
     "FunctionName": {
@@ -223,7 +224,7 @@
      ]
     },
     "HandlerArn": {
-     "Ref": "DataFetcherFunctionCurrentVersionCA89113125e883f522e56e97d0aa31f6a8e96dec"
+     "Ref": "DataFetcherFunctionCurrentVersionCA8911313c9168d6f86b267c4eb753f809db9b1d"
     },
     "InvocationType": "Event",
     "Timeout": "120000",

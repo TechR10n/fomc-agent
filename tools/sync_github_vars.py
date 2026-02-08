@@ -122,7 +122,8 @@ def _gh_delete_variable(name: str, *, repo: str | None, dry_run: bool) -> None:
 
     # `gh variable delete` returns non-zero when the variable does not exist.
     stderr = (completed.stderr or "").lower()
-    if "not found" in stderr:
+    # Newer `gh` versions report missing variables as an HTTP 404.
+    if "not found" in stderr or "http 404" in stderr or "status 404" in stderr:
         print(f"Skipped delete for {name} (not set)")
         return
 

@@ -1,21 +1,6 @@
 {
   "version": "48.0.0",
   "files": {
-    "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6": {
-      "displayName": "FomcSiteStack/Custom::S3AutoDeleteObjectsCustomResourceProvider Code",
-      "source": {
-        "path": "asset.faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6",
-        "packaging": "zip"
-      },
-      "destinations": {
-        "424808095422-us-east-1-54572bcf": {
-          "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
-          "objectKey": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
-          "region": "us-east-1",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
-        }
-      }
-    },
     "0cfdecad2260a3a84ad0c2d08a77e03c9d25e26c7b52f26b1e1faf97aef92f18": {
       "displayName": "DeploySite/AwsCliLayer/Code",
       "source": {
@@ -46,31 +31,31 @@
         }
       }
     },
-    "1c3785a37a6b503cb8c3fe8592ac498b0c64713856e7b6dedaf59a2cc516f9e0": {
+    "2e1320297effa256988e1beec065d7e3352b55cb37683c0ad751b2d23b27300c": {
       "displayName": "DeploySite/Asset1",
       "source": {
-        "path": "asset.1c3785a37a6b503cb8c3fe8592ac498b0c64713856e7b6dedaf59a2cc516f9e0",
+        "path": "asset.2e1320297effa256988e1beec065d7e3352b55cb37683c0ad751b2d23b27300c",
         "packaging": "zip"
       },
       "destinations": {
-        "424808095422-us-east-1-d9ed5633": {
+        "424808095422-us-east-1-283d6828": {
           "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
-          "objectKey": "1c3785a37a6b503cb8c3fe8592ac498b0c64713856e7b6dedaf59a2cc516f9e0.zip",
+          "objectKey": "2e1320297effa256988e1beec065d7e3352b55cb37683c0ad751b2d23b27300c.zip",
           "region": "us-east-1",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
         }
       }
     },
-    "ec1196872762a61a144ce558b5710fd9b2f10c383aec98265b68c01f38b74864": {
+    "90aa2251b57c63e026c9c0835e5a795b4e57bb685b605ffe9b0f035a31136f0c": {
       "displayName": "FomcSiteStack Template",
       "source": {
         "path": "FomcSiteStack.template.json",
         "packaging": "file"
       },
       "destinations": {
-        "424808095422-us-east-1-401a1ac0": {
+        "424808095422-us-east-1-4c9806fd": {
           "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
-          "objectKey": "ec1196872762a61a144ce558b5710fd9b2f10c383aec98265b68c01f38b74864.json",
+          "objectKey": "90aa2251b57c63e026c9c0835e5a795b4e57bb685b605ffe9b0f035a31136f0c.json",
           "region": "us-east-1",
           "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
         }
