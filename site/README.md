@@ -25,22 +25,4 @@ cdk deploy FomcSiteStack --require-approval never
 
 The output includes:
 - `SiteUrl` (CloudFront URL)
-- `SiteCloudFrontDomain` (target for DNS CNAME)
-
-## Use a GoDaddy-managed domain
-
-Set these env vars before deploying `FomcSiteStack`:
-
-```bash
-export FOMC_SITE_DOMAIN="www.example.com"
-export FOMC_SITE_CERT_ARN="arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-```
-
-Optional additional aliases (comma-separated):
-
-```bash
-export FOMC_SITE_ALIASES="www.example.com,app.example.com"
-```
-
-After deploy, create a GoDaddy DNS `CNAME` record for your subdomain that points to
-`SiteCloudFrontDomain` (or `GoDaddyCnameTarget` output).
+- `SiteCloudFrontDomain` (CloudFront host behind `SiteUrl`)

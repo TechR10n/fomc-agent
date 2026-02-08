@@ -1,0 +1,71 @@
+@startuml aws-allowmixing-component-deployment
+!theme plain
+allowmixing
+left to right direction
+skinparam shadowing false
+
+title FOMC Agent - AWS Hourly Flow (allowmixing Component + Deployment)
+
+actor "GitHub Actions / Operator" as operator
+actor "Browser User" as user
+cloud "BLS LABSTAT\n(download.bls.gov)" as bls
+cloud "DataUSA API\n(api.datausa.io)" as datausa
+
+node "AWS Account" as account #F8F9FA {
+  node "Region us-east-1" as region #F8F9FA {
+    node "FomcComputeStack" as compute #E3F2FD {
+      component "EventBridge Rule\nFetchScheduleRule" as eb <<AWS::Events::Rule>>
+      component "Lambda\nfomc-data-fetcher" as fetcher <<AWS::Lambda::Function>>
+    }
+
+    node "FomcStorageStack" as storage #E8F5E9 {
+      database "S3\n{prefix}-bls-raw" as bls_raw <<AWS::S3::Bucket>>
+      database "S3\n{prefix}-datausa-raw" as datausa_raw <<AWS::S3::Bucket>>
+      database "S3\n{prefix}-bls-processed" as bls_processed <<AWS::S3::Bucket>>
+      database "S3\n{prefix}-datausa-processed" as datausa_processed <<AWS::S3::Bucket>>
+      queue "SQS\nfomc-analytics-queue" as q <<AWS::SQS::Queue>>
+      queue "SQS DLQ\nfomc-analytics-dlq" as dlq <<AWS::SQS::Queue>>
+    }
+
+    node "FomcMessagingStack" as messaging #FFF3E0 {
+      component "Lambda\nfomc-analytics-processor" as analytics <<AWS::Lambda::Function>>
+      component "Lambda\nfomc-site-publisher" as publisher <<AWS::Lambda::Function>>
+    }
+
+    node "FomcSiteStack" as site #F3E5F5 {
+      database "S3\n{prefix}-site" as site_bucket <<AWS::S3::Bucket>>
+      component "CloudFront Distribution" as cf <<AWS::CloudFront::Distribution>>
+    }
+
+    cloud "CloudWatch\nLogs + Metrics + Alarms" as cw
+  }
+}
+
+operator -> eb : configure cadence\n(FOMC_FETCH_INTERVAL_HOURS=1)
+eb -> fetcher : scheduled invoke
+bls -> fetcher : BLS files
+datausa -> fetcher : JSON datasets
+fetcher -> bls_raw : sync raw + state
+fetcher -> datausa_raw : sync raw + state
+datausa_raw -> q : S3 notifications (*.json)
+q --> analytics : queue messages
+analytics -> bls_processed : write processed
+analytics -> datausa_processed : write processed
+analytics -> publisher : request site refresh
+publisher -> site_bucket : write site/data/*.json
+publisher -> cf : invalidate /data/*
+q -[dashed]-> dlq : retry exhaustion
+fetcher -> cw : logs + metrics
+analytics -> cw : logs + metrics
+publisher -> cw : logs + metrics
+dlq -> cw : failure signal
+user -> cf : HTTPS requests
+cf -> site_bucket : origin reads
+cf --> user : static pages + chart JSON
+
+note bottom of account
+  This mixed diagram combines deployment boundaries (stack/region/account)
+  with runtime components and hourly data flows in one view.
+end note
+
+@enduml

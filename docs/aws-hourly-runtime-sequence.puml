@@ -1,0 +1,70 @@
+@startuml aws-hourly-runtime-sequence
+!theme plain
+skinparam shadowing false
+
+title FOMC Agent - Hourly AWS Runtime Sequence\n(Target behavior: ingest -> enrich -> site data publish)
+
+participant "EventBridge Rule\nFetchScheduleRule\n(rate: 1 hour)" as EB #E3F2FD
+participant "Lambda\nfomc-data-fetcher" as Fetcher #E3F2FD
+database "S3\n{prefix}-bls-raw" as BLSRaw #E8F5E9
+database "S3\n{prefix}-datausa-raw" as DataRaw #E8F5E9
+queue "SQS\nfomc-analytics-queue" as Q #FFF3E0
+queue "SQS DLQ\nfomc-analytics-dlq" as DLQ #FFEBEE
+participant "Lambda\nfomc-analytics-processor" as Analytics #FFF3E0
+database "S3\n{prefix}-bls-processed" as BLSProcessed #E8F5E9
+database "S3\n{prefix}-datausa-processed" as DataProcessed #E8F5E9
+participant "Lambda\nfomc-site-publisher" as Publisher #F3E5F5
+database "S3\n{prefix}-site\n(site/data/*.json)" as SiteBucket #F3E5F5
+participant "CloudFront Distribution" as CF #F3E5F5
+participant "CloudWatch Logs + Metrics" as CW #F5F5F5
+participant "BLS LABSTAT\ndownload.bls.gov" as BLS #F5F5F5
+participant "DataUSA API\napi.datausa.io" as DataUSA #F5F5F5
+actor "Browser User" as User
+
+== Hourly trigger ==
+EB -> Fetcher : invoke once per hour
+activate Fetcher
+Fetcher -> BLS : sync changed BLS files
+BLS --> Fetcher : files + modified timestamps
+Fetcher -> BLSRaw : put raw files + _sync_state
+Fetcher -> DataUSA : fetch configured datasets
+DataUSA --> Fetcher : JSON payloads
+Fetcher -> DataRaw : put *.json + _sync_state
+Fetcher -> CW : write fetch logs + metrics
+deactivate Fetcher
+
+== Raw-to-enriched processing ==
+DataRaw -> Q : S3:ObjectCreated (*.json)
+Q -> Analytics : event source mapping (batch=1)
+activate Analytics
+Analytics -> BLSRaw : read BLS input
+Analytics -> DataRaw : read DataUSA input
+Analytics -> BLSProcessed : write processed CSVs
+Analytics -> DataProcessed : write processed CSVs
+Analytics -> Publisher : invoke site-data refresh step
+Analytics -> CW : write processing logs + metrics
+deactivate Analytics
+
+== Site data publish ==
+activate Publisher
+Publisher -> BLSProcessed : read processed datasets
+Publisher -> DataProcessed : read processed datasets
+Publisher -> SiteBucket : put site/data/timeseries.json
+Publisher -> SiteBucket : put site/data/*.json (charts/timeline/status)
+Publisher -> CF : invalidate /data/*
+Publisher -> CW : write publish logs + metrics
+deactivate Publisher
+
+== User reads refreshed charts ==
+User -> CF : GET /index.html + /data/*.json
+CF -> SiteBucket : origin fetch
+SiteBucket --> CF : latest static assets + chart JSON
+CF --> User : updated dashboard
+
+== Failure path ==
+alt analytics or publish step fails repeatedly
+  Q -> DLQ : move message after maxReceiveCount=3
+  DLQ -> CW : alarmable backlog/error signal
+end
+
+@enduml

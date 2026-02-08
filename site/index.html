@@ -3,252 +3,265 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dashboard — FOMC Agent Lab</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Case Studies - FOMC Agent</title>
+  <meta name="description" content="Case studies for the FOMC Agent project, including notebook-to-production flow and the Monetary Policy Agent website use case." />
+  <link rel="stylesheet" href="case-study.css" />
 </head>
-<body>
-  <nav>
-    <a class="brand" href="index.html">FOMC Agent Lab</a>
-    <a href="executive-summary.html">Executive Summary</a>
-    <a class="active" href="index.html">Dashboard</a>
-    <a href="pipeline.html">Pipeline</a>
-    <a href="timeline.html">Timeline</a>
-    <a href="charts.html">Charts</a>
-    <a href="architecture.html">Architecture</a>
-    <a href="design.html">Design</a>
-    <a href="alternatives.html">Alternatives</a>
-    <a href="diagrams.html">Diagrams</a>
-    <a href="about.html">About</a>
-    <a href="bls-guide.html">BLS Guide</a>
-    <a href="adr.html">ADRs</a>
-  </nav>
-
-  <div class="container">
-    <div class="page-header">
-      <h1>Data Pipeline Dashboard</h1>
-      <p class="subtitle">A 4-step demo pipeline (raw → parse/update → enrich → CDC) that works the same way in LocalStack and AWS.</p>
-    </div>
-
-    <!-- Environment toggle -->
-    <div class="card">
-      <div class="env-toggle" role="tablist" aria-label="Environment selector">
-        <button class="env-tab" type="button" data-env="localstack" aria-selected="true">LocalStack</button>
-        <button class="env-tab" type="button" data-env="aws" aria-selected="false">AWS Cloud</button>
+<body data-page="listing" data-share-title="FOMC Agent Case Studies">
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="index.html">FOMC Agent</a>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="main-nav">Menu</button>
+        <nav class="main-nav" id="main-nav" data-main-nav aria-label="Main navigation">
+          <a href="index.html" data-nav="listing">Case Studies</a>
+          <a href="case-study-fomc-agent-lab.html" data-nav="notebook">Notebook Flow</a>
+          <a href="case-study-monetary-policy-agent-website.html" data-nav="website">Website Use Case</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="pipeline.html">Pipeline</a>
+          <a href="charts.html">Charts</a>
+        </nav>
+        <a class="contact-link" href="about.html">Contact</a>
       </div>
-      <p class="muted" style="margin-top:0.75rem;">
-        The dashboard below swaps commands and resource names depending on the selected environment.
-        In both cases, <strong>ingestion only lands raw data</strong> — parsing, enrichment, and CDC are separate steps.
-      </p>
-    </div>
+    </header>
 
-    <!-- Live-ish status (static JSON on the site) -->
-    <div class="grid-3">
-      <div class="card stat">
-        <div class="number" id="dash-last-run">—</div>
-        <div class="label">Last Run</div>
-      </div>
-      <div class="card stat">
-        <div class="number" id="dash-files-checked">—</div>
-        <div class="label">Files Checked</div>
-      </div>
-      <div class="card stat">
-        <div class="number" id="dash-files-updated">—</div>
-        <div class="label">Files Updated</div>
-      </div>
-    </div>
+    <main class="listing-main">
+      <section class="hero reveal">
+        <div class="container">
+          <h1>Case Studies</h1>
+          <p>
+            Dive into these stories to understand how this project moved from a research notebook to an automated
+            cloud data product and then into a complete Monetary Policy Agent website experience.
+          </p>
+        </div>
+      </section>
 
-    <!-- Four-step dashboard -->
-    <div class="grid-2">
-      <div class="card step step-1">
-        <div class="step-head">
-          <div>
-            <div class="kicker">Step 1</div>
-            <h2>Ingest Raw</h2>
-            <p class="muted">Download source data and land it in raw buckets <em>without parsing</em>.</p>
+      <section class="featured-section reveal">
+        <div class="container">
+          <a class="featured-card" href="case-study-fomc-agent-lab.html">
+            <div class="featured-image">
+              <img src="diagrams/deployment.svg" alt="FOMC Agent deployment architecture diagram" />
+            </div>
+            <div class="featured-content">
+              <div class="tag-row">
+                <span class="tag">Notebook</span>
+                <span class="tag">AWS</span>
+                <span class="tag">LocalStack</span>
+                <span class="tag">Serverless</span>
+              </div>
+              <h2>Notebook-to-Production Flow for FOMC Agent</h2>
+              <div class="meta-row">
+                <span class="meta-item">February 8, 2026</span>
+                <span class="meta-sep">-</span>
+                <span class="meta-item">FOMC Agent Team</span>
+              </div>
+              <p>
+                Starting from exploratory analysis, this case study shows how notebook logic was hardened into tested
+                Python modules, automated with Lambda and SQS, and published as static dashboard artifacts.
+              </p>
+              <span class="button-pill">Read more</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="cards-section reveal">
+        <div class="container">
+          <div class="cards-grid">
+            <a class="article-card" href="case-study-monetary-policy-agent-website.html">
+              <div class="article-image">
+                <img src="diagrams/interview-c4-context.svg" alt="Monetary Policy Agent website context diagram" />
+              </div>
+              <div class="article-body">
+                <p class="author-line">FOMC Agent Team</p>
+                <h3>Monetary Policy Agent Website Use Case</h3>
+                <p>
+                  A website-centric use case showing how every project page fits together for stakeholders, reviewers,
+                  and operators.
+                </p>
+                <div class="tag-row">
+                  <span class="tag">Website</span>
+                  <span class="tag">Navigation</span>
+                  <span class="tag">UX</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="article-card" href="case-study-fomc-agent-lab.html#challenge">
+              <div class="article-image">
+                <img src="diagrams/data-flow-sequence.svg" alt="Data flow sequence diagram" />
+              </div>
+              <div class="article-body">
+                <p class="author-line">FOMC Agent Team</p>
+                <h3>Raw-First Data Ingestion Strategy</h3>
+                <p>
+                  The ingestion path preserves source-of-truth files and supports idempotent replay across local and
+                  cloud environments.
+                </p>
+                <div class="tag-row">
+                  <span class="tag">Data Pipeline</span>
+                  <span class="tag">S3</span>
+                  <span class="tag">BLS</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="article-card" href="case-study-fomc-agent-lab.html#solution">
+              <div class="article-image">
+                <img src="diagrams/architecture-stacks.svg" alt="CDK stack architecture diagram" />
+              </div>
+              <div class="article-body">
+                <p class="author-line">FOMC Agent Team</p>
+                <h3>Infrastructure as Code Delivery</h3>
+                <p>
+                  CDK stacks provision eventing, compute, storage, and static hosting with reproducible deployment
+                  behavior.
+                </p>
+                <div class="tag-row">
+                  <span class="tag">CDK</span>
+                  <span class="tag">Lambda</span>
+                  <span class="tag">SQS</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="article-card" href="pipeline.html">
+              <div class="article-image">
+                <img src="diagrams/interview-orchestration.svg" alt="Pipeline orchestration diagram" />
+              </div>
+              <div class="article-body">
+                <p class="author-line">FOMC Agent Team</p>
+                <h3>Operational Pipeline Evidence</h3>
+                <p>
+                  Verify update counts, sync behavior, and runtime status to support discussions about reliability and
+                  change detection.
+                </p>
+                <div class="tag-row">
+                  <span class="tag">Ops</span>
+                  <span class="tag">Monitoring</span>
+                  <span class="tag">Evidence</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="article-card" href="timeline.html">
+              <div class="article-image">
+                <img src="diagrams/interview-failure-retry.svg" alt="Failure and retry diagram" />
+              </div>
+              <div class="article-body">
+                <p class="author-line">FOMC Agent Team</p>
+                <h3>Retry and DLQ Failure Handling</h3>
+                <p>
+                  The queue-driven processing pattern captures transient failures and routes durable issues into a DLQ
+                  for replay.
+                </p>
+                <div class="tag-row">
+                  <span class="tag">Reliability</span>
+                  <span class="tag">Retries</span>
+                  <span class="tag">DLQ</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="article-card" href="charts.html">
+              <div class="article-image">
+                <img src="diagrams/interview-data-model.svg" alt="Data model diagram" />
+              </div>
+              <div class="article-body">
+                <p class="author-line">FOMC Agent Team</p>
+                <h3>Curated Analytics for Decision Support</h3>
+                <p>
+                  Static JSON outputs power chart views for productivity, labor, and macro trend narratives used in
+                  policy analysis.
+                </p>
+                <div class="tag-row">
+                  <span class="tag">Analytics</span>
+                  <span class="tag">Charts</span>
+                  <span class="tag">Insights</span>
+                </div>
+              </div>
+            </a>
           </div>
-          <span class="badge badge-green">raw</span>
         </div>
-        <div class="pill-row">
-          <span class="pill">BLS LABSTAT flat files</span>
-          <span class="pill">DataUSA Tesseract cubes</span>
-          <span class="pill">S3 raw buckets</span>
-        </div>
+      </section>
 
-        <div class="only-localstack">
-          <h3>LocalStack demo</h3>
-          <pre><code>docker compose up -d
-source .env.localstack
-python tools/localstack_invoke_fetcher.py
-
-# verify raw landed
-aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-bls-raw/pr/ --recursive | head
-aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-datausa-raw/</code></pre>
-        </div>
-
-        <div class="only-aws">
-          <h3>AWS demo</h3>
-          <pre><code>source .env.local   # contains FOMC_BUCKET_PREFIX + AWS_PROFILE
-npx cdk deploy --all --require-approval never
-
-# run ingestion now (scheduled daily at 09:00 UTC too)
-aws lambda invoke --function-name fomc-data-fetcher /tmp/fetcher.json --profile "$AWS_PROFILE"
-cat /tmp/fetcher.json</code></pre>
-        </div>
-      </div>
-
-      <div class="card step step-2">
-        <div class="step-head">
-          <div>
-            <div class="kicker">Step 2</div>
-            <h2>Parse &amp; Update</h2>
-            <p class="muted">Convert raw objects into clean, queryable “processed” tables and update the current view.</p>
+      <section class="steps-cta reveal">
+        <div class="container">
+          <div class="steps-frame">
+            <span class="label-pill dark">Next steps</span>
+            <h2>Ready to talk about your next data engineering project?</h2>
+            <div class="steps-grid">
+              <div class="step-card">
+                <span class="step-index">1</span>
+                <p>Share your ingestion and reporting requirements.</p>
+              </div>
+              <div class="step-card">
+                <span class="step-index">2</span>
+                <p>Review architecture and implementation options.</p>
+              </div>
+              <div class="step-card">
+                <span class="step-index">3</span>
+                <p>Start delivery with measurable milestones.</p>
+              </div>
+            </div>
           </div>
-          <span class="badge badge-blue">processed</span>
+          <a class="button-pill cta-button" href="case-study-fomc-agent-lab.html">Let's Talk</a>
         </div>
-        <div class="pill-row">
-          <span class="pill">Schema + cleaning</span>
-          <span class="pill">Idempotent upserts</span>
-          <span class="pill">S3 processed buckets</span>
-        </div>
+      </section>
 
-        <div class="only-localstack">
-          <h3>LocalStack demo</h3>
-          <p class="muted">Ingest once, then iterate quickly on parsing without re-downloading the sources.</p>
-          <pre><code>source .env.localstack
-python -m src.transforms.to_processed
-
-aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-bls-processed/pr/ --recursive | head
-aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-datausa-processed/</code></pre>
-        </div>
-
-        <div class="only-aws">
-          <h3>AWS demo</h3>
-          <p class="muted">For the demo, you can run parsing locally against AWS S3 (production would run this as a separate job/Lambda).</p>
-          <pre><code>source .env.local
-python -m src.transforms.to_processed
-
-aws s3 ls s3://$FOMC_BUCKET_PREFIX-bls-processed/pr/ --recursive --profile "$AWS_PROFILE" | head
-aws s3 ls s3://$FOMC_BUCKET_PREFIX-datausa-processed/ --profile "$AWS_PROFILE"</code></pre>
-        </div>
-      </div>
-
-      <div class="card step step-3">
-        <div class="step-head">
+      <section class="newsletter reveal">
+        <div class="container newsletter-inner">
           <div>
-            <div class="kicker">Step 3</div>
-            <h2>Enrich</h2>
-            <p class="muted">Join and derive analytics-ready datasets (e.g., BLS series × population by year).</p>
+            <h2>Newsletter</h2>
+            <p>Be the first to hear about pipeline updates and architecture notes.</p>
           </div>
-          <span class="badge badge-amber">curated</span>
+          <form class="newsletter-form">
+            <label for="newsletter-email">enter your e-mail</label>
+            <input id="newsletter-email" name="email" type="email" placeholder="e.g. you@example.com" required />
+            <button type="submit" class="button-pill button-dark">Submit</button>
+          </form>
         </div>
-        <div class="pill-row">
-          <span class="pill">Joins</span>
-          <span class="pill">Aggregations</span>
-          <span class="pill">Publish JSON for charts</span>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="footer-top">
+          <a class="brand footer-brand" href="index.html">FOMC Agent</a>
+          <a class="linkedin-link" href="https://www.linkedin.com/" target="_blank" rel="noreferrer">LinkedIn</a>
         </div>
-
-        <div class="only-localstack">
-          <h3>LocalStack demo</h3>
-          <pre><code>source .env.localstack
-
-# run analytics locally against LocalStack S3
-python -m src.analytics.reports</code></pre>
-        </div>
-
-        <div class="only-aws">
-          <h3>AWS demo</h3>
-          <pre><code># Enrichment is typically a separate compute step:
-# - Lambda (stdlib CSV/JSON) for small workloads
-# - Glue / EMR / Athena for bigger workloads
-# - Outputs written to a "curated" bucket or directly to a serving store</code></pre>
-        </div>
-      </div>
-
-      <div class="card step step-4">
-        <div class="step-head">
+        <div class="footer-columns">
           <div>
-            <div class="kicker">Step 4</div>
-            <h2>CDC &amp; Triggers</h2>
-            <p class="muted">Capture changes and fan-out work with durable events (S3 → SQS → workers).</p>
+            <h3>Case studies</h3>
+            <a href="case-study-fomc-agent-lab.html">Notebook-to-Production Flow</a>
+            <a href="case-study-monetary-policy-agent-website.html">Monetary Policy Agent Website</a>
+            <a href="architecture.html">Architecture</a>
+            <a href="pipeline.html">Pipeline Evidence</a>
           </div>
-          <span class="badge badge-gray">events</span>
+          <div>
+            <h3>Experience</h3>
+            <a href="timeline.html">Timeline</a>
+            <a href="charts.html">Charts</a>
+            <a href="diagrams.html">Diagrams</a>
+            <a href="executive-summary.html">Executive Summary</a>
+          </div>
+          <div>
+            <h3>Project</h3>
+            <a href="design.html">Design Notes</a>
+            <a href="alternatives.html">Alternatives</a>
+            <a href="bls-guide.html">BLS Guide</a>
+            <a href="adr.html">ADRs</a>
+            <a href="about.html">About</a>
+          </div>
         </div>
-        <div class="pill-row">
-          <span class="pill">S3 notifications</span>
-          <span class="pill">SQS (DLQ)</span>
-          <span class="pill">At-least-once processing</span>
-        </div>
-
-        <div class="only-localstack">
-          <h3>LocalStack demo</h3>
-          <pre><code>source .env.localstack
-
-# 1) start a local worker that polls SQS and runs the Lambda handler
-python tools/localstack_worker.py
-
-# 2) in another terminal, "touch" DataUSA to trigger S3 -> SQS
-python tools/localstack_touch_datausa.py</code></pre>
-        </div>
-
-        <div class="only-aws">
-          <h3>AWS demo</h3>
-          <pre><code># Uploading a new population.json triggers S3 -> SQS
-aws s3 cp population.json s3://$FOMC_BUCKET_PREFIX-datausa-raw/population.json --profile "$AWS_PROFILE"
-
-# Then check:
-# - SQS queue depth (fomc-analytics-queue)
-# - Lambda logs (/aws/lambda/fomc-analytics-processor)</code></pre>
+        <div class="footer-bottom">
+          <span>Copyright &copy; <span data-current-year></span> FOMC Agent</span>
+          <a href="about.html">Contact</a>
         </div>
       </div>
-    </div>
-
-    <div class="card prose">
-      <h2>Where this comes from</h2>
-      <p>
-        The four steps map directly to the workshop requirements in <code>docs/instructions.md</code>:
-        ingest raw datasets (BLS + API), then run analytics, and finally automate it with IaC and event-driven compute.
-      </p>
-      <p class="muted">
-        Want more detail? See <a href="architecture.html">Architecture</a> for diagrams and <a href="pipeline.html">Pipeline</a> for the last-run evidence.
-      </p>
-    </div>
+    </footer>
   </div>
 
-  <script>
-    // Environment toggle
-    (function initEnvToggle() {
-      const tabs = Array.from(document.querySelectorAll(".env-tab"));
-      const stored = localStorage.getItem("fomc_env");
-      const initial = stored === "aws" ? "aws" : "localstack";
-
-      function setEnv(env) {
-        document.body.dataset.env = env;
-        localStorage.setItem("fomc_env", env);
-        for (const t of tabs) {
-          const active = t.dataset.env === env;
-          t.classList.toggle("active", active);
-          t.setAttribute("aria-selected", String(active));
-        }
-      }
-
-      tabs.forEach(t => t.addEventListener("click", () => setEnv(t.dataset.env)));
-      setEnv(initial);
-    })();
-
-    // Dashboard stats sourced from the same JSON used on the Pipeline page.
-    (async function loadDashboardStats() {
-      try {
-        const resp = await fetch("data/pipeline_status.json", { cache: "no-store" });
-        if (!resp.ok) return;
-        const data = await resp.json();
-        const lastRun = new Date(data.last_run);
-        document.getElementById("dash-last-run").textContent = lastRun.toLocaleDateString();
-        document.getElementById("dash-files-checked").textContent = data.summary?.total_files_checked ?? "—";
-        document.getElementById("dash-files-updated").textContent = data.summary?.files_updated ?? "—";
-      } catch (e) {
-        // leave placeholders
-      }
-    })();
-  </script>
+  <script src="case-study.js"></script>
 </body>
 </html>

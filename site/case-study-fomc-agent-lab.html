@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Notebook-to-Production Flow - FOMC Agent</title>
+  <meta name="description" content="Case study of the FOMC Agent notebook-to-production flow across LocalStack and AWS." />
+  <link rel="stylesheet" href="case-study.css" />
+</head>
+<body data-page="notebook" data-share-title="Notebook-to-Production Flow for FOMC Agent">
+  <div class="site-shell">
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="index.html">FOMC Agent</a>
+        <button class="menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="main-nav">Menu</button>
+        <nav class="main-nav" id="main-nav" data-main-nav aria-label="Main navigation">
+          <a href="index.html" data-nav="listing">Case Studies</a>
+          <a href="case-study-fomc-agent-lab.html" data-nav="notebook">Notebook Flow</a>
+          <a href="case-study-monetary-policy-agent-website.html" data-nav="website">Website Use Case</a>
+          <a href="architecture.html">Architecture</a>
+          <a href="pipeline.html">Pipeline</a>
+          <a href="charts.html">Charts</a>
+        </nav>
+        <a class="contact-link" href="about.html">Contact</a>
+      </div>
+    </header>
+
+    <main class="article-main">
+      <section class="article-top reveal">
+        <div class="container article-top-inner">
+          <a class="label-pill" href="index.html">Case Study</a>
+          <h1>Notebook-to-Production Flow for FOMC Agent</h1>
+          <div class="article-hero-image">
+            <img src="diagrams/deployment.svg" alt="End-to-end FOMC Agent architecture diagram" />
+          </div>
+        </div>
+      </section>
+
+      <section class="article-body">
+        <div class="container article-layout">
+          <article class="article-content reveal">
+            <h3 id="challenge">Challenge</h3>
+            <p>
+              The project started as notebook exploration and needed to become a production-ready pipeline without losing
+              traceability. The original analysis had to move from one-off notebook execution into repeatable modules,
+              testable logic, and automated orchestration.
+            </p>
+            <p>
+              It also had to preserve reproducibility across environments: quick iteration in LocalStack and reliable
+              execution in AWS using the same processing behavior.
+            </p>
+
+            <h3 id="solution">Solution</h3>
+            <p>
+              We converted exploratory logic into layered pipeline steps: raw ingestion, processing transforms, and
+              curated analytics artifacts. The notebook flow informed report definitions, then those definitions were
+              implemented in package modules and orchestrated with EventBridge, Lambda, and SQS.
+            </p>
+            <p>
+              Supporting pages: <a href="architecture.html">Architecture</a>,
+              <a href="pipeline.html">Pipeline Evidence</a>, <a href="timeline.html">Timeline</a>,
+              <a href="charts.html">Charts</a>, <a href="diagrams.html">Diagrams</a>,
+              <a href="executive-summary.html">Executive Summary</a>, <a href="design.html">Design Notes</a>,
+              <a href="alternatives.html">Alternatives</a>, <a href="bls-guide.html">BLS Guide</a>,
+              <a href="adr.html">ADRs</a>, and <a href="about.html">About</a>.
+            </p>
+            <p>
+              <img src="diagrams/architecture-stacks.svg" alt="CDK stacks and resource mapping for FOMC Agent" />
+            </p>
+            <ul>
+              <li><strong>Notebook foundation:</strong> exploratory model and report logic shaped KPI definitions and data contracts.</li>
+              <li><strong>Module hardening:</strong> report generation moved into package code with deterministic inputs and outputs.</li>
+              <li><strong>Automation:</strong> queue-driven processing and scheduled ingestion enabled daily production refreshes.</li>
+            </ul>
+
+            <h3 id="outcome">Outcome</h3>
+            <ul>
+              <li>Analysis logic became repeatable and environment-agnostic across LocalStack and AWS.</li>
+              <li>Three reports are generated as static JSON artifacts that feed dashboard pages directly.</li>
+              <li>The project now demonstrates a complete path from notebook experiment to operational data product.</li>
+            </ul>
+            <p>
+              This case study is the canonical notebook-to-production narrative for the Monetary Policy Agent project.
+            </p>
+          </article>
+
+          <aside class="article-sidebar reveal">
+            <div class="sidebar-card">
+              <div class="meta-block">
+                <p class="meta-label">Published</p>
+                <p class="meta-value">February 8, 2026</p>
+              </div>
+
+              <div class="meta-block">
+                <p class="meta-label">Author</p>
+                <p class="meta-value">FOMC Agent Team</p>
+              </div>
+
+              <div class="meta-block">
+                <p class="meta-label">Share this article</p>
+                <div class="share-row">
+                  <a class="share-link" data-share="facebook" href="#" aria-label="Share on Facebook">f</a>
+                  <a class="share-link" data-share="linkedin" href="#" aria-label="Share on LinkedIn">in</a>
+                  <a class="share-link" data-share="twitter" href="#" aria-label="Share on X">x</a>
+                </div>
+              </div>
+
+              <div class="meta-block">
+                <p class="meta-label">Tags</p>
+                <div class="tag-row">
+                  <span class="tag">Notebook</span>
+                  <span class="tag">AWS</span>
+                  <span class="tag">LocalStack</span>
+                  <span class="tag">Architecture</span>
+                  <span class="tag">Serverless</span>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="latest-section reveal">
+        <div class="container">
+          <h2>Latest Articles</h2>
+          <p>Read more about related implementation and website experience work.</p>
+          <div class="latest-grid">
+            <a class="latest-card" href="case-study-monetary-policy-agent-website.html">
+              <div class="latest-image">
+                <img src="diagrams/interview-c4-context.svg" alt="Monetary Policy Agent website context diagram" />
+              </div>
+              <div class="latest-body">
+                <h3>Monetary Policy Agent Website Use Case</h3>
+                <p>A dedicated view that maps and links every page in the website experience.</p>
+                <div class="tag-row">
+                  <span class="tag">Website</span>
+                  <span class="tag">Navigation</span>
+                  <span class="tag">UX</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="latest-card" href="pipeline.html">
+              <div class="latest-image">
+                <img src="diagrams/interview-orchestration.svg" alt="Pipeline orchestration diagram" />
+              </div>
+              <div class="latest-body">
+                <h3>Pipeline Validation Evidence</h3>
+                <p>Inspect run summaries, file actions, and update counts from the latest sync cycle.</p>
+                <div class="tag-row">
+                  <span class="tag">S3</span>
+                  <span class="tag">SQS</span>
+                  <span class="tag">Ops</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="latest-card" href="architecture.html">
+              <div class="latest-image">
+                <img src="diagrams/interview-c4-containers.svg" alt="Architecture containers diagram" />
+              </div>
+              <div class="latest-body">
+                <h3>Architecture Walkthrough</h3>
+                <p>Explore service boundaries and production data movement across the stack.</p>
+                <div class="tag-row">
+                  <span class="tag">Cloud</span>
+                  <span class="tag">AWS</span>
+                  <span class="tag">Design</span>
+                </div>
+              </div>
+            </a>
+
+            <a class="latest-card" href="executive-summary.html">
+              <div class="latest-image">
+                <img src="diagrams/interview-data-model.svg" alt="Data model diagram" />
+              </div>
+              <div class="latest-body">
+                <h3>Executive Summary and Metrics</h3>
+                <p>Review the sponsor-facing narrative and KPI set driving current development priorities.</p>
+                <div class="tag-row">
+                  <span class="tag">Analytics</span>
+                  <span class="tag">KPIs</span>
+                  <span class="tag">Stakeholders</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="steps-cta reveal">
+        <div class="container">
+          <div class="steps-frame">
+            <span class="label-pill dark">Next steps</span>
+            <h2>Ready to talk about your next data engineering project?</h2>
+            <div class="steps-grid">
+              <div class="step-card">
+                <span class="step-index">1</span>
+                <p>Share your ingestion and reporting requirements.</p>
+              </div>
+              <div class="step-card">
+                <span class="step-index">2</span>
+                <p>Get a concrete architecture and implementation plan.</p>
+              </div>
+              <div class="step-card">
+                <span class="step-index">3</span>
+                <p>Kick off delivery with testable milestones.</p>
+              </div>
+            </div>
+          </div>
+          <a class="button-pill cta-button" href="about.html">Let's Talk</a>
+        </div>
+      </section>
+
+      <section class="newsletter reveal">
+        <div class="container newsletter-inner">
+          <div>
+            <h2>Newsletter</h2>
+            <p>Be the first to hear about pipeline updates and architecture notes.</p>
+          </div>
+          <form class="newsletter-form">
+            <label for="newsletter-email">enter your e-mail</label>
+            <input id="newsletter-email" name="email" type="email" placeholder="e.g. you@example.com" required />
+            <button type="submit" class="button-pill button-dark">Submit</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <div class="footer-top">
+          <a class="brand footer-brand" href="index.html">FOMC Agent</a>
+          <a class="linkedin-link" href="https://www.linkedin.com/" target="_blank" rel="noreferrer">LinkedIn</a>
+        </div>
+        <div class="footer-columns">
+          <div>
+            <h3>Case studies</h3>
+            <a href="case-study-fomc-agent-lab.html">Notebook-to-Production Flow</a>
+            <a href="case-study-monetary-policy-agent-website.html">Monetary Policy Agent Website</a>
+            <a href="architecture.html">Architecture</a>
+            <a href="pipeline.html">Pipeline Evidence</a>
+          </div>
+          <div>
+            <h3>Experience</h3>
+            <a href="timeline.html">Timeline</a>
+            <a href="charts.html">Charts</a>
+            <a href="diagrams.html">Diagrams</a>
+            <a href="executive-summary.html">Executive Summary</a>
+          </div>
+          <div>
+            <h3>Project</h3>
+            <a href="design.html">Design Notes</a>
+            <a href="alternatives.html">Alternatives</a>
+            <a href="bls-guide.html">BLS Guide</a>
+            <a href="adr.html">ADRs</a>
+            <a href="about.html">About</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>Copyright &copy; <span data-current-year></span> FOMC Agent</span>
+          <a href="about.html">Contact</a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="case-study.js"></script>
+</body>
+</html>

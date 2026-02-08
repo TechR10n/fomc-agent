@@ -1,0 +1,52 @@
+@startuml github-actions-deploy-sequence
+!theme plain
+skinparam shadowing false
+
+title FOMC Agent - GitHub Actions Validate + Deploy Flow
+
+actor "Developer" as Dev
+participant "GitHub Repo" as Repo
+participant "Workflow\nCI and Deploy" as Workflow
+participant "Job: validate\n(pytest + cdk synth)" as Validate
+participant "Job: deploy\n(push main only)" as Deploy
+participant "GitHub OIDC Provider\ntoken.actions.githubusercontent.com" as OIDC
+participant "AWS STS" as STS
+participant "IAM Role\nAWS_DEPLOY_ROLE_ARN" as Role
+participant "CDK CLI" as CDK
+participant "CloudFormation" as CFN
+participant "AWS Stacks\n(Storage, Compute, Messaging, Site)" as Stacks
+
+Dev -> Repo : push commit / open PR
+Repo -> Workflow : trigger workflow
+Workflow -> Validate : start on PR + push(main)
+
+activate Validate
+Validate -> Validate : setup Python + Node
+Validate -> Validate : install deps (.[dev,cdk])
+Validate -> Validate : run pytest
+Validate -> CDK : synth --all
+CDK --> Validate : templates
+deactivate Validate
+
+alt push to main AND validate passed
+  Workflow -> Deploy : start deploy job
+  activate Deploy
+  Deploy -> OIDC : request OIDC token
+  OIDC --> Deploy : signed JWT
+  Deploy -> STS : AssumeRoleWithWebIdentity
+  STS -> Role : trust policy check (repo + branch)
+  Role --> STS : allow
+  STS --> Deploy : temporary AWS credentials
+  Deploy -> Deploy : write .env.local from repo vars
+  Deploy -> CDK : deploy --all --require-approval never
+  CDK -> CFN : update stacks
+  CFN -> Stacks : create/update resources
+  Stacks --> CFN : outputs (SiteUrl, etc.)
+  CFN --> CDK : success
+  CDK --> Deploy : deploy complete
+  deactivate Deploy
+else PR or non-main branch
+  Workflow -> Workflow : skip deploy job
+end
+
+@enduml

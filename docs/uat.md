@@ -209,21 +209,8 @@ Deploy the site stack:
 cdk deploy FomcSiteStack --require-approval never
 ```
 
-Optional custom domain (GoDaddy-managed DNS):
-
-```bash
-export FOMC_SITE_DOMAIN="www.example.com"
-export FOMC_SITE_CERT_ARN="arn:aws:acm:us-east-1:<account-id>:certificate/<certificate-id>"
-# Optional extra aliases:
-# export FOMC_SITE_ALIASES="www.example.com,app.example.com"
-
-cdk deploy FomcSiteStack --require-approval never
-```
-
 - [ ] CDK output includes `SiteUrl` and `SiteCloudFrontDomain`
 - [ ] Opening `SiteUrl` renders a chart
-- [ ] If custom domain is configured, GoDaddy `CNAME` points your subdomain to `SiteCloudFrontDomain`
-- [ ] Opening your custom domain renders the same site
 
 ---
 

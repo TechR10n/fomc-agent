@@ -1,0 +1,59 @@
+@startuml localstack-synth-sequence
+!theme plain
+skinparam shadowing false
+
+title FOMC Agent - LocalStack + Synth Developer Flow
+
+actor "Developer" as Dev
+participant ".env.localstack" as Env
+participant "tools/cdk.py synth --all" as Synth
+participant "CDK CLI" as CDK
+participant "app.py" as App
+participant "tools/localstack_up.py" as Up
+participant "Docker Compose" as Compose
+participant "LocalStack Container" as LS
+participant "init-aws.sh" as Init
+database "Local S3 buckets" as S3
+queue "Local SQS queues" as SQS
+participant "tools/localstack_full_refresh.py" as Refresh
+participant "tools/localstack_invoke_fetcher.py" as Invoke
+participant "src/transforms/to_processed.py" as Processed
+participant "src/analytics/reports.py" as Reports
+participant "tools/build_bls_timeline.py" as Timeline
+participant "python -m http.server (site/)" as Web
+actor "Browser" as Browser
+
+== 1) Synthesize infra templates (no AWS calls) ==
+Dev -> Env : source .env.localstack
+Dev -> Synth : run
+Synth -> CDK : invoke synth
+CDK -> App : load stack definitions
+App --> CDK : CloudFormation templates
+CDK --> Synth : cdk.out/*
+
+== 2) Start LocalStack resources ==
+Dev -> Up : run
+Up -> Compose : docker compose up -d
+Compose -> LS : start container
+LS -> Init : execute on READY
+Init -> S3 : create raw + processed buckets
+Init -> SQS : create queue + DLQ + notification config
+
+== 3) Run local full refresh ==
+Dev -> Refresh : run
+Refresh -> Invoke : invoke local data-fetcher handler
+Invoke -> S3 : write raw objects + _sync_state
+Refresh -> Processed : raw -> processed CSV
+Processed -> S3 : write processed objects
+Refresh -> Reports : build chart payloads
+Reports -> S3 : read via endpoint http://localhost:4566
+Reports --> Refresh : write site/data/*.json (local files)
+Refresh -> Timeline : build bls_timeline.json
+Timeline --> Refresh : write site/data/bls_timeline.json
+
+== 4) View static site locally ==
+Dev -> Web : serve ./site
+Browser -> Web : GET http://localhost:8000
+Web --> Browser : HTML/CSS/JS + site/data/*.json
+
+@enduml

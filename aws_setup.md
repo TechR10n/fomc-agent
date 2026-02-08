@@ -1,5 +1,11 @@
 # AWS Console & PyCharm Setup for fomc-agent
 
+## Service-by-Service Tutorials
+
+For hands-on tutorials for each AWS service used by this project (S3, SQS, Lambda, EventBridge, IAM, CloudWatch, Cost Explorer, CloudFront, ACM, and CloudFormation), see:
+
+- `docs/aws-service-tutorials.md`
+
 ## 1. AWS Console Setup
 
 ### 1.1 Create a Dedicated IAM User (or use SSO)
@@ -50,10 +56,6 @@ FOMC_BUCKET_PREFIX=fomc-yourname-20260204
 FOMC_REMOVAL_POLICY=destroy
 # Optional: EventBridge fetch cadence (default hourly)
 FOMC_FETCH_INTERVAL_HOURS=1
-# Optional: Custom site domain (GoDaddy DNS -> CloudFront)
-# FOMC_SITE_DOMAIN=www.example.com
-# FOMC_SITE_CERT_ARN=arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-# FOMC_SITE_ALIASES=www.example.com,app.example.com
 EOF
 ```
 
@@ -78,14 +80,9 @@ aws s3 ls --profile fomc-agent
 
 No errors means you're good. An empty list is fine if the account is new.
 
-### 1.6 Optional: Prepare Custom Domain for Static Site (GoDaddy)
+### 1.6 Site URL (AWS-managed)
 
-If you want your own domain to serve the site:
-
-1. Request an ACM certificate in `us-east-1` for your subdomain(s), e.g. `www.example.com`.
-2. Complete ACM DNS validation by adding the validation `CNAME` records in GoDaddy.
-3. Set `FOMC_SITE_DOMAIN` and `FOMC_SITE_CERT_ARN` in `.env.local`.
-4. Deploy `FomcSiteStack` and then add a GoDaddy `CNAME` from your subdomain to the stack output `SiteCloudFrontDomain`.
+Deploy `FomcSiteStack` and use the `SiteUrl` CloudFormation output to access the site.
 
 ---
 
@@ -136,9 +133,6 @@ For running scripts and tests inside PyCharm:
    FOMC_BUCKET_PREFIX=fomc-yourname-20260204
    FOMC_REMOVAL_POLICY=destroy
    FOMC_FETCH_INTERVAL_HOURS=1
-   # Optional:
-   # FOMC_SITE_DOMAIN=www.example.com
-   # FOMC_SITE_CERT_ARN=arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
    ```
 3. Alternatively, check **EnvFile** plugin and point it to `.env.local`
 
@@ -177,21 +171,14 @@ Run the full pipeline locally without touching your AWS account. Requires Docker
 
 ### 3.1 Optional: Set Your Auth Token (Pro only)
 
-If you use LocalStack Pro features, find your token at [app.localstack.cloud](https://app.localstack.cloud/getting-started) and export it:
+If you use LocalStack Pro features, find your token at [app.localstack.cloud](https://app.localstack.cloud/getting-started) and set it in `.env.localstack`:
 
 ```bash
-export LOCALSTACK_AUTH_TOKEN=ls-xxxxxxxx
-```
-
-Add it to your shell profile (`~/.zshrc`) so it persists across sessions. If you only use OSS features, skip this step.
-
-**PyCharm tip (recommended):** Docker Compose automatically reads a project-root `.env` file (gitignored). This makes **one-click** LocalStack runs work even when PyCharm doesn't inherit your shell environment:
-
-```bash
-cat > .env <<'EOF'
+# edit .env.localstack
 LOCALSTACK_AUTH_TOKEN=ls-xxxxxxxx
-EOF
 ```
+
+This repo's `docker-compose.yml` now loads `.env.localstack` directly for the LocalStack container, so `docker compose up -d` and the provided local helper scripts use the same LocalStack env settings.
 
 ### 3.2 Start LocalStack
 
@@ -344,13 +331,10 @@ This repo now includes `.github/workflows/ci-deploy.yml`:
   - `AWS_REGION` (default `us-east-1`)
   - `FOMC_REMOVAL_POLICY` (default `retain`)
   - `FOMC_FETCH_INTERVAL_HOURS`
-  - `FOMC_SITE_DOMAIN`
-  - `FOMC_SITE_CERT_ARN`
-  - `FOMC_SITE_ALIASES`
 
 ### 4.3 IAM Role for GitHub OIDC
 
-Create an IAM role trusted by GitHub's OIDC provider with a trust policy scoped to this repo/branch (`main`), then attach permissions needed for CDK deploy (CloudFormation, IAM, Lambda, S3, SQS, EventBridge, CloudFront, ACM as applicable).
+Create an IAM role trusted by GitHub's OIDC provider with a trust policy scoped to this repo/branch (`main`), then attach permissions needed for CDK deploy (CloudFormation, IAM, Lambda, S3, SQS, EventBridge, CloudFront).
 
 High-level flow:
 1. Add GitHub OIDC provider (`token.actions.githubusercontent.com`) in AWS IAM (one-time per account).
@@ -387,6 +371,6 @@ Then every push to `main` deploys via GitHub Actions.
 | CDK bootstrap error         | Make sure Node.js is installed (`node --version`) and you ran `cdk bootstrap`   |
 | PyCharm can't find `boto3`  | Ensure interpreter points to `.venv` and run `uv sync`                          |
 | Lambda imports fail locally | Run from project root, not from `src/`                                          |
-| LocalStack Pro token missing in PyCharm | Put `LOCALSTACK_AUTH_TOKEN` in project-root `.env` (gitignored) or restart PyCharm after exporting |
+| LocalStack Pro token missing in PyCharm | Put `LOCALSTACK_AUTH_TOKEN` in `.env.localstack`, then restart LocalStack (`docker compose down && docker compose up -d`) |
 | LocalStack buckets missing  | Check `docker compose logs` for init hook errors; re-run `docker compose up -d` |
 | Run configs not showing     | Reopen the project in PyCharm; configs are in `.run/` and auto-detected         |

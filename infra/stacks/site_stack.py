@@ -97,4 +97,3 @@ class FomcSiteStack(Stack):
         if site_aliases:
             CfnOutput(self, "CustomSiteDomains", value=",".join(site_aliases))
             CfnOutput(self, "CustomSiteUrl", value=f"https://{site_aliases[0]}")
-            CfnOutput(self, "GoDaddyCnameTarget", value=distribution.distribution_domain_name)
