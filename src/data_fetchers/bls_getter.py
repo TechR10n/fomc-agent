@@ -6,7 +6,6 @@ import os
 import re
 import time
 from datetime import datetime, timezone
-from html.parser import HTMLParser
 
 from src.config import get_bls_bucket, get_bls_series_list
 from src.helpers.aws_client import get_client
@@ -35,49 +34,6 @@ def _matches_patterns(filename: str, patterns: list[str] | None) -> bool:
     return any(fnmatch.fnmatch(filename, pattern) for pattern in patterns)
 
 
-class BLSDirectoryParser(HTMLParser):
-    """Parse BLS directory listing HTML to extract filename/timestamp pairs."""
-
-    def __init__(self):
-        super().__init__()
-        self.files = []
-        self._in_pre = False
-        self._pre_data = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "pre":
-            self._in_pre = True
-            self._pre_data = []
-
-    def handle_endtag(self, tag):
-        if tag == "pre":
-            self._in_pre = False
-            self._parse_pre_content("".join(self._pre_data))
-
-    def handle_data(self, data):
-        if self._in_pre:
-            self._pre_data.append(data)
-
-    def _parse_pre_content(self, text):
-        # BLS format: each line has a link text followed by date and size
-        # Pattern: filename    M/D/YYYY  H:MM AM/PM    size
-        pattern = re.compile(
-            r"(\S+)\s+(\d{1,2}/\d{1,2}/\d{4}\s+\d{1,2}:\d{2}\s+[AP]M)\s+(\d+|-)"
-        )
-        for match in pattern.finditer(text):
-            filename = match.group(1)
-            timestamp_str = match.group(2)
-            size_str = match.group(3)
-            if filename in (".", "..") or "[" in filename or "]" in filename:
-                continue
-            size = int(size_str) if size_str != "-" else 0
-            self.files.append({
-                "filename": filename,
-                "timestamp": timestamp_str,
-                "size": size,
-            })
-
-
 def parse_bls_timestamp(date_str: str) -> datetime:
     """Parse BLS page timestamp: '1/29/2026  8:30 AM' -> datetime."""
     cleaned = re.sub(r"\s+", " ", date_str.strip())
@@ -91,9 +47,29 @@ def fetch_directory_listing(series_id: str) -> list[dict]:
     url = f"{base_url}/{series_id}/"
     html = fetch_text(url, headers={"User-Agent": user_agent}, timeout=30)
 
-    parser = BLSDirectoryParser()
-    parser.feed(html)
-    return parser.files
+    # BLS directory HTML format:
+    #   M/D/YYYY  H:MM AM|PM   size  <A HREF="...">filename</A><br>
+    pattern = re.compile(
+        r"(\d{1,2}/\d{1,2}/\d{4})\s+(\d{1,2}:\d{2}\s+[AP]M)\s+(\d+|-)\s+<A\s+HREF=\"[^\"]+\">([^<]+)</A>",
+        flags=re.IGNORECASE,
+    )
+
+    files: list[dict] = []
+    for m in pattern.finditer(html or ""):
+        date_str = m.group(1)
+        time_str = m.group(2)
+        size_str = m.group(3)
+        filename = (m.group(4) or "").strip()
+        if not filename or filename.startswith("[") and filename.endswith("]"):
+            continue
+        size = int(size_str) if size_str.isdigit() else 0
+        files.append({
+            "filename": filename,
+            "timestamp": f"{date_str} {time_str}",
+            "size": size,
+        })
+
+    return files
 
 
 def needs_update(source_time: datetime, s3_metadata: dict) -> bool:
@@ -177,10 +153,14 @@ def sync_series(series_id: str, bucket: str | None = None) -> dict:
     if bucket is None:
         bucket = get_bls_bucket()
 
-    file_patterns = _parse_file_patterns(
-        os.environ.get("BLS_FILE_PATTERNS"),
-        series_id=series_id,
-    )
+    # Default to the one file the rest of the pipeline expects to exist:
+    #   s3://<bucket>/<series>/<series>.data.0.Current
+    #
+    # This keeps local runs fast (BLS directories can contain very large files).
+    raw_patterns = os.environ.get("BLS_FILE_PATTERNS")
+    if raw_patterns is None:
+        raw_patterns = "{series}.data.0.Current"
+    file_patterns = _parse_file_patterns(raw_patterns, series_id=series_id)
 
     s3 = get_client("s3")
     now = datetime.now(timezone.utc)

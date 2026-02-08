@@ -11,6 +11,14 @@ from moto import mock_aws
 @pytest.fixture(autouse=True)
 def default_project_env(monkeypatch):
     """Provide deterministic default env vars for tests."""
+    # Tests should be hermetic. If the developer has LocalStack env vars set
+    # (e.g. from `.env.localstack`), boto3 will route calls to LocalStack and
+    # bypass moto.
+    for key in list(os.environ.keys()):
+        if key == "AWS_ENDPOINT_URL" or key.startswith("AWS_ENDPOINT_URL_"):
+            monkeypatch.delenv(key, raising=False)
+    monkeypatch.delenv("AWS_S3_ADDRESSING_STYLE", raising=False)
+
     defaults = {
         "AWS_ACCESS_KEY_ID": "testing",
         "AWS_SECRET_ACCESS_KEY": "testing",
@@ -111,9 +119,9 @@ def sample_bls_html():
 <body>
 <pre>
 <a href="/pub/time.series/">[To Parent Directory]</a>
-<a href="pr.data.0.Current">pr.data.0.Current</a>      1/15/2026  8:30 AM       123456
-<a href="pr.data.1.AllData">pr.data.1.AllData</a>      1/10/2026  8:30 AM       789012
-<a href="pr.series">pr.series</a>              1/15/2026  8:30 AM        34567
+ 1/15/2026  8:30 AM       123456 <a href="/pub/time.series/pr/pr.data.0.Current">pr.data.0.Current</a><br>
+ 1/10/2026  8:30 AM       789012 <a href="/pub/time.series/pr/pr.data.1.AllData">pr.data.1.AllData</a><br>
+ 1/15/2026  8:30 AM        34567 <a href="/pub/time.series/pr/pr.series">pr.series</a><br>
 </pre>
 </body>
 </html>"""

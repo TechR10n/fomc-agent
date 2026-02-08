@@ -10,7 +10,6 @@ import pytest
 from moto import mock_aws
 
 from src.data_fetchers.bls_getter import (
-    BLSDirectoryParser,
     parse_bls_timestamp,
     fetch_directory_listing,
     needs_update,
@@ -21,24 +20,6 @@ from src.data_fetchers.bls_getter import (
     save_sync_state,
     append_sync_log,
 )
-
-
-class TestBLSDirectoryParser:
-    def test_parse_directory_listing(self, sample_bls_html):
-        """Parses filenames + timestamps from saved HTML snapshot."""
-        parser = BLSDirectoryParser()
-        parser.feed(sample_bls_html)
-        assert len(parser.files) == 3
-        assert parser.files[0]["filename"] == "pr.data.0.Current"
-        assert parser.files[0]["timestamp"] == "1/15/2026  8:30 AM"
-        assert parser.files[0]["size"] == 123456
-
-    def test_parse_directory_listing_format_change(self):
-        """Raises no files if HTML format changes (no <pre> tag)."""
-        parser = BLSDirectoryParser()
-        parser.feed("<html><body><div>No pre tag here</div></body></html>")
-        assert parser.files == []
-
 
 class TestParseBLSTimestamp:
     def test_parse_bls_timestamp_valid(self):
@@ -156,6 +137,8 @@ class TestFetchDirectoryListing:
             files = fetch_directory_listing("pr")
         assert len(files) == 3
         assert files[0]["filename"] == "pr.data.0.Current"
+        assert files[0]["timestamp"].startswith("1/15/2026")
+        assert files[0]["size"] == 123456
 
 
 class TestSyncSeries:
@@ -179,7 +162,8 @@ class TestSyncSeries:
             patch("src.data_fetchers.bls_getter.fetch_bytes", side_effect=_fetch_bytes),
         ):
             result = sync_series("pr")
-        assert len(result["added"]) == 3
+        # Default behavior only syncs `{series}.data.0.Current` for speed.
+        assert len(result["added"]) == 1
         assert len(result["unchanged"]) == 0
 
     @mock_aws
@@ -195,24 +179,37 @@ class TestSyncSeries:
             Body=b"data0",
             Metadata={"source_modified": "2026-01-15T08:30:00"},
         )
-        s3.put_object(
-            Bucket="fomc-bls-raw",
-            Key="pr/pr.data.1.AllData",
-            Body=b"data1",
-            Metadata={"source_modified": "2026-01-10T08:30:00"},
-        )
-        s3.put_object(
-            Bucket="fomc-bls-raw",
-            Key="pr/pr.series",
-            Body=b"series",
-            Metadata={"source_modified": "2026-01-15T08:30:00"},
-        )
 
         with patch("src.data_fetchers.bls_getter.fetch_text", return_value=sample_bls_html):
             result = sync_series("pr")
-        assert len(result["unchanged"]) == 3
+        assert len(result["unchanged"]) == 1
         assert len(result["added"]) == 0
         assert len(result["updated"]) == 0
+
+    @mock_aws
+    def test_sync_all_files_when_bls_file_patterns_empty(self, sample_bls_html, monkeypatch):
+        """Empty BLS_FILE_PATTERNS syncs all files in the directory listing."""
+        monkeypatch.setenv("BLS_FILE_PATTERNS", "")
+
+        s3 = boto3.client("s3", region_name="us-east-1")
+        s3.create_bucket(Bucket="fomc-bls-raw")
+
+        def _fetch_bytes(url: str, **_kwargs):
+            if url.endswith("/pr/pr.data.0.Current"):
+                return b"data0"
+            if url.endswith("/pr/pr.data.1.AllData"):
+                return b"data1"
+            if url.endswith("/pr/pr.series"):
+                return b"series"
+            raise AssertionError(f"Unexpected URL: {url}")
+
+        with (
+            patch("src.data_fetchers.bls_getter.fetch_text", return_value=sample_bls_html),
+            patch("src.data_fetchers.bls_getter.fetch_bytes", side_effect=_fetch_bytes),
+        ):
+            result = sync_series("pr")
+
+        assert len(result["added"]) == 3
 
 
 class TestSyncMultipleSeries:
@@ -223,8 +220,15 @@ class TestSyncMultipleSeries:
         s3.create_bucket(Bucket="fomc-bls-raw")
 
         def _fetch_text(url: str, **_kwargs):
-            if url.endswith("/pr/") or url.endswith("/cu/"):
+            if url.endswith("/pr/"):
                 return sample_bls_html
+            if url.endswith("/cu/"):
+                return (
+                    sample_bls_html.replace("/pr/", "/cu/")
+                    .replace("pr.data.0.Current", "cu.data.0.Current")
+                    .replace("pr.data.1.AllData", "cu.data.1.AllItems")
+                    .replace("pr.series", "cu.series")
+                )
             raise AssertionError(f"Unexpected URL: {url}")
 
         def _fetch_bytes(url: str, **_kwargs):
@@ -239,3 +243,7 @@ class TestSyncMultipleSeries:
             results = sync_all(series_list=["pr", "cu"])
         assert "pr" in results
         assert "cu" in results
+
+        # Default patterns should have synced the "data.0.Current" file for each series.
+        assert s3.get_object(Bucket="fomc-bls-raw", Key="pr/pr.data.0.Current")["Body"].read()
+        assert s3.get_object(Bucket="fomc-bls-raw", Key="cu/cu.data.0.Current")["Body"].read()

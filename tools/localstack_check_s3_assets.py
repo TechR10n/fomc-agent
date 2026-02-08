@@ -23,6 +23,7 @@ def _run(cmd: list[str]) -> None:
 
 def main() -> None:
     load_localstack_env()
+    _run([sys.executable, str(PROJECT_ROOT / "tools/localstack_up.py")])
     _run([sys.executable, str(PROJECT_ROOT / "tools/check_s3_assets.py"), "--strict"])
     print("\n==> LocalStack S3 asset check complete.")
 

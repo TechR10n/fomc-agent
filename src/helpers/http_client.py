@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import json
 import random
+import ssl
 import time
 import urllib.error
 import urllib.request
+from pathlib import Path
 from typing import Any
 
 _DEFAULT_RETRYABLE_HTTP_STATUS: set[int] = {429, 500, 502, 503, 504}
@@ -56,6 +58,32 @@ def _sleep_seconds(
         time.sleep(sleep_for)
 
 
+def _ssl_context() -> ssl.SSLContext:
+    """Return an SSL context that works on macOS Python.org installs.
+
+    Some Python builds (notably the Python.org macOS installer) require running
+    an "Install Certificates" step to populate the OpenSSL CA bundle path.
+    When that hasn't been done, stdlib `urllib` HTTPS calls fail with:
+      CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate
+
+    If no system CA bundle is found, fall back to `certifi` (if installed).
+    """
+    paths = ssl.get_default_verify_paths()
+    cafile = paths.openssl_cafile
+    capath = paths.openssl_capath
+    if (cafile and Path(cafile).exists()) or (capath and Path(capath).exists()):
+        return ssl.create_default_context()
+
+    try:
+        import certifi  # type: ignore
+
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        # Last resort: use the default context even though verification will
+        # likely fail. Callers will see the underlying SSL error.
+        return ssl.create_default_context()
+
+
 def fetch_bytes(
     url: str,
     *,
@@ -72,10 +100,11 @@ def fetch_bytes(
     retryable = retryable_statuses or _DEFAULT_RETRYABLE_HTTP_STATUS
 
     last_error: Exception | None = None
+    ctx = _ssl_context()
     for attempt in range(retries):
         try:
             req = urllib.request.Request(url, headers=headers or {})
-            with urllib.request.urlopen(req, timeout=timeout) as resp:  # nosec - url is controlled by caller
+            with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:  # nosec - url is controlled by caller
                 return resp.read()
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as e:
             last_error = e

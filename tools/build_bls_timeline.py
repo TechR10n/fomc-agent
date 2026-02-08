@@ -17,7 +17,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.analytics.bls_timeline import export_bls_change_timeline
 from src.config import get_bls_bucket, get_bls_series_list

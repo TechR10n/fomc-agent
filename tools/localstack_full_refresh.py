@@ -37,7 +37,8 @@ def main() -> None:
 
     parse_cmd = [
         sys.executable,
-        str(PROJECT_ROOT / "src/transforms/to_processed.py"),
+        "-m",
+        "src.transforms.to_processed",
         "--bls-series",
         bls_series,
         "--datausa-datasets",
@@ -45,7 +46,7 @@ def main() -> None:
     ]
     _run(parse_cmd)
 
-    _run([sys.executable, str(PROJECT_ROOT / "src/analytics/reports.py")])
+    _run([sys.executable, "-m", "src.analytics.reports"])
 
     timeline_cmd = [
         sys.executable,
