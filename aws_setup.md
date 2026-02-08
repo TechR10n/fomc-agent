@@ -48,6 +48,12 @@ AWS_DEFAULT_REGION=us-east-1
 AWS_PROFILE=fomc-agent
 FOMC_BUCKET_PREFIX=fomc-yourname-20260204
 FOMC_REMOVAL_POLICY=destroy
+# Optional: EventBridge fetch cadence (default hourly)
+FOMC_FETCH_INTERVAL_HOURS=1
+# Optional: Custom site domain (GoDaddy DNS -> CloudFront)
+# FOMC_SITE_DOMAIN=www.example.com
+# FOMC_SITE_CERT_ARN=arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# FOMC_SITE_ALIASES=www.example.com,app.example.com
 EOF
 ```
 
@@ -71,6 +77,15 @@ aws s3 ls --profile fomc-agent
 ```
 
 No errors means you're good. An empty list is fine if the account is new.
+
+### 1.6 Optional: Prepare Custom Domain for Static Site (GoDaddy)
+
+If you want your own domain to serve the site:
+
+1. Request an ACM certificate in `us-east-1` for your subdomain(s), e.g. `www.example.com`.
+2. Complete ACM DNS validation by adding the validation `CNAME` records in GoDaddy.
+3. Set `FOMC_SITE_DOMAIN` and `FOMC_SITE_CERT_ARN` in `.env.local`.
+4. Deploy `FomcSiteStack` and then add a GoDaddy `CNAME` from your subdomain to the stack output `SiteCloudFrontDomain`.
 
 ---
 
@@ -120,6 +135,10 @@ For running scripts and tests inside PyCharm:
    AWS_PROFILE=fomc-agent
    FOMC_BUCKET_PREFIX=fomc-yourname-20260204
    FOMC_REMOVAL_POLICY=destroy
+   FOMC_FETCH_INTERVAL_HOURS=1
+   # Optional:
+   # FOMC_SITE_DOMAIN=www.example.com
+   # FOMC_SITE_CERT_ARN=arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
    ```
 3. Alternatively, check **EnvFile** plugin and point it to `.env.local`
 
@@ -154,17 +173,17 @@ This installs `aws-cdk-lib` and `constructs` into your venv.
 
 ## 3. LocalStack (Local AWS)
 
-Run the full pipeline locally without touching your AWS account. Requires Docker and a LocalStack Pro account ([app.localstack.cloud](https://app.localstack.cloud/getting-started)).
+Run the full pipeline locally without touching your AWS account. Requires Docker.
 
-### 3.1 Set Your Auth Token
+### 3.1 Optional: Set Your Auth Token (Pro only)
 
-Find your token at [app.localstack.cloud](https://app.localstack.cloud/getting-started) and export it:
+If you use LocalStack Pro features, find your token at [app.localstack.cloud](https://app.localstack.cloud/getting-started) and export it:
 
 ```bash
 export LOCALSTACK_AUTH_TOKEN=ls-xxxxxxxx
 ```
 
-Add it to your shell profile (`~/.zshrc`) so it persists across sessions.
+Add it to your shell profile (`~/.zshrc`) so it persists across sessions. If you only use OSS features, skip this step.
 
 **PyCharm tip (recommended):** Docker Compose automatically reads a project-root `.env` file (gitignored). This makes **one-click** LocalStack runs work even when PyCharm doesn't inherit your shell environment:
 
@@ -188,7 +207,7 @@ Verify it's ready:
 aws --endpoint-url=http://localhost:4566 s3 ls
 ```
 
-You should see all four `fomc-*` buckets.
+You should see all four buckets derived from `FOMC_BUCKET_PREFIX` in `.env.localstack`.
 
 ### 3.3 Run the Pipeline Locally
 
@@ -203,8 +222,8 @@ python -m src.data_fetchers.datausa_getter
 Verify data landed:
 
 ```bash
-aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-bls-raw/pr/ --recursive | head
-aws --endpoint-url=http://localhost:4566 s3 ls s3://fomc-datausa-raw/
+aws --endpoint-url=http://localhost:4566 s3 ls "s3://${FOMC_BUCKET_PREFIX}-bls-raw/pr/" --recursive | head
+aws --endpoint-url=http://localhost:4566 s3 ls "s3://${FOMC_BUCKET_PREFIX}-datausa-raw/"
 ```
 
 Run analytics against local data:
@@ -280,6 +299,19 @@ Each LocalStack config has `AWS_ENDPOINT_URL=http://localhost:4566` pre-set. Run
 1. Run **CDK Diff (AWS)**.
 2. Run **CDK Deploy (AWS)** when ready.
 
+#### LocalStack pre-push gate (recommended)
+
+Before pushing changes, run one full local validation pass:
+
+```bash
+source .env.localstack
+python tools/localstack_full_refresh.py
+python tools/check_s3_assets.py --env-file .env.localstack --strict
+python -m pytest
+```
+
+If those pass, push to `main` to trigger the AWS deploy workflow.
+
 ### 3.5 Stop LocalStack
 
 ```bash
@@ -294,21 +326,59 @@ docker compose down -v
 
 ---
 
-## 4. Quick Verification Checklist
+## 4. GitHub Actions Deploy on `main`
+
+This repo now includes `.github/workflows/ci-deploy.yml`:
+
+- On PRs: runs pytest + `cdk synth --all`.
+- On pushes to `main`: runs pytest + synth, then deploys all CDK stacks to AWS.
+
+### 4.1 Required GitHub Repository Secret
+
+- `AWS_DEPLOY_ROLE_ARN`: IAM role ARN that GitHub Actions assumes via OIDC.
+
+### 4.2 Required/Optional GitHub Repository Variables
+
+- Required: `FOMC_BUCKET_PREFIX`
+- Optional:
+  - `AWS_REGION` (default `us-east-1`)
+  - `FOMC_REMOVAL_POLICY` (default `retain`)
+  - `FOMC_FETCH_INTERVAL_HOURS`
+  - `FOMC_SITE_DOMAIN`
+  - `FOMC_SITE_CERT_ARN`
+  - `FOMC_SITE_ALIASES`
+
+### 4.3 IAM Role for GitHub OIDC
+
+Create an IAM role trusted by GitHub's OIDC provider with a trust policy scoped to this repo/branch (`main`), then attach permissions needed for CDK deploy (CloudFormation, IAM, Lambda, S3, SQS, EventBridge, CloudFront, ACM as applicable).
+
+High-level flow:
+1. Add GitHub OIDC provider (`token.actions.githubusercontent.com`) in AWS IAM (one-time per account).
+2. Create deploy role and trust only this repository's `main` branch.
+3. Add that role ARN to the repo secret `AWS_DEPLOY_ROLE_ARN`.
+
+Then every push to `main` deploys via GitHub Actions.
+
+---
+
+## 5. Quick Verification Checklist
 
 ```
 [ ] aws sts get-caller-identity --profile fomc-agent       # returns your account
 [ ] python3 --version                                      # 3.12+
 [ ] uv --version                                           # installed
 [ ] .env.local exists with FOMC_BUCKET_PREFIX set
+[ ] .env.localstack uses matching FOMC_BUCKET_PREFIX (for local/cloud parity)
 [ ] PyCharm interpreter points to .venv/bin/python
 [ ] pytest runs green in PyCharm (right-click tests/)
 [ ] docker compose up -d                                   # LocalStack starts
-[ ] aws --endpoint-url=http://localhost:4566 s3 ls          # shows fomc-* buckets
+[ ] aws --endpoint-url=http://localhost:4566 s3 ls          # shows prefix-derived buckets
 [ ] PyCharm shows run configs in the Run dropdown
+[ ] GitHub secret AWS_DEPLOY_ROLE_ARN is set
+[ ] GitHub variable FOMC_BUCKET_PREFIX is set
 ```
 
-## 4. Common Issues
+## 6. Common Issues
 
 | Problem                     | Fix                                                                             |
 |-----------------------------|---------------------------------------------------------------------------------|
@@ -317,7 +387,6 @@ docker compose down -v
 | CDK bootstrap error         | Make sure Node.js is installed (`node --version`) and you ran `cdk bootstrap`   |
 | PyCharm can't find `boto3`  | Ensure interpreter points to `.venv` and run `uv sync`                          |
 | Lambda imports fail locally | Run from project root, not from `src/`                                          |
-| LocalStack token missing in PyCharm | Put `LOCALSTACK_AUTH_TOKEN` in project-root `.env` (gitignored) or restart PyCharm after exporting |
-| LocalStack exits with code 55 | `LOCALSTACK_AUTH_TOKEN` not set — export it before `docker compose up`         |
+| LocalStack Pro token missing in PyCharm | Put `LOCALSTACK_AUTH_TOKEN` in project-root `.env` (gitignored) or restart PyCharm after exporting |
 | LocalStack buckets missing  | Check `docker compose logs` for init hook errors; re-run `docker compose up -d` |
 | Run configs not showing     | Reopen the project in PyCharm; configs are in `.run/` and auto-detected         |

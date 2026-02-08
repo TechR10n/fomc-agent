@@ -1,0 +1,42 @@
+@startuml aws-observability-flow
+!theme plain
+skinparam shadowing false
+left to right direction
+
+
+title FOMC Agent - AWS Observability Data Flow\n(CloudWatch + Cost Explorer -> static site JSON)
+
+actor "Operator / CI" as operator
+component "tools/build_aws_observability.py" as tool
+component "src.analytics.aws_observability" as obs
+database "CloudWatch\n(Lambda/SQS/S3 metrics)" as cw <<AWS::CloudWatch>>
+database "Cost Explorer\n(actual + forecast cost)" as ce <<AWS::CostExplorer>>
+file "Local artifact\nsite/data/aws_observability.json" as local_json
+component "CDK BucketDeployment" as deploy
+storage "S3 Bucket\n{prefix}-site" as site_bucket <<AWS::S3::Bucket>>
+component "CloudFront Distribution" as cf <<AWS::CloudFront::Distribution>>
+actor "Browser User" as user
+
+operator --> tool : run script
+
+tool --> obs : export_aws_observability(days, forecast_days)
+obs --> cw : GetMetricStatistics\nAWS/Lambda, AWS/SQS, AWS/S3
+obs --> ce : GetCostAndUsage + GetCostForecast
+obs --> local_json : write JSON payload
+
+operator --> deploy : cdk deploy FomcSiteStack
+
+deploy --> site_bucket : upload site/*
+deploy --> cf : invalidate /*
+
+user --> cf : HTTPS GET /timeline.html
+cf --> site_bucket : fetch static assets
+site_bucket --> cf : aws_observability.json + page assets
+cf --> user : dashboard renders observability charts
+
+note bottom of obs
+  This path is on-demand (script-driven),
+  not part of the EventBridge -> Lambda ingestion trigger.
+end note
+
+@enduml

@@ -1,14 +1,21 @@
 services:
   localstack:
     container_name: fomc-localstack
-    image: localstack/localstack-pro:latest
+    image: localstack/localstack:latest
     ports:
       - "127.0.0.1:4566:4566"
     environment:
-      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:?Set LOCALSTACK_AUTH_TOKEN before running}
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-}
       - SERVICES=s3,sqs,lambda,iam,cloudwatch
       - DEFAULT_REGION=us-east-1
       - DEBUG=0
+      - FOMC_BUCKET_PREFIX=${FOMC_BUCKET_PREFIX:-fomc}
+      - BLS_BUCKET=${BLS_BUCKET:-}
+      - DATAUSA_BUCKET=${DATAUSA_BUCKET:-}
+      - BLS_PROCESSED_BUCKET=${BLS_PROCESSED_BUCKET:-}
+      - DATAUSA_PROCESSED_BUCKET=${DATAUSA_PROCESSED_BUCKET:-}
+      - FOMC_ANALYTICS_QUEUE_NAME=${FOMC_ANALYTICS_QUEUE_NAME:-fomc-analytics-queue}
+      - FOMC_ANALYTICS_DLQ_NAME=${FOMC_ANALYTICS_DLQ_NAME:-fomc-analytics-dlq}
     volumes:
       - "./localstack/init:/etc/localstack/init"
       - "./volume:/var/lib/localstack"

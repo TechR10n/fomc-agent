@@ -9,6 +9,7 @@ from aws_cdk import aws_events_targets as targets
 from aws_cdk import aws_lambda as _lambda
 from constructs import Construct
 
+from infra.config import get_env_config
 from infra.stacks.storage_stack import FomcStorageStack
 
 
@@ -22,6 +23,7 @@ class FomcComputeStack(Stack):
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
+        config = get_env_config()
         project_root = str(Path(__file__).resolve().parent.parent.parent)
 
         self.data_fetcher = _lambda.Function(
@@ -63,10 +65,12 @@ class FomcComputeStack(Stack):
         storage.bls_raw_bucket.grant_read_write(self.data_fetcher)
         storage.datausa_raw_bucket.grant_read_write(self.data_fetcher)
 
-        # Schedule: run daily at 9 AM UTC
+        # Schedule: run fetch pipeline at a fixed interval (hourly by default).
         rule = events.Rule(
             self,
-            "DailyFetchRule",
-            schedule=events.Schedule.cron(hour="9", minute="0"),
+            "FetchScheduleRule",
+            schedule=events.Schedule.rate(
+                Duration.hours(config["fetch_interval_hours"]),
+            ),
         )
         rule.add_target(targets.LambdaFunction(self.data_fetcher))

@@ -5,6 +5,13 @@
 set -euo pipefail
 
 REGION="${DEFAULT_REGION:-us-east-1}"
+BUCKET_PREFIX="${FOMC_BUCKET_PREFIX:-fomc}"
+BLS_BUCKET="${BLS_BUCKET:-${BUCKET_PREFIX}-bls-raw}"
+DATAUSA_BUCKET="${DATAUSA_BUCKET:-${BUCKET_PREFIX}-datausa-raw}"
+BLS_PROCESSED_BUCKET="${BLS_PROCESSED_BUCKET:-${BUCKET_PREFIX}-bls-processed}"
+DATAUSA_PROCESSED_BUCKET="${DATAUSA_PROCESSED_BUCKET:-${BUCKET_PREFIX}-datausa-processed}"
+ANALYTICS_QUEUE_NAME="${FOMC_ANALYTICS_QUEUE_NAME:-fomc-analytics-queue}"
+ANALYTICS_DLQ_NAME="${FOMC_ANALYTICS_DLQ_NAME:-fomc-analytics-dlq}"
 
 ensure_bucket() {
   local bucket="$1"
@@ -32,16 +39,16 @@ ensure_queue() {
 }
 
 echo "==> Ensuring S3 buckets..."
-ensure_bucket "fomc-bls-raw"
-ensure_bucket "fomc-datausa-raw"
-ensure_bucket "fomc-bls-processed"
-ensure_bucket "fomc-datausa-processed"
+ensure_bucket "$BLS_BUCKET"
+ensure_bucket "$DATAUSA_BUCKET"
+ensure_bucket "$BLS_PROCESSED_BUCKET"
+ensure_bucket "$DATAUSA_PROCESSED_BUCKET"
 
 echo "==> Ensuring SQS queues..."
-DLQ_URL="$(ensure_queue "fomc-analytics-dlq" '{"MessageRetentionPeriod":"1209600"}')"
+DLQ_URL="$(ensure_queue "$ANALYTICS_DLQ_NAME" '{"MessageRetentionPeriod":"1209600"}')"
 DLQ_ARN="$(awslocal sqs get-queue-attributes --queue-url "$DLQ_URL" --attribute-names QueueArn --query Attributes.QueueArn --output text)"
 
-QUEUE_URL="$(ensure_queue "fomc-analytics-queue" '{"VisibilityTimeout":"360"}')"
+QUEUE_URL="$(ensure_queue "$ANALYTICS_QUEUE_NAME" '{"VisibilityTimeout":"360"}')"
 QUEUE_ARN="$(awslocal sqs get-queue-attributes --queue-url "$QUEUE_URL" --attribute-names QueueArn --query Attributes.QueueArn --output text)"
 
 echo "==> Configuring SQS redrive policy..."
@@ -51,7 +58,7 @@ awslocal sqs set-queue-attributes --queue-url "$QUEUE_URL" --attributes \
   >/dev/null
 
 echo "==> Allowing S3 bucket notifications to publish to SQS..."
-SOURCE_BUCKET="fomc-datausa-raw"
+SOURCE_BUCKET="$DATAUSA_BUCKET"
 SOURCE_BUCKET_ARN="arn:aws:s3:::${SOURCE_BUCKET}"
 
 QUEUE_POLICY="$(cat <<EOF | tr -d '\n'
@@ -92,5 +99,10 @@ awslocal s3api put-bucket-notification-configuration \
   >/dev/null
 
 echo "==> LocalStack init complete. Resources:"
+echo "    - bucket prefix: ${BUCKET_PREFIX}"
+echo "    - bls raw bucket: ${BLS_BUCKET}"
+echo "    - datausa raw bucket: ${DATAUSA_BUCKET}"
+echo "    - analytics queue: ${ANALYTICS_QUEUE_NAME}"
+echo "    - analytics dlq: ${ANALYTICS_DLQ_NAME}"
 awslocal s3 ls
 awslocal sqs list-queues

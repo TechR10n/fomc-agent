@@ -1,209 +1,94 @@
 @startuml architecture-stacks
 !theme plain
 allowmixing
+left to right direction
+skinparam shadowing false
 
-title FOMC Agent — CDK Stack Architecture\nAll AWS Resources by Stack
 
-' ──────────────────────────────────────────────
-' Stack 1: FomcStorageStack
-' ──────────────────────────────────────────────
-package "FomcStorageStack" as storage_stack <<CloudFormation Stack>> #E8F5E9 {
+title FOMC Agent - AWS Services and Data Flows\n(Current CDK stacks + runtime wiring)
 
-  ' S3 Buckets
-  storage "{prefix}-bls-raw" as bls_raw <<S3 Bucket>> {
-    card "series/{filename}" as bls_files
-    card "_sync_state/{series}/\nlatest_state.json\nsync_log.jsonl" as bls_sync
+actor "Developer" as dev
+actor "Browser User" as user
+cloud "BLS LABSTAT\ndownload.bls.gov" as bls
+cloud "DataUSA API\napi.datausa.io" as datausa
+
+package "AWS Account (CDK deployment target)" as aws #F8F9FA {
+
+  package "FomcStorageStack" as storage_stack <<CloudFormation Stack>> #E8F5E9 {
+    storage "S3 Bucket\n{prefix}-bls-raw" as bls_raw <<AWS::S3::Bucket>>
+    storage "S3 Bucket\n{prefix}-datausa-raw" as datausa_raw <<AWS::S3::Bucket>>
+    storage "S3 Bucket\n{prefix}-bls-processed" as bls_processed <<AWS::S3::Bucket>>
+    storage "S3 Bucket\n{prefix}-datausa-processed" as datausa_processed <<AWS::S3::Bucket>>
+
+    queue "SQS Queue\nfomc-analytics-queue" as analytics_queue <<AWS::SQS::Queue>>
+    queue "SQS DLQ\nfomc-analytics-dlq" as analytics_dlq <<AWS::SQS::Queue>>
+    rectangle "S3 Notification Rule\nOBJECT_CREATED + suffix=.json" as s3_notif <<S3 NotificationConfiguration>>
+
+    analytics_queue -[dashed]-> analytics_dlq : after 3 failed receives
+    datausa_raw --> s3_notif
+    s3_notif --> analytics_queue : publish S3 event
   }
 
-  storage "{prefix}-datausa-raw" as datausa_raw <<S3 Bucket>> {
-    card "population.json" as pop_file
-    card "_sync_state/\nlatest_state.json\nsync_log.jsonl" as datausa_sync
+  package "FomcComputeStack" as compute_stack <<CloudFormation Stack>> #E3F2FD {
+    component "EventBridge Rule\nFetchScheduleRule" as fetch_rule <<AWS::Events::Rule>>
+    component "Lambda\nfomc-data-fetcher" as data_fetcher <<AWS::Lambda::Function>>
+    component "CloudWatch Log Group\n/aws/lambda/fomc-data-fetcher" as fetcher_logs <<AWS::Logs::LogGroup>>
+    component "IAM Role\n(data fetcher)" as fetcher_role <<AWS::IAM::Role>>
+
+    fetch_rule --> data_fetcher : invoke rate(hours=FOMC_FETCH_INTERVAL_HOURS)
+    fetcher_role -[dotted]-> data_fetcher : grant_read_write(raw buckets)
+    data_fetcher --> fetcher_logs : function logs
   }
 
-  storage "{prefix}-bls-processed" as bls_processed <<S3 Bucket>> {
+  package "FomcMessagingStack" as messaging_stack <<CloudFormation Stack>> #FFF3E0 {
+    component "Lambda\nfomc-analytics-processor" as analytics_lambda <<AWS::Lambda::Function>>
+    component "Lambda Event Source Mapping\nSQS -> Lambda (batch=1)" as sqs_mapping <<AWS::Lambda::EventSourceMapping>>
+    component "CloudWatch Log Group\n/aws/lambda/fomc-analytics-processor" as analytics_logs <<AWS::Logs::LogGroup>>
+    component "IAM Role\n(analytics processor)" as analytics_role <<AWS::IAM::Role>>
+
+    analytics_queue --> sqs_mapping : message delivery
+    sqs_mapping --> analytics_lambda : invoke
+    analytics_role -[dotted]-> analytics_lambda : grant_read(raw buckets + queue access)
+    analytics_lambda --> analytics_logs : function logs
   }
 
-  storage "{prefix}-datausa-processed" as datausa_processed <<S3 Bucket>> {
+  package "FomcSiteStack" as site_stack <<CloudFormation Stack>> #F3E5F5 {
+    storage "S3 Bucket\n{prefix}-site" as site_bucket <<AWS::S3::Bucket>>
+    component "CloudFront Distribution" as cf_dist <<AWS::CloudFront::Distribution>>
+    component "BucketDeployment\n(site/* upload + invalidation)" as site_deploy <<CDK Construct>>
+    component "ACM Certificate\n(optional, custom domains)" as cert <<AWS::CertificateManager::Certificate>>
+
+    cf_dist --> site_bucket : origin read (private bucket)
+    site_deploy --> site_bucket : upload static assets
+    site_deploy --> cf_dist : invalidate /*
+    cert --> cf_dist : TLS cert when aliases configured
   }
-
-  note right of bls_processed
-    Processed buckets reserved
-    for future transforms
-  end note
-
-  ' Bucket configuration
-  note bottom of bls_raw
-    RemovalPolicy: DESTROY | RETAIN
-    auto_delete_objects: true (if DESTROY)
-  end note
-
-  ' SQS Queues (co-located to avoid cyclic refs)
-  queue "fomc-analytics-queue" as sqs_main <<SQS Queue>> {
-  }
-  note right of sqs_main
-    visibility_timeout: 6 min
-    max_receive_count: 3
-    DLQ: fomc-analytics-dlq
-  end note
-
-  queue "fomc-analytics-dlq" as sqs_dlq <<SQS Dead Letter Queue>> {
-  }
-  note right of sqs_dlq
-    retention_period: 14 days
-  end note
-
-  ' S3 Event Notification
-  card "S3 Event Notification" as s3_notif <<NotificationConfiguration>>
-  note bottom of s3_notif
-    Event: OBJECT_CREATED
-    Filter: suffix = ".json"
-    Destination: SQS
-  end note
-
-  ' Wiring within the stack
-  sqs_main -[dashed]-> sqs_dlq : after 3 failures
-  datausa_raw --> s3_notif
-  s3_notif --> sqs_main : JSON upload events
 }
 
-' ──────────────────────────────────────────────
-' Stack 2: FomcComputeStack
-' ──────────────────────────────────────────────
-package "FomcComputeStack" as compute_stack <<CloudFormation Stack>> #E3F2FD {
+bls --> data_fetcher : HTTPS GET directory + files
 
-  component "fomc-data-fetcher" as fetcher_lambda <<Lambda Function>> {
-  }
-  note right of fetcher_lambda
-    Runtime: Python 3.12
-    Handler: src.lambdas.data_fetcher.handler.handler
-    Memory: 256 MB
-    Timeout: 5 min
-    Env vars:
-      BLS_BUCKET, DATAUSA_BUCKET
-      BLS_SERIES = "pr"
-  end note
+datausa --> data_fetcher : HTTPS GET JSON datasets
 
-  component "DailyFetchRule" as eb_rule <<EventBridge Rule>>
-  note right of eb_rule
-    Schedule: cron(0 9 * * ? *)
-    "Every day at 9:00 AM UTC"
-  end note
 
-  ' IAM (auto-generated by CDK)
-  card "IAM Role" as fetcher_role <<IAM>>
-  note bottom of fetcher_role
-    grant_read_write:
-      {prefix}-bls-raw
-      {prefix}-datausa-raw
-  end note
+data_fetcher --> bls_raw : sync files + _sync_state/*
+data_fetcher --> datausa_raw : write *.json + _sync_state/*
 
-  eb_rule --> fetcher_lambda : invokes daily
-  fetcher_role -[dotted]-> fetcher_lambda
-}
+analytics_lambda --> bls_raw : read BLS file (BLS_KEY)
+analytics_lambda --> datausa_raw : read population.json
 
-' ──────────────────────────────────────────────
-' Stack 3: FomcMessagingStack
-' ──────────────────────────────────────────────
-package "FomcMessagingStack" as messaging_stack <<CloudFormation Stack>> #FFF3E0 {
+user --> cf_dist : HTTPS requests
+cf_dist --> user : HTML/JS/CSS/JSON responses
 
-  component "fomc-analytics-processor" as analytics_lambda <<Lambda Function>> {
-  }
-  note right of analytics_lambda
-    Runtime: Python 3.12
-    Handler: src.lambdas.analytics_processor.handler.handler
-    Memory: 256 MB
-    Timeout: 5 min
-    Env vars:
-      BLS_BUCKET, DATAUSA_BUCKET
-  end note
+dev --> site_deploy : cdk deploy FomcSiteStack
 
-  card "SQS Event Source" as sqs_source <<Event Source Mapping>>
-  note bottom of sqs_source
-    batch_size: 1
-  end note
-
-  card "IAM Role" as analytics_role <<IAM>>
-  note bottom of analytics_role
-    grant_read:
-      {prefix}-bls-raw
-      {prefix}-datausa-raw
-    sqs:ReceiveMessage,
-    sqs:DeleteMessage
-  end note
-
-  sqs_source --> analytics_lambda : triggers
-  analytics_role -[dotted]-> analytics_lambda
-}
-
-' ──────────────────────────────────────────────
-' Stack 4: FomcSiteStack
-' ──────────────────────────────────────────────
-package "FomcSiteStack" as site_stack <<CloudFormation Stack>> #F3E5F5 {
-
-  storage "{prefix}-site" as site_bucket <<S3 Bucket>> {
-    card "index.html\npipeline.html\ncharts.html\narchitecture.html\ndesign.html\nalternatives.html\ndiagrams.html\nabout.html\nbls-guide.html\nadr.html" as site_pages
-    card "style.css\napp.js\ndiagrams/*.svg\npuml/*.puml" as site_assets
-    card "data/\ntimeseries.json\npipeline_status.json" as site_data
-  }
-  note right of site_bucket
-    website_index_document: index.html
-    website_error_document: index.html
-    public_read_access: true
-    block_public_access: all disabled
-  end note
-
-  component "BucketDeployment" as s3_deploy <<CDK Construct>>
-  note right of s3_deploy
-    Source: site/ directory
-    prune: true
-  end note
-
-  card "CfnOutput: SiteBucketName" as out_name <<CloudFormation Output>>
-  card "CfnOutput: SiteUrl" as out_url <<CloudFormation Output>>
-
-  s3_deploy --> site_bucket : uploads site/ contents
-}
-
-' ──────────────────────────────────────────────
-' External Data Sources
-' ──────────────────────────────────────────────
-cloud "BLS LABSTAT" as bls_ext <<https://download.bls.gov>>
-cloud "DataUSA API" as datausa_ext <<https://honolulu-api.datausa.io>>
-actor "Browser" as browser
-
-' ──────────────────────────────────────────────
-' Cross-stack dependencies
-' ──────────────────────────────────────────────
-compute_stack ..> storage_stack : depends on\n(bucket names)
-messaging_stack ..> storage_stack : depends on\n(bucket names + queue)
-
-' Data flow arrows
-fetcher_lambda --> bls_raw : writes BLS files
-fetcher_lambda --> datausa_raw : writes population.json
-bls_ext --> fetcher_lambda : HTTP GET\n(directory listing + files)
-datausa_ext --> fetcher_lambda : HTTP GET\n(JSON API)
-sqs_main --> sqs_source : delivers messages
-analytics_lambda --> bls_raw : reads BLS CSV
-analytics_lambda --> datausa_raw : reads population.json
-browser --> site_bucket : HTTP (S3 website endpoint)
-
-' ──────────────────────────────────────────────
-' CDK App entry point
-' ──────────────────────────────────────────────
-node "app.py" as cdk_app <<CDK App>> #FFFDE7 {
-}
-note bottom of cdk_app
-  env: account + region
-  from infra/config.py:
-    FOMC_BUCKET_PREFIX
-    FOMC_REMOVAL_POLICY
-    CDK_DEFAULT_ACCOUNT
-    CDK_DEFAULT_REGION
+note bottom of bls_processed
+  Provisioned for future transforms.
+  Current runtime flow is raw -> analytics.
 end note
 
-cdk_app --> storage_stack : instantiates
-cdk_app --> compute_stack : instantiates(storage=)
-cdk_app --> messaging_stack : instantiates(storage=)
-cdk_app --> site_stack : instantiates
+note bottom of datausa_processed
+  Provisioned for future transforms.
+  Current runtime flow is raw -> analytics.
+end note
 
 @enduml

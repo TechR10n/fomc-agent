@@ -125,6 +125,15 @@ Verify SQS queue:
 aws sqs list-queues --queue-name-prefix fomc-analytics-queue | python -m json.tool
 ```
 
+Verify EventBridge schedule (hourly by default):
+
+```bash
+RULE_NAME="$(aws events list-rules --name-prefix FomcComputeStack-FetchScheduleRule --query 'Rules[0].Name' --output text)"
+aws events describe-rule --name "$RULE_NAME" --query 'ScheduleExpression' --output text
+```
+
+- [ ] Schedule expression is `rate(1 hour)` (or your configured `FOMC_FETCH_INTERVAL_HOURS`)
+
 ---
 
 ## UAT-4: End-to-End Pipeline (Invoke Fetcher → S3 → SQS → Analytics Lambda)
@@ -176,7 +185,7 @@ python src/analytics/reports.py | head -80
 
 ---
 
-## UAT-6: Static Website (S3)
+## UAT-6: Static Website (CloudFront + S3)
 
 Generate the website data files (writes `site/data/timeseries.json` and additional curated JSON artifacts):
 
@@ -200,8 +209,21 @@ Deploy the site stack:
 cdk deploy FomcSiteStack --require-approval never
 ```
 
-- [ ] CDK output includes `SiteUrl`
+Optional custom domain (GoDaddy-managed DNS):
+
+```bash
+export FOMC_SITE_DOMAIN="www.example.com"
+export FOMC_SITE_CERT_ARN="arn:aws:acm:us-east-1:<account-id>:certificate/<certificate-id>"
+# Optional extra aliases:
+# export FOMC_SITE_ALIASES="www.example.com,app.example.com"
+
+cdk deploy FomcSiteStack --require-approval never
+```
+
+- [ ] CDK output includes `SiteUrl` and `SiteCloudFrontDomain`
 - [ ] Opening `SiteUrl` renders a chart
+- [ ] If custom domain is configured, GoDaddy `CNAME` points your subdomain to `SiteCloudFrontDomain`
+- [ ] Opening your custom domain renders the same site
 
 ---
 

@@ -20,6 +20,8 @@ class FomcStorageStack(Stack):
 
         config = get_env_config()
         prefix = config["bucket_prefix"]
+        analytics_queue_name = config["analytics_queue_name"]
+        analytics_dlq_name = config["analytics_dlq_name"]
 
         removal = RemovalPolicy.DESTROY if config["removal_policy"] == "destroy" else RemovalPolicy.RETAIN
 
@@ -50,14 +52,14 @@ class FomcStorageStack(Stack):
         dlq = sqs.Queue(
             self,
             "AnalyticsDLQ",
-            queue_name="fomc-analytics-dlq",
+            queue_name=analytics_dlq_name,
             retention_period=Duration.days(14),
         )
 
         self.analytics_queue = sqs.Queue(
             self,
             "AnalyticsQueue",
-            queue_name="fomc-analytics-queue",
+            queue_name=analytics_queue_name,
             visibility_timeout=Duration.minutes(6),
             dead_letter_queue=sqs.DeadLetterQueue(
                 max_receive_count=3,

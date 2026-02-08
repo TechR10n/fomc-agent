@@ -1,33 +1,33 @@
 {
   "version": "48.0.0",
   "files": {
-    "b9c06ca7b08b52347384072f68e558d41337e94f1b5fcf1c0482bb8891999941": {
+    "1795403a30c3e9ee0269d12ba3cfebff71222a1871e4215e98124dc28c69b14a": {
       "displayName": "DataFetcherFunction/Code",
       "source": {
-        "path": "asset.b9c06ca7b08b52347384072f68e558d41337e94f1b5fcf1c0482bb8891999941",
+        "path": "asset.1795403a30c3e9ee0269d12ba3cfebff71222a1871e4215e98124dc28c69b14a",
         "packaging": "zip"
       },
       "destinations": {
-        "current_account-us-east-1-4e960e7d": {
-          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
-          "objectKey": "b9c06ca7b08b52347384072f68e558d41337e94f1b5fcf1c0482bb8891999941.zip",
-          "region": "us-east-1",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
+        "111111111111-us-east-2-ed22be07": {
+          "bucketName": "cdk-hnb659fds-assets-111111111111-us-east-2",
+          "objectKey": "1795403a30c3e9ee0269d12ba3cfebff71222a1871e4215e98124dc28c69b14a.zip",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-file-publishing-role-111111111111-us-east-2"
         }
       }
     },
-    "4d6bbc653e678e0a737cf8df51051bd2be535abf91c9dae65da59897362358d8": {
+    "ebbfe9786c0dd1953cb6abab51ba9944d5c748e09a0f83bc66eed3c9bef952db": {
       "displayName": "FomcComputeStack Template",
       "source": {
         "path": "FomcComputeStack.template.json",
         "packaging": "file"
       },
       "destinations": {
-        "current_account-us-east-1-6ae52ab9": {
-          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
-          "objectKey": "4d6bbc653e678e0a737cf8df51051bd2be535abf91c9dae65da59897362358d8.json",
-          "region": "us-east-1",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
+        "111111111111-us-east-2-a86c2a08": {
+          "bucketName": "cdk-hnb659fds-assets-111111111111-us-east-2",
+          "objectKey": "ebbfe9786c0dd1953cb6abab51ba9944d5c748e09a0f83bc66eed3c9bef952db.json",
+          "region": "us-east-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-file-publishing-role-111111111111-us-east-2"
         }
       }
     }

@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 
 DEFAULT_BUCKET_PREFIX = "fomc"
+DEFAULT_ANALYTICS_QUEUE_NAME = "fomc-analytics-queue"
+DEFAULT_ANALYTICS_DLQ_NAME = "fomc-analytics-dlq"
 
 
 def get_bucket_prefix() -> str:
@@ -25,6 +27,16 @@ def get_datausa_bucket() -> str:
 def get_datausa_key() -> str:
     """Get the S3 key used for the DataUSA population JSON."""
     return os.environ.get("DATAUSA_KEY", "population.json")
+
+
+def get_analytics_queue_name() -> str:
+    """Get the analytics SQS queue name."""
+    return os.environ.get("FOMC_ANALYTICS_QUEUE_NAME", DEFAULT_ANALYTICS_QUEUE_NAME)
+
+
+def get_analytics_dlq_name() -> str:
+    """Get the analytics dead-letter queue name."""
+    return os.environ.get("FOMC_ANALYTICS_DLQ_NAME", DEFAULT_ANALYTICS_DLQ_NAME)
 
 
 def get_datausa_datasets(default: str = "population") -> list[str]:

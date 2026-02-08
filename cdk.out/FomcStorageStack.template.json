@@ -1,9 +1,9 @@
 {
  "Resources": {
-  "fomcblsraw35871BFE": {
+  "fomcciblsraw3B219EFB": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
-    "BucketName": "fomc-bls-raw",
+    "BucketName": "fomc-ci-bls-raw",
     "Tags": [
      {
       "Key": "aws-cdk:auto-delete-objects",
@@ -14,14 +14,14 @@
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-bls-raw/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-bls-raw/Resource"
    }
   },
-  "fomcblsrawPolicy9FC4D695": {
+  "fomcciblsrawPolicyF5DD9324": {
    "Type": "AWS::S3::BucketPolicy",
    "Properties": {
     "Bucket": {
-     "Ref": "fomcblsraw35871BFE"
+     "Ref": "fomcciblsraw3B219EFB"
     },
     "PolicyDocument": {
      "Statement": [
@@ -44,7 +44,7 @@
        "Resource": [
         {
          "Fn::GetAtt": [
-          "fomcblsraw35871BFE",
+          "fomcciblsraw3B219EFB",
           "Arn"
          ]
         },
@@ -54,7 +54,7 @@
           [
            {
             "Fn::GetAtt": [
-             "fomcblsraw35871BFE",
+             "fomcciblsraw3B219EFB",
              "Arn"
             ]
            },
@@ -69,10 +69,10 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-bls-raw/Policy/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-bls-raw/Policy/Resource"
    }
   },
-  "fomcblsrawAutoDeleteObjectsCustomResourceF3F41BFB": {
+  "fomcciblsrawAutoDeleteObjectsCustomResource7D2C338C": {
    "Type": "Custom::S3AutoDeleteObjects",
    "Properties": {
     "ServiceToken": {
@@ -82,16 +82,16 @@
      ]
     },
     "BucketName": {
-     "Ref": "fomcblsraw35871BFE"
+     "Ref": "fomcciblsraw3B219EFB"
     }
    },
    "DependsOn": [
-    "fomcblsrawPolicy9FC4D695"
+    "fomcciblsrawPolicyF5DD9324"
    ],
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-bls-raw/AutoDeleteObjectsCustomResource/Default"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-bls-raw/AutoDeleteObjectsCustomResource/Default"
    }
   },
   "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
@@ -123,9 +123,7 @@
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
-     },
+     "S3Bucket": "cdk-hnb659fds-assets-111111111111-us-east-2",
      "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip"
     },
     "Timeout": 900,
@@ -144,7 +142,7 @@
       [
        "Lambda function for auto-deleting objects in ",
        {
-        "Ref": "fomcblsraw35871BFE"
+        "Ref": "fomcciblsraw3B219EFB"
        },
        " S3 bucket."
       ]
@@ -160,10 +158,10 @@
     "aws:asset:property": "Code"
    }
   },
-  "fomcdatausarawECE932DE": {
+  "fomccidatausarawF4D4DA91": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
-    "BucketName": "fomc-datausa-raw",
+    "BucketName": "fomc-ci-datausa-raw",
     "Tags": [
      {
       "Key": "aws-cdk:auto-delete-objects",
@@ -174,14 +172,14 @@
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-datausa-raw/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-datausa-raw/Resource"
    }
   },
-  "fomcdatausarawPolicyDE6A3273": {
+  "fomccidatausarawPolicy496079AB": {
    "Type": "AWS::S3::BucketPolicy",
    "Properties": {
     "Bucket": {
-     "Ref": "fomcdatausarawECE932DE"
+     "Ref": "fomccidatausarawF4D4DA91"
     },
     "PolicyDocument": {
      "Statement": [
@@ -204,7 +202,7 @@
        "Resource": [
         {
          "Fn::GetAtt": [
-          "fomcdatausarawECE932DE",
+          "fomccidatausarawF4D4DA91",
           "Arn"
          ]
         },
@@ -214,7 +212,7 @@
           [
            {
             "Fn::GetAtt": [
-             "fomcdatausarawECE932DE",
+             "fomccidatausarawF4D4DA91",
              "Arn"
             ]
            },
@@ -229,10 +227,10 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-datausa-raw/Policy/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-datausa-raw/Policy/Resource"
    }
   },
-  "fomcdatausarawAutoDeleteObjectsCustomResource3FB406B3": {
+  "fomccidatausarawAutoDeleteObjectsCustomResourceB5729BC2": {
    "Type": "Custom::S3AutoDeleteObjects",
    "Properties": {
     "ServiceToken": {
@@ -242,19 +240,19 @@
      ]
     },
     "BucketName": {
-     "Ref": "fomcdatausarawECE932DE"
+     "Ref": "fomccidatausarawF4D4DA91"
     }
    },
    "DependsOn": [
-    "fomcdatausarawPolicyDE6A3273"
+    "fomccidatausarawPolicy496079AB"
    ],
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-datausa-raw/AutoDeleteObjectsCustomResource/Default"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-datausa-raw/AutoDeleteObjectsCustomResource/Default"
    }
   },
-  "fomcdatausarawNotifications5AD88046": {
+  "fomccidatausarawNotificationsDDB3B011": {
    "Type": "Custom::S3BucketNotifications",
    "Properties": {
     "ServiceToken": {
@@ -264,7 +262,7 @@
      ]
     },
     "BucketName": {
-     "Ref": "fomcdatausarawECE932DE"
+     "Ref": "fomccidatausarawF4D4DA91"
     },
     "NotificationConfiguration": {
      "QueueConfigurations": [
@@ -297,16 +295,16 @@
    "DependsOn": [
     "AnalyticsQueuePolicy69C133EE",
     "AnalyticsQueue238D9515",
-    "fomcdatausarawPolicyDE6A3273"
+    "fomccidatausarawPolicy496079AB"
    ],
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-datausa-raw/Notifications/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-datausa-raw/Notifications/Resource"
    }
   },
-  "fomcblsprocessed792F45CD": {
+  "fomcciblsprocessed22AC87F7": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
-    "BucketName": "fomc-bls-processed",
+    "BucketName": "fomc-ci-bls-processed",
     "Tags": [
      {
       "Key": "aws-cdk:auto-delete-objects",
@@ -317,14 +315,14 @@
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-bls-processed/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-bls-processed/Resource"
    }
   },
-  "fomcblsprocessedPolicyC2C2C42C": {
+  "fomcciblsprocessedPolicyC92BF0F6": {
    "Type": "AWS::S3::BucketPolicy",
    "Properties": {
     "Bucket": {
-     "Ref": "fomcblsprocessed792F45CD"
+     "Ref": "fomcciblsprocessed22AC87F7"
     },
     "PolicyDocument": {
      "Statement": [
@@ -347,7 +345,7 @@
        "Resource": [
         {
          "Fn::GetAtt": [
-          "fomcblsprocessed792F45CD",
+          "fomcciblsprocessed22AC87F7",
           "Arn"
          ]
         },
@@ -357,7 +355,7 @@
           [
            {
             "Fn::GetAtt": [
-             "fomcblsprocessed792F45CD",
+             "fomcciblsprocessed22AC87F7",
              "Arn"
             ]
            },
@@ -372,10 +370,10 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-bls-processed/Policy/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-bls-processed/Policy/Resource"
    }
   },
-  "fomcblsprocessedAutoDeleteObjectsCustomResourceD1DF6CB6": {
+  "fomcciblsprocessedAutoDeleteObjectsCustomResourceA51E19B0": {
    "Type": "Custom::S3AutoDeleteObjects",
    "Properties": {
     "ServiceToken": {
@@ -385,22 +383,22 @@
      ]
     },
     "BucketName": {
-     "Ref": "fomcblsprocessed792F45CD"
+     "Ref": "fomcciblsprocessed22AC87F7"
     }
    },
    "DependsOn": [
-    "fomcblsprocessedPolicyC2C2C42C"
+    "fomcciblsprocessedPolicyC92BF0F6"
    ],
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-bls-processed/AutoDeleteObjectsCustomResource/Default"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-bls-processed/AutoDeleteObjectsCustomResource/Default"
    }
   },
-  "fomcdatausaprocessedCFD31A80": {
+  "fomccidatausaprocessed75F536B5": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
-    "BucketName": "fomc-datausa-processed",
+    "BucketName": "fomc-ci-datausa-processed",
     "Tags": [
      {
       "Key": "aws-cdk:auto-delete-objects",
@@ -411,14 +409,14 @@
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-datausa-processed/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-datausa-processed/Resource"
    }
   },
-  "fomcdatausaprocessedPolicy5823F557": {
+  "fomccidatausaprocessedPolicyE000B347": {
    "Type": "AWS::S3::BucketPolicy",
    "Properties": {
     "Bucket": {
-     "Ref": "fomcdatausaprocessedCFD31A80"
+     "Ref": "fomccidatausaprocessed75F536B5"
     },
     "PolicyDocument": {
      "Statement": [
@@ -441,7 +439,7 @@
        "Resource": [
         {
          "Fn::GetAtt": [
-          "fomcdatausaprocessedCFD31A80",
+          "fomccidatausaprocessed75F536B5",
           "Arn"
          ]
         },
@@ -451,7 +449,7 @@
           [
            {
             "Fn::GetAtt": [
-             "fomcdatausaprocessedCFD31A80",
+             "fomccidatausaprocessed75F536B5",
              "Arn"
             ]
            },
@@ -466,10 +464,10 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-datausa-processed/Policy/Resource"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-datausa-processed/Policy/Resource"
    }
   },
-  "fomcdatausaprocessedAutoDeleteObjectsCustomResource30EECFF9": {
+  "fomccidatausaprocessedAutoDeleteObjectsCustomResource98303A88": {
    "Type": "Custom::S3AutoDeleteObjects",
    "Properties": {
     "ServiceToken": {
@@ -479,16 +477,16 @@
      ]
     },
     "BucketName": {
-     "Ref": "fomcdatausaprocessedCFD31A80"
+     "Ref": "fomccidatausaprocessed75F536B5"
     }
    },
    "DependsOn": [
-    "fomcdatausaprocessedPolicy5823F557"
+    "fomccidatausaprocessedPolicyE000B347"
    ],
    "UpdateReplacePolicy": "Delete",
    "DeletionPolicy": "Delete",
    "Metadata": {
-    "aws:cdk:path": "FomcStorageStack/fomc-datausa-processed/AutoDeleteObjectsCustomResource/Default"
+    "aws:cdk:path": "FomcStorageStack/fomc-ci-datausa-processed/AutoDeleteObjectsCustomResource/Default"
    }
   },
   "AnalyticsDLQE9AD2DE0": {
@@ -539,7 +537,7 @@
         "ArnLike": {
          "aws:SourceArn": {
           "Fn::GetAtt": [
-           "fomcdatausarawECE932DE",
+           "fomccidatausarawF4D4DA91",
            "Arn"
           ]
          }
@@ -613,7 +611,7 @@
        "Effect": "Allow",
        "Resource": {
         "Fn::GetAtt": [
-         "fomcdatausarawECE932DE",
+         "fomccidatausarawF4D4DA91",
          "Arn"
         ]
        }
@@ -660,7 +658,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1VPXQ6CMAw+C++jKiS+CxdAPICZo+IEtrhuGrLs7iIjoknT77cPzSDL97BN+ItS0XRpLy/gT5aLjk3W2VMOvnCiQ8vKq1pYhEr3UoyrHXVg9CDwR4cOP1kk814PfmRgkg/ga93P9RnX4tIJrHRk9VAjaWdEbH75X1QZ/ZQNmoITsgMR2umbVqo2sGq0N602OeyyaZI7SZkap6wcEOqIb1JlPVcPAQAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WPSw6CMBCGz+K+jIHGuBYugHgAU8uIFWhjp9WQhruLlIhu5n/MN4vJION7SDfiRYms26RTFwgnJ2TLpuociEPIvWzRseKqFxelNJ2Sw1rHPDJ6EISjR4+fXTTzXA9+4siU6CFUppvxWVdwYUZWeHKmr5CMtzKSX/+3Kq15qhptLgjZgQjd9E2jdDOycnA3o7ccUg67zZ2USqzXTvUIVdQ3scn+PA4BAAA="
    },
    "Metadata": {
     "aws:cdk:path": "FomcStorageStack/CDKMetadata/Default"
@@ -668,42 +666,42 @@
   }
  },
  "Outputs": {
-  "ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539": {
+  "ExportsOutputFnGetAttfomcciblsraw3B219EFBArn873C0BF4": {
    "Value": {
     "Fn::GetAtt": [
-     "fomcblsraw35871BFE",
+     "fomcciblsraw3B219EFB",
      "Arn"
     ]
    },
    "Export": {
-    "Name": "FomcStorageStack:ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
+    "Name": "FomcStorageStack:ExportsOutputFnGetAttfomcciblsraw3B219EFBArn873C0BF4"
    }
   },
-  "ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70": {
+  "ExportsOutputFnGetAttfomccidatausarawF4D4DA91ArnE7B7BFF6": {
    "Value": {
     "Fn::GetAtt": [
-     "fomcdatausarawECE932DE",
+     "fomccidatausarawF4D4DA91",
      "Arn"
     ]
    },
    "Export": {
-    "Name": "FomcStorageStack:ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
+    "Name": "FomcStorageStack:ExportsOutputFnGetAttfomccidatausarawF4D4DA91ArnE7B7BFF6"
    }
   },
-  "ExportsOutputReffomcblsraw35871BFE745A94C8": {
+  "ExportsOutputReffomcciblsraw3B219EFB21094858": {
    "Value": {
-    "Ref": "fomcblsraw35871BFE"
+    "Ref": "fomcciblsraw3B219EFB"
    },
    "Export": {
-    "Name": "FomcStorageStack:ExportsOutputReffomcblsraw35871BFE745A94C8"
+    "Name": "FomcStorageStack:ExportsOutputReffomcciblsraw3B219EFB21094858"
    }
   },
-  "ExportsOutputReffomcdatausarawECE932DE487BE692": {
+  "ExportsOutputReffomccidatausarawF4D4DA91F061C8BD": {
    "Value": {
-    "Ref": "fomcdatausarawECE932DE"
+    "Ref": "fomccidatausarawF4D4DA91"
    },
    "Export": {
-    "Name": "FomcStorageStack:ExportsOutputReffomcdatausarawECE932DE487BE692"
+    "Name": "FomcStorageStack:ExportsOutputReffomccidatausarawF4D4DA91F061C8BD"
    }
   },
   "ExportsOutputFnGetAttAnalyticsQueue238D9515ArnD2234C55": {

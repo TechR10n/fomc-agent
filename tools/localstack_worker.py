@@ -18,18 +18,13 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from src.config import get_analytics_queue_name
 from src.helpers.aws_client import get_client
 from src.lambdas.analytics_processor.handler import handler as analytics_handler
 
 
 def _ensure_localstack_env() -> None:
-    endpoint = os.environ.get("AWS_ENDPOINT_URL")
-    if not endpoint:
-        raise SystemExit(
-            "AWS_ENDPOINT_URL is not set (expected something like http://localhost:4566). "
-            "Tip: source `.env.localstack` or use the PyCharm run config."
-        )
-
+    os.environ.setdefault("AWS_ENDPOINT_URL", "http://localhost:4566")
     os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
     os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
     os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
@@ -91,7 +86,7 @@ def process_once(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--queue", default="fomc-analytics-queue", help="SQS queue name")
+    parser.add_argument("--queue", default=get_analytics_queue_name(), help="SQS queue name")
     parser.add_argument("--once", action="store_true", help="Process all available messages then exit")
     parser.add_argument("--max-messages", type=int, default=100, help="Max messages to process per run")
     parser.add_argument("--wait", type=int, default=10, help="Long-poll wait seconds (0-20)")
@@ -117,4 +112,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

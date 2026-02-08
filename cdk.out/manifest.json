@@ -11,21 +11,21 @@
     },
     "FomcStorageStack": {
       "type": "aws:cloudformation:stack",
-      "environment": "aws://unknown-account/us-east-1",
+      "environment": "aws://111111111111/us-east-2",
       "properties": {
         "templateFile": "FomcStorageStack.template.json",
         "terminationProtection": false,
         "validateOnSynth": false,
-        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
-        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/8afed0bb601cbacea54af8bb22e18668ed8b2409051ca7bfe9dd92f655a1d00d.json",
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-deploy-role-111111111111-us-east-2",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-cfn-exec-role-111111111111-us-east-2",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-111111111111-us-east-2/cd1e58aa681d44ae0875c34361e55444bb28a24443c4feebd71356ca3aaa922b.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
           "FomcStorageStack.assets"
         ],
         "lookupRole": {
-          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-us-east-1",
+          "arn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-lookup-role-111111111111-us-east-2",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
@@ -34,22 +34,22 @@
         "FomcStorageStack.assets"
       ],
       "metadata": {
-        "/FomcStorageStack/fomc-bls-raw/Resource": [
+        "/FomcStorageStack/fomc-ci-bls-raw/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcblsraw35871BFE"
+            "data": "fomcciblsraw3B219EFB"
           }
         ],
-        "/FomcStorageStack/fomc-bls-raw/Policy/Resource": [
+        "/FomcStorageStack/fomc-ci-bls-raw/Policy/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcblsrawPolicy9FC4D695"
+            "data": "fomcciblsrawPolicyF5DD9324"
           }
         ],
-        "/FomcStorageStack/fomc-bls-raw/AutoDeleteObjectsCustomResource/Default": [
+        "/FomcStorageStack/fomc-ci-bls-raw/AutoDeleteObjectsCustomResource/Default": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcblsrawAutoDeleteObjectsCustomResourceF3F41BFB"
+            "data": "fomcciblsrawAutoDeleteObjectsCustomResource7D2C338C"
           }
         ],
         "/FomcStorageStack/Custom::S3AutoDeleteObjectsCustomResourceProvider": [
@@ -70,64 +70,64 @@
             "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
           }
         ],
-        "/FomcStorageStack/fomc-datausa-raw/Resource": [
+        "/FomcStorageStack/fomc-ci-datausa-raw/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcdatausarawECE932DE"
+            "data": "fomccidatausarawF4D4DA91"
           }
         ],
-        "/FomcStorageStack/fomc-datausa-raw/Policy/Resource": [
+        "/FomcStorageStack/fomc-ci-datausa-raw/Policy/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcdatausarawPolicyDE6A3273"
+            "data": "fomccidatausarawPolicy496079AB"
           }
         ],
-        "/FomcStorageStack/fomc-datausa-raw/AutoDeleteObjectsCustomResource/Default": [
+        "/FomcStorageStack/fomc-ci-datausa-raw/AutoDeleteObjectsCustomResource/Default": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcdatausarawAutoDeleteObjectsCustomResource3FB406B3"
+            "data": "fomccidatausarawAutoDeleteObjectsCustomResourceB5729BC2"
           }
         ],
-        "/FomcStorageStack/fomc-datausa-raw/Notifications/Resource": [
+        "/FomcStorageStack/fomc-ci-datausa-raw/Notifications/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcdatausarawNotifications5AD88046"
+            "data": "fomccidatausarawNotificationsDDB3B011"
           }
         ],
-        "/FomcStorageStack/fomc-bls-processed/Resource": [
+        "/FomcStorageStack/fomc-ci-bls-processed/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcblsprocessed792F45CD"
+            "data": "fomcciblsprocessed22AC87F7"
           }
         ],
-        "/FomcStorageStack/fomc-bls-processed/Policy/Resource": [
+        "/FomcStorageStack/fomc-ci-bls-processed/Policy/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcblsprocessedPolicyC2C2C42C"
+            "data": "fomcciblsprocessedPolicyC92BF0F6"
           }
         ],
-        "/FomcStorageStack/fomc-bls-processed/AutoDeleteObjectsCustomResource/Default": [
+        "/FomcStorageStack/fomc-ci-bls-processed/AutoDeleteObjectsCustomResource/Default": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcblsprocessedAutoDeleteObjectsCustomResourceD1DF6CB6"
+            "data": "fomcciblsprocessedAutoDeleteObjectsCustomResourceA51E19B0"
           }
         ],
-        "/FomcStorageStack/fomc-datausa-processed/Resource": [
+        "/FomcStorageStack/fomc-ci-datausa-processed/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcdatausaprocessedCFD31A80"
+            "data": "fomccidatausaprocessed75F536B5"
           }
         ],
-        "/FomcStorageStack/fomc-datausa-processed/Policy/Resource": [
+        "/FomcStorageStack/fomc-ci-datausa-processed/Policy/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcdatausaprocessedPolicy5823F557"
+            "data": "fomccidatausaprocessedPolicyE000B347"
           }
         ],
-        "/FomcStorageStack/fomc-datausa-processed/AutoDeleteObjectsCustomResource/Default": [
+        "/FomcStorageStack/fomc-ci-datausa-processed/AutoDeleteObjectsCustomResource/Default": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "fomcdatausaprocessedAutoDeleteObjectsCustomResource30EECFF9"
+            "data": "fomccidatausaprocessedAutoDeleteObjectsCustomResource98303A88"
           }
         ],
         "/FomcStorageStack/AnalyticsDLQ/Resource": [
@@ -172,28 +172,28 @@
             "data": "CDKMetadata"
           }
         ],
-        "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"fomcblsraw35871BFE\",\"Arn\"]}": [
+        "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"fomcciblsraw3B219EFB\",\"Arn\"]}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
+            "data": "ExportsOutputFnGetAttfomcciblsraw3B219EFBArn873C0BF4"
           }
         ],
-        "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"fomcdatausarawECE932DE\",\"Arn\"]}": [
+        "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"fomccidatausarawF4D4DA91\",\"Arn\"]}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
+            "data": "ExportsOutputFnGetAttfomccidatausarawF4D4DA91ArnE7B7BFF6"
           }
         ],
-        "/FomcStorageStack/Exports/Output{\"Ref\":\"fomcblsraw35871BFE\"}": [
+        "/FomcStorageStack/Exports/Output{\"Ref\":\"fomcciblsraw3B219EFB\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputReffomcblsraw35871BFE745A94C8"
+            "data": "ExportsOutputReffomcciblsraw3B219EFB21094858"
           }
         ],
-        "/FomcStorageStack/Exports/Output{\"Ref\":\"fomcdatausarawECE932DE\"}": [
+        "/FomcStorageStack/Exports/Output{\"Ref\":\"fomccidatausarawF4D4DA91\"}": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "ExportsOutputReffomcdatausarawECE932DE487BE692"
+            "data": "ExportsOutputReffomccidatausarawF4D4DA91F061C8BD"
           }
         ],
         "/FomcStorageStack/Exports/Output{\"Fn::GetAtt\":[\"AnalyticsQueue238D9515\",\"Arn\"]}": [
@@ -227,21 +227,21 @@
     },
     "FomcComputeStack": {
       "type": "aws:cloudformation:stack",
-      "environment": "aws://unknown-account/us-east-1",
+      "environment": "aws://111111111111/us-east-2",
       "properties": {
         "templateFile": "FomcComputeStack.template.json",
         "terminationProtection": false,
         "validateOnSynth": false,
-        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
-        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/4d6bbc653e678e0a737cf8df51051bd2be535abf91c9dae65da59897362358d8.json",
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-deploy-role-111111111111-us-east-2",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-cfn-exec-role-111111111111-us-east-2",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-111111111111-us-east-2/ebbfe9786c0dd1953cb6abab51ba9944d5c748e09a0f83bc66eed3c9bef952db.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
           "FomcComputeStack.assets"
         ],
         "lookupRole": {
-          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-us-east-1",
+          "arn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-lookup-role-111111111111-us-east-2",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
@@ -269,16 +269,16 @@
             "data": "DataFetcherFunction18E82FAA"
           }
         ],
-        "/FomcComputeStack/DailyFetchRule/Resource": [
+        "/FomcComputeStack/FetchScheduleRule/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "DailyFetchRule5A781B42"
+            "data": "FetchScheduleRuleE0D2DDB2"
           }
         ],
-        "/FomcComputeStack/DailyFetchRule/AllowEventRuleFomcComputeStackDataFetcherFunction77B28AEA": [
+        "/FomcComputeStack/FetchScheduleRule/AllowEventRuleFomcComputeStackDataFetcherFunction77B28AEA": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "DailyFetchRuleAllowEventRuleFomcComputeStackDataFetcherFunction77B28AEA517BBD4A"
+            "data": "FetchScheduleRuleAllowEventRuleFomcComputeStackDataFetcherFunction77B28AEAB6177238"
           }
         ],
         "/FomcComputeStack/CDKMetadata/Default": [
@@ -312,21 +312,21 @@
     },
     "FomcMessagingStack": {
       "type": "aws:cloudformation:stack",
-      "environment": "aws://unknown-account/us-east-1",
+      "environment": "aws://111111111111/us-east-2",
       "properties": {
         "templateFile": "FomcMessagingStack.template.json",
         "terminationProtection": false,
         "validateOnSynth": false,
-        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
-        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/8fb8bac6ebca09aa0d7c7bf90192e1d1df67798544da1e753ccb30e563e51509.json",
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-deploy-role-111111111111-us-east-2",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-cfn-exec-role-111111111111-us-east-2",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-111111111111-us-east-2/24ccf546aa179eb84d3c21191de5561fa0733716564d3d8af9790f8a8840e660.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
           "FomcMessagingStack.assets"
         ],
         "lookupRole": {
-          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-us-east-1",
+          "arn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-lookup-role-111111111111-us-east-2",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
@@ -391,21 +391,21 @@
     },
     "FomcSiteStack": {
       "type": "aws:cloudformation:stack",
-      "environment": "aws://unknown-account/us-east-1",
+      "environment": "aws://111111111111/us-east-2",
       "properties": {
         "templateFile": "FomcSiteStack.template.json",
         "terminationProtection": false,
         "validateOnSynth": false,
-        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
-        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/561c3d4e7281c65f17d1a0380097a753e5a965b6653056a4e787e67fab8bf28e.json",
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-deploy-role-111111111111-us-east-2",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-cfn-exec-role-111111111111-us-east-2",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-111111111111-us-east-2/ac7454f698d0b0aa3a424db58c04b9fd1fc0583d773a815bd24000f197efc869.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
           "FomcSiteStack.assets"
         ],
         "lookupRole": {
-          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-us-east-1",
+          "arn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-lookup-role-111111111111-us-east-2",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
@@ -448,6 +448,12 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+          }
+        ],
+        "/FomcSiteStack/SiteDistribution/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SiteDistribution3FF9535D"
           }
         ],
         "/FomcSiteStack/DeploySite/AwsCliLayer/Resource": [
@@ -494,6 +500,12 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "SiteBucketName"
+          }
+        ],
+        "/FomcSiteStack/SiteCloudFrontDomain": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SiteCloudFrontDomain"
           }
         ],
         "/FomcSiteStack/SiteUrl": [
@@ -778,6 +790,10 @@
           "@aws-cdk/aws-eks:nodegroupNameAttribute": {
             "recommendedValue": true,
             "explanation": "When enabled, nodegroupName attribute of the provisioned EKS NodeGroup will not have the cluster name prefix."
+          },
+          "@aws-cdk/aws-eks:useNativeOidcProvider": {
+            "recommendedValue": true,
+            "explanation": "When enabled, EKS V2 clusters will use the native OIDC provider resource AWS::IAM::OIDCProvider instead of creating the OIDCProvider with a custom resource (iam.OpenIDConnectProvider)."
           },
           "@aws-cdk/aws-ec2:ebsDefaultGp3Volume": {
             "recommendedValue": true,

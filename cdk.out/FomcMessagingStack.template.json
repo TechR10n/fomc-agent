@@ -61,14 +61,14 @@
        "Effect": "Allow",
        "Resource": [
         {
-         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
+         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcciblsraw3B219EFBArn873C0BF4"
         },
         {
          "Fn::Join": [
           "",
           [
            {
-            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcblsraw35871BFEArn70659539"
+            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcciblsraw3B219EFBArn873C0BF4"
            },
            "/*"
           ]
@@ -85,14 +85,14 @@
        "Effect": "Allow",
        "Resource": [
         {
-         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
+         "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomccidatausarawF4D4DA91ArnE7B7BFF6"
         },
         {
          "Fn::Join": [
           "",
           [
            {
-            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomcdatausarawECE932DEArnE9002C70"
+            "Fn::ImportValue": "FomcStorageStack:ExportsOutputFnGetAttfomccidatausarawF4D4DA91ArnE7B7BFF6"
            },
            "/*"
           ]
@@ -118,18 +118,16 @@
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
-     },
-     "S3Key": "b9c06ca7b08b52347384072f68e558d41337e94f1b5fcf1c0482bb8891999941.zip"
+     "S3Bucket": "cdk-hnb659fds-assets-111111111111-us-east-2",
+     "S3Key": "1795403a30c3e9ee0269d12ba3cfebff71222a1871e4215e98124dc28c69b14a.zip"
     },
     "Environment": {
      "Variables": {
       "BLS_BUCKET": {
-       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcblsraw35871BFE745A94C8"
+       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcciblsraw3B219EFB21094858"
       },
       "DATAUSA_BUCKET": {
-       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomcdatausarawECE932DE487BE692"
+       "Fn::ImportValue": "FomcStorageStack:ExportsOutputReffomccidatausarawF4D4DA91F061C8BD"
       }
      }
     },
@@ -151,7 +149,7 @@
    ],
    "Metadata": {
     "aws:cdk:path": "FomcMessagingStack/AnalyticsProcessorFunction/Resource",
-    "aws:asset:path": "asset.b9c06ca7b08b52347384072f68e558d41337e94f1b5fcf1c0482bb8891999941",
+    "aws:asset:path": "asset.1795403a30c3e9ee0269d12ba3cfebff71222a1871e4215e98124dc28c69b14a",
     "aws:asset:is-bundled": false,
     "aws:asset:property": "Code"
    }
@@ -174,7 +172,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/2WOwQqDMBBEv6X3uG0Veq+lvRVEP0DWmNqtMRGTtEjw35so9FJYeDOzy7AppNkJDjv8mIS3fSKpAV9Z5D0LUe0lDk2L4G9OcUtasctD/fT1LZSttJu4uOM4kuri+j9dGOEAvtRSxIOVhZbE52g3tTCT1WiMsAbOEcFD7ngvbI5GLGwNw2fdWljM9qnVPoNjGmb3MkTJ5JSlQUC58QuFIOMR2wAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/2WOQQ6CMBBFz8K+jIHGuBajOxMCByBDqThSWkJbDSHcXQqJG1fv/zeTyaSQ8hMkEX5sLJouVlTDXDoUHVtVNSvs6wZhvnktHBnNLg/9y9e31K40fhTyjsNAug3jf7swwh7mwigZFjbmRpGYQt3Twiyv0FrpLJwD1g6ZF510GVq5sE2un7XbwXxyT6MPHBIOx+hlieLRa0e9hGLnFywdWQ/aAAAA"
    },
    "Metadata": {
     "aws:cdk:path": "FomcMessagingStack/CDKMetadata/Default"

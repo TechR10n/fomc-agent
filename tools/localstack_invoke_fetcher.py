@@ -20,13 +20,7 @@ from src.lambdas.data_fetcher.handler import handler as fetcher_handler
 
 
 def _ensure_localstack_env() -> None:
-    endpoint = os.environ.get("AWS_ENDPOINT_URL")
-    if not endpoint:
-        raise SystemExit(
-            "AWS_ENDPOINT_URL is not set (expected something like http://localhost:4566). "
-            "Tip: source `.env.localstack` or use the PyCharm run config."
-        )
-
+    os.environ.setdefault("AWS_ENDPOINT_URL", "http://localhost:4566")
     os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
     os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
     os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
@@ -60,4 +54,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

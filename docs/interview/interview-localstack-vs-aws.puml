@@ -31,7 +31,7 @@ package "LocalStack (Dev Laptop)" as LS #E8F5E9 {
 }
 
 package "AWS Cloud (Prod-like)" as AWS #E3F2FD {
-  component "EventBridge\nDaily schedule" as EB
+  component "EventBridge\nHourly schedule" as EB
   component "Lambda\nfomc-data-fetcher" as Fetcher
   storage "S3\n{prefix}-bls-raw" as AWS_BLS <<Bucket>>
   storage "S3\n{prefix}-datausa-raw" as AWS_DataUSA <<Bucket>>
@@ -66,4 +66,3 @@ note bottom of AWS
 end note
 
 @enduml
-

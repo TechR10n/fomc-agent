@@ -67,6 +67,11 @@ def main() -> None:
         raise SystemExit("Missing CDK arguments. Example: python tools/cdk.py diff --all")
 
     _load_env_file(Path(args.env_file))
+    # Ensure the Python interpreter running this wrapper is first on PATH.
+    # This keeps CDK app execution (`python3 app.py`) inside the same venv.
+    python_bin = str(Path(sys.executable).parent)
+    current_path = os.environ.get("PATH", "")
+    os.environ["PATH"] = f"{python_bin}{os.pathsep}{current_path}" if current_path else python_bin
     cmd = _resolve_cdk_command() + args.cdk_args
 
     print(f"[cdk] Running: {shlex.join(cmd)}")
@@ -75,4 +80,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
