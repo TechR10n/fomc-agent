@@ -5,10 +5,11 @@ services:
     ports:
       - "127.0.0.1:4566:4566"
     env_file:
+      - .env.shared
       - .env.localstack
     environment:
       - SERVICES=s3,sqs,lambda,iam,cloudwatch
-      - DEFAULT_REGION=us-east-1
+      - DEFAULT_REGION=${AWS_DEFAULT_REGION}
       - DEBUG=0
     volumes:
       - "./localstack/init:/etc/localstack/init"

@@ -8,26 +8,26 @@
         "packaging": "zip"
       },
       "destinations": {
-        "111111111111-us-east-2-65d881cf": {
-          "bucketName": "cdk-hnb659fds-assets-111111111111-us-east-2",
+        "424808095422-us-east-1-54572bcf": {
+          "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
           "objectKey": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip",
-          "region": "us-east-2",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-file-publishing-role-111111111111-us-east-2"
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
         }
       }
     },
-    "cd1e58aa681d44ae0875c34361e55444bb28a24443c4feebd71356ca3aaa922b": {
+    "7b5ab5e24e64fd88106b171085bf09d2496a850e3c882a1b612f2394a9add502": {
       "displayName": "FomcStorageStack Template",
       "source": {
         "path": "FomcStorageStack.template.json",
         "packaging": "file"
       },
       "destinations": {
-        "111111111111-us-east-2-e4057424": {
-          "bucketName": "cdk-hnb659fds-assets-111111111111-us-east-2",
-          "objectKey": "cd1e58aa681d44ae0875c34361e55444bb28a24443c4feebd71356ca3aaa922b.json",
-          "region": "us-east-2",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::111111111111:role/cdk-hnb659fds-file-publishing-role-111111111111-us-east-2"
+        "424808095422-us-east-1-c78aa274": {
+          "bucketName": "cdk-hnb659fds-assets-424808095422-us-east-1",
+          "objectKey": "7b5ab5e24e64fd88106b171085bf09d2496a850e3c882a1b612f2394a9add502.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::424808095422:role/cdk-hnb659fds-file-publishing-role-424808095422-us-east-1"
         }
       }
     }

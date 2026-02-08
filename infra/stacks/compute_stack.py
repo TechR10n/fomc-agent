@@ -7,6 +7,7 @@ from aws_cdk import Duration, Stack
 from aws_cdk import aws_events as events
 from aws_cdk import aws_events_targets as targets
 from aws_cdk import aws_lambda as _lambda
+from aws_cdk import triggers
 from constructs import Construct
 
 from infra.config import get_env_config
@@ -25,6 +26,7 @@ class FomcComputeStack(Stack):
 
         config = get_env_config()
         project_root = str(Path(__file__).resolve().parent.parent.parent)
+        deployment_id = os.environ.get("FOMC_DEPLOYMENT_ID", "")
 
         self.data_fetcher = _lambda.Function(
             self,
@@ -56,8 +58,9 @@ class FomcComputeStack(Stack):
             environment={
                 "BLS_BUCKET": storage.bls_raw_bucket.bucket_name,
                 "DATAUSA_BUCKET": storage.datausa_raw_bucket.bucket_name,
-                "BLS_SERIES": "pr,cu,ce,ln,jt,ci",
-                "DATAUSA_DATASETS": "population,commute_time,citizenship",
+                "BLS_SERIES": config["bls_series"],
+                "DATAUSA_DATASETS": config["datausa_datasets"],
+                "FOMC_DEPLOYMENT_ID": deployment_id,
             },
         )
 
@@ -65,12 +68,18 @@ class FomcComputeStack(Stack):
         storage.bls_raw_bucket.grant_read_write(self.data_fetcher)
         storage.datausa_raw_bucket.grant_read_write(self.data_fetcher)
 
-        # Schedule: run fetch pipeline at a fixed interval (hourly by default).
+        # Schedule: run the fetcher on the configured interval.
         rule = events.Rule(
             self,
             "FetchScheduleRule",
-            schedule=events.Schedule.rate(
-                Duration.hours(config["fetch_interval_hours"]),
-            ),
+            schedule=events.Schedule.rate(Duration.hours(config["fetch_interval_hours"])),
         )
         rule.add_target(targets.LambdaFunction(self.data_fetcher))
+
+        # Trigger once on each deployment (fire-and-forget).
+        triggers.Trigger(
+            self,
+            "DataFetcherDeployTrigger",
+            handler=self.data_fetcher,
+            invocation_type=triggers.InvocationType.EVENT,
+        )

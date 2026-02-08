@@ -94,6 +94,22 @@ class TestHandler:
         assert len(body["results"]) == 2
 
     @mock_aws
+    def test_handler_direct_invocation(self, sample_population_data, sample_bls_csv):
+        """Runs reports when invoked directly (no SQS records)."""
+        _setup_s3_data(sample_population_data, sample_bls_csv)
+
+        with patch.dict(os.environ, {
+            "BLS_BUCKET": "fomc-bls-raw",
+            "DATAUSA_BUCKET": "fomc-datausa-raw",
+        }):
+            result = handler({}, None)
+
+        assert result["statusCode"] == 200
+        body = json.loads(result["body"])
+        assert len(body["results"]) == 1
+        assert len(body["errors"]) == 0
+
+    @mock_aws
     def test_handler_invalid_message(self, sample_population_data, sample_bls_csv):
         """Handles malformed SQS record gracefully."""
         _setup_s3_data(sample_population_data, sample_bls_csv)

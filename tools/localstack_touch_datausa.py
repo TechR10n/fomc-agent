@@ -8,10 +8,11 @@ DataUSA API.
 
 from __future__ import annotations
 
-import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+
+from env_loader import load_localstack_env
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -20,15 +21,8 @@ from src.config import get_datausa_bucket, get_datausa_key
 from src.helpers.aws_client import get_client
 
 
-def _ensure_localstack_env() -> None:
-    os.environ.setdefault("AWS_ENDPOINT_URL", "http://localhost:4566")
-    os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
-    os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
-    os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
-
-
 def main() -> None:
-    _ensure_localstack_env()
+    load_localstack_env()
 
     bucket = get_datausa_bucket()
     key = get_datausa_key()

@@ -326,11 +326,23 @@ This repo now includes `.github/workflows/ci-deploy.yml`:
 
 ### 4.2 Required/Optional GitHub Repository Variables
 
+Use `.env.localstack` as the single source of truth for non-secret deploy settings, then sync them to GitHub:
+
+```bash
+python tools/sync_github_vars.py
+```
+
+The script sets:
+
 - Required: `FOMC_BUCKET_PREFIX`
-- Optional:
-  - `AWS_REGION` (default `us-east-1`)
-  - `FOMC_REMOVAL_POLICY` (default `retain`)
+- Defaulted if missing in `.env.localstack`:
+  - `AWS_REGION` (`AWS_DEFAULT_REGION` fallback, then `us-east-1`)
+  - `FOMC_REMOVAL_POLICY` (`retain`)
+- Optional (set when present, removed when blank):
   - `FOMC_FETCH_INTERVAL_HOURS`
+  - `FOMC_SITE_DOMAIN`
+  - `FOMC_SITE_CERT_ARN`
+  - `FOMC_SITE_ALIASES`
 
 ### 4.3 IAM Role for GitHub OIDC
 
@@ -351,15 +363,15 @@ Then every push to `main` deploys via GitHub Actions.
 [ ] aws sts get-caller-identity --profile fomc-agent       # returns your account
 [ ] python3 --version                                      # 3.12+
 [ ] uv --version                                           # installed
-[ ] .env.local exists with FOMC_BUCKET_PREFIX set
-[ ] .env.localstack uses matching FOMC_BUCKET_PREFIX (for local/cloud parity)
+[ ] .env.local exists (for local AWS profile/region settings)
+[ ] .env.localstack has desired FOMC_* deploy values (single source for LocalStack + GitHub vars)
 [ ] PyCharm interpreter points to .venv/bin/python
 [ ] pytest runs green in PyCharm (right-click tests/)
 [ ] docker compose up -d                                   # LocalStack starts
 [ ] aws --endpoint-url=http://localhost:4566 s3 ls          # shows prefix-derived buckets
 [ ] PyCharm shows run configs in the Run dropdown
 [ ] GitHub secret AWS_DEPLOY_ROLE_ARN is set
-[ ] GitHub variable FOMC_BUCKET_PREFIX is set
+[ ] python tools/sync_github_vars.py                         # sync non-secret GitHub vars from .env.localstack
 ```
 
 ## 6. Common Issues

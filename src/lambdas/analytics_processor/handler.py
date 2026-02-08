@@ -31,16 +31,10 @@ def handler(event, context):
     results = []
     errors = []
 
-    for record in event.get("Records", []):
+    records = event.get("Records", []) if isinstance(event, dict) else []
+    if not records:
+        # Support direct invocations (deploy trigger/EventBridge schedule).
         try:
-            body = json.loads(record.get("body", "{}"))
-            # S3 notification format
-            s3_records = body.get("Records", [])
-            for s3_record in s3_records:
-                bucket_name = s3_record.get("s3", {}).get("bucket", {}).get("name", "")
-                key = s3_record.get("s3", {}).get("object", {}).get("key", "")
-                logger.info(f"Processing S3 event: {bucket_name}/{key}")
-
             report = run_reports(
                 bls_bucket,
                 datausa_bucket,
@@ -52,8 +46,32 @@ def handler(event, context):
             results.append(report)
             logger.info(f"Report results: {json.dumps(report, default=str)}")
         except Exception as e:
-            logger.error(f"Error processing record: {e}")
+            logger.error(f"Error processing direct invocation: {e}")
             errors.append(str(e))
+    else:
+        for record in records:
+            try:
+                body = json.loads(record.get("body", "{}"))
+                # S3 notification format
+                s3_records = body.get("Records", [])
+                for s3_record in s3_records:
+                    bucket_name = s3_record.get("s3", {}).get("bucket", {}).get("name", "")
+                    key = s3_record.get("s3", {}).get("object", {}).get("key", "")
+                    logger.info(f"Processing S3 event: {bucket_name}/{key}")
+
+                report = run_reports(
+                    bls_bucket,
+                    datausa_bucket,
+                    bls_key=bls_key,
+                    pop_key=pop_key,
+                    join_series_id=join_series_id,
+                    join_period=join_period,
+                )
+                results.append(report)
+                logger.info(f"Report results: {json.dumps(report, default=str)}")
+            except Exception as e:
+                logger.error(f"Error processing record: {e}")
+                errors.append(str(e))
 
     status = 200 if not errors else 207
     return {

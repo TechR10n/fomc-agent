@@ -39,8 +39,10 @@ Q -> Analytics : event source mapping (batch=1)
 activate Analytics
 Analytics -> BLSRaw : read BLS input
 Analytics -> DataRaw : read DataUSA input
-Analytics -> BLSProcessed : write processed CSVs
-Analytics -> DataProcessed : write processed CSVs
+Analytics -> BLSProcessed : put processed/bls/pr.data.0.Current.csv
+Analytics -> DataProcessed : put processed/datausa/population.csv
+Analytics -> DataProcessed : put processed/datausa/commute_time.csv
+Analytics -> DataProcessed : put processed/datausa/citizenship.csv
 Analytics -> Publisher : invoke site-data refresh step
 Analytics -> CW : write processing logs + metrics
 deactivate Analytics
@@ -50,16 +52,19 @@ activate Publisher
 Publisher -> BLSProcessed : read processed datasets
 Publisher -> DataProcessed : read processed datasets
 Publisher -> SiteBucket : put site/data/timeseries.json
-Publisher -> SiteBucket : put site/data/*.json (charts/timeline/status)
-Publisher -> CF : invalidate /data/*
+Publisher -> SiteBucket : put site/data/productivity_vs_compensation.json
+Publisher -> SiteBucket : put site/data/unemployment_vs_commute_time.json
+Publisher -> SiteBucket : put site/data/participation_vs_noncitizen_share.json
+Publisher -> SiteBucket : put site/data/bls_timeline.json + pipeline_status.json
+Publisher -> CF : invalidate /data/* + /charts.html + /timeline.html
 Publisher -> CW : write publish logs + metrics
 deactivate Publisher
 
 == User reads refreshed charts ==
 User -> CF : GET /index.html + /data/*.json
 CF -> SiteBucket : origin fetch
-SiteBucket --> CF : latest static assets + chart JSON
-CF --> User : updated dashboard
+SiteBucket --> CF : latest static assets + fresh chart JSON
+CF --> User : refreshed static website with fresh charts
 
 == Failure path ==
 alt analytics or publish step fails repeatedly

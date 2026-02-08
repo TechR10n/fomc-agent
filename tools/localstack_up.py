@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import os
 import shutil
 import subprocess
 import time
@@ -12,22 +11,10 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from env_loader import load_localstack_env
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 HEALTH_URL = "http://localhost:4566/_localstack/health"
-
-
-def _load_env_file(path: Path) -> None:
-    if not path.exists():
-        return
-    for raw in path.read_text().splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip("'").strip('"')
-        if key and key not in os.environ:
-            os.environ[key] = value
 
 
 def _get_health() -> dict | None:
@@ -44,7 +31,7 @@ def main() -> None:
     if not shutil.which("docker"):
         raise SystemExit("`docker` not found on PATH.")
 
-    _load_env_file(PROJECT_ROOT / ".env.localstack")
+    load_localstack_env()
     subprocess.run(["docker", "compose", "up", "-d"], cwd=PROJECT_ROOT, check=True)
 
     deadline = time.time() + 120

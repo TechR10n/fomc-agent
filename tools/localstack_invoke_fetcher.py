@@ -8,10 +8,11 @@ It writes to LocalStack S3 and returns the same JSON shape as the deployed Lambd
 from __future__ import annotations
 
 import json
-import os
 import sys
 import time
 from pathlib import Path
+
+from env_loader import load_localstack_env
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -19,15 +20,8 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from src.lambdas.data_fetcher.handler import handler as fetcher_handler
 
 
-def _ensure_localstack_env() -> None:
-    os.environ.setdefault("AWS_ENDPOINT_URL", "http://localhost:4566")
-    os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
-    os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
-    os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
-
-
 def main() -> None:
-    _ensure_localstack_env()
+    load_localstack_env()
 
     started = time.time()
     response = fetcher_handler({}, None)

@@ -4,14 +4,28 @@
 
 set -euo pipefail
 
-REGION="${DEFAULT_REGION:-us-east-1}"
-BUCKET_PREFIX="${FOMC_BUCKET_PREFIX:-fomc}"
+require_env() {
+  local name="$1"
+  local value="${!name:-}"
+  if [[ -z "$value" ]]; then
+    echo "ERROR: Missing required environment variable: $name" >&2
+    exit 1
+  fi
+}
+
+require_env AWS_DEFAULT_REGION
+require_env FOMC_BUCKET_PREFIX
+require_env FOMC_ANALYTICS_QUEUE_NAME
+require_env FOMC_ANALYTICS_DLQ_NAME
+
+REGION="${AWS_DEFAULT_REGION}"
+BUCKET_PREFIX="${FOMC_BUCKET_PREFIX}"
 BLS_BUCKET="${BLS_BUCKET:-${BUCKET_PREFIX}-bls-raw}"
 DATAUSA_BUCKET="${DATAUSA_BUCKET:-${BUCKET_PREFIX}-datausa-raw}"
 BLS_PROCESSED_BUCKET="${BLS_PROCESSED_BUCKET:-${BUCKET_PREFIX}-bls-processed}"
 DATAUSA_PROCESSED_BUCKET="${DATAUSA_PROCESSED_BUCKET:-${BUCKET_PREFIX}-datausa-processed}"
-ANALYTICS_QUEUE_NAME="${FOMC_ANALYTICS_QUEUE_NAME:-fomc-analytics-queue}"
-ANALYTICS_DLQ_NAME="${FOMC_ANALYTICS_DLQ_NAME:-fomc-analytics-dlq}"
+ANALYTICS_QUEUE_NAME="${FOMC_ANALYTICS_QUEUE_NAME}"
+ANALYTICS_DLQ_NAME="${FOMC_ANALYTICS_DLQ_NAME}"
 
 ensure_bucket() {
   local bucket="$1"

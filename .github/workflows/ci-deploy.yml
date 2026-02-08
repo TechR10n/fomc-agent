@@ -56,7 +56,7 @@ jobs:
       id-token: write
     env:
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
-      FOMC_BUCKET_PREFIX: ${{ vars.FOMC_BUCKET_PREFIX }}
+      FOMC_BUCKET_PREFIX: ${{ vars.FOMC_BUCKET_PREFIX || secrets.FOMC_BUCKET_PREFIX }}
       FOMC_REMOVAL_POLICY: ${{ vars.FOMC_REMOVAL_POLICY || 'retain' }}
       FOMC_FETCH_INTERVAL_HOURS: ${{ vars.FOMC_FETCH_INTERVAL_HOURS }}
       FOMC_SITE_DOMAIN: ${{ vars.FOMC_SITE_DOMAIN }}
@@ -65,6 +65,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Validate deploy configuration
+        run: |
+          if [ -z "${FOMC_BUCKET_PREFIX}" ]; then
+            echo "::error::Missing FOMC_BUCKET_PREFIX."
+            echo "::error::Set repository variable FOMC_BUCKET_PREFIX (recommended), or add secret FOMC_BUCKET_PREFIX."
+            exit 1
+          fi
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -91,11 +99,6 @@ jobs:
 
       - name: Create deploy env file
         run: |
-          if [ -z "${FOMC_BUCKET_PREFIX}" ]; then
-            echo "Repository variable FOMC_BUCKET_PREFIX is required for deploy."
-            exit 1
-          fi
-
           {
             echo "AWS_DEFAULT_REGION=${AWS_REGION}"
             echo "FOMC_BUCKET_PREFIX=${FOMC_BUCKET_PREFIX}"

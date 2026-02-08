@@ -3,7 +3,7 @@
   "SiteBucket397A1860": {
    "Type": "AWS::S3::Bucket",
    "Properties": {
-    "BucketName": "fomc-ci-site",
+    "BucketName": "fomc-ryan-20260204-site",
     "PublicAccessBlockConfiguration": {
      "BlockPublicAcls": true,
      "BlockPublicPolicy": true,
@@ -167,7 +167,7 @@
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-111111111111-us-east-2",
+     "S3Bucket": "cdk-hnb659fds-assets-424808095422-us-east-1",
      "S3Key": "faa95a81ae7d7373f3e1f242268f904eb748d8d0fdd306e8a6fe515a1905a7d6.zip"
     },
     "Timeout": 900,
@@ -254,7 +254,7 @@
    "Type": "AWS::Lambda::LayerVersion",
    "Properties": {
     "Content": {
-     "S3Bucket": "cdk-hnb659fds-assets-111111111111-us-east-2",
+     "S3Bucket": "cdk-hnb659fds-assets-424808095422-us-east-1",
      "S3Key": "0cfdecad2260a3a84ad0c2d08a77e03c9d25e26c7b52f26b1e1faf97aef92f18.zip"
     },
     "Description": "/opt/awscli/aws"
@@ -276,10 +276,10 @@
      ]
     },
     "SourceBucketNames": [
-     "cdk-hnb659fds-assets-111111111111-us-east-2"
+     "cdk-hnb659fds-assets-424808095422-us-east-1"
     ],
     "SourceObjectKeys": [
-     "b50920dc9ff6ee7942976ed8dc79a0ebed1ad2f5efab0359c99a17cd6213a765.zip"
+     "1c3785a37a6b503cb8c3fe8592ac498b0c64713856e7b6dedaf59a2cc516f9e0.zip"
     ],
     "DestinationBucketName": {
      "Ref": "SiteBucket397A1860"
@@ -355,7 +355,7 @@
            {
             "Ref": "AWS::Partition"
            },
-           ":s3:::cdk-hnb659fds-assets-111111111111-us-east-2"
+           ":s3:::cdk-hnb659fds-assets-424808095422-us-east-1"
           ]
          ]
         },
@@ -367,7 +367,7 @@
            {
             "Ref": "AWS::Partition"
            },
-           ":s3:::cdk-hnb659fds-assets-111111111111-us-east-2/*"
+           ":s3:::cdk-hnb659fds-assets-424808095422-us-east-1/*"
           ]
          ]
         }
@@ -436,7 +436,7 @@
    "Type": "AWS::Lambda::Function",
    "Properties": {
     "Code": {
-     "S3Bucket": "cdk-hnb659fds-assets-111111111111-us-east-2",
+     "S3Bucket": "cdk-hnb659fds-assets-424808095422-us-east-1",
      "S3Key": "3423a042b818e31c1e34a19d6689ab2e5f9b70fcbe9e71df66f241b20a200bd9.zip"
     },
     "Environment": {

@@ -15,19 +15,14 @@ import time
 from pathlib import Path
 from typing import Any
 
+from env_loader import load_localstack_env
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.config import get_analytics_queue_name
 from src.helpers.aws_client import get_client
 from src.lambdas.analytics_processor.handler import handler as analytics_handler
-
-
-def _ensure_localstack_env() -> None:
-    os.environ.setdefault("AWS_ENDPOINT_URL", "http://localhost:4566")
-    os.environ.setdefault("AWS_DEFAULT_REGION", "us-east-1")
-    os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
-    os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
 
 
 def _get_queue_url(queue_name: str) -> str:
@@ -85,14 +80,14 @@ def process_once(
 
 
 def main() -> None:
+    load_localstack_env()
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--queue", default=get_analytics_queue_name(), help="SQS queue name")
     parser.add_argument("--once", action="store_true", help="Process all available messages then exit")
     parser.add_argument("--max-messages", type=int, default=100, help="Max messages to process per run")
     parser.add_argument("--wait", type=int, default=10, help="Long-poll wait seconds (0-20)")
     args = parser.parse_args()
-
-    _ensure_localstack_env()
 
     if args.once:
         processed = process_once(queue_name=args.queue, max_messages=args.max_messages, wait_seconds=0)
