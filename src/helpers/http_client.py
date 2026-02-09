@@ -190,3 +190,49 @@ def fetch_json(
                 )
     assert last_error is not None
     raise last_error
+
+
+def post_json(
+    url: str,
+    payload: Any,
+    *,
+    headers: dict[str, str] | None = None,
+    timeout: int = 30,
+    retries: int = 3,
+    backoff_seconds: float = 1.0,
+    retryable_statuses: set[int] | None = None,
+    max_backoff_seconds: float = 60.0,
+) -> Any:
+    """POST a JSON payload and parse a JSON response (Lambda-friendly, retries)."""
+    if retries < 1:
+        retries = 1
+    retryable = retryable_statuses or _DEFAULT_RETRYABLE_HTTP_STATUS
+
+    body = json.dumps(payload).encode("utf-8")
+    req_headers = {"Content-Type": "application/json", **(headers or {})}
+
+    last_error: Exception | None = None
+    ctx = _ssl_context()
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, data=body, headers=req_headers, method="POST")
+            with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:  # nosec - url is controlled by caller
+                text = resp.read().decode("utf-8", errors="replace")
+            return json.loads(text)
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
+            last_error = e
+            if attempt < retries - 1:
+                retry_after = None
+                if isinstance(e, urllib.error.HTTPError):
+                    status = int(getattr(e, "code", 0) or 0)
+                    if status and status not in retryable:
+                        break
+                    retry_after = _parse_retry_after_seconds(e.headers.get("Retry-After"))
+                _sleep_seconds(
+                    attempt=attempt,
+                    backoff_seconds=backoff_seconds,
+                    retry_after_seconds=retry_after,
+                    max_backoff_seconds=max_backoff_seconds,
+                )
+    assert last_error is not None
+    raise last_error

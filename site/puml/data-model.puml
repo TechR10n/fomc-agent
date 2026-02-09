@@ -1,6 +1,16 @@
-@startuml interview-data-model
-!theme plain
-title Interview — Data Model (Simplified)\nBLS × Population → Enriched Points
+@startuml data-model
+!theme cyborg
+skinparam backgroundColor #020A20
+skinparam defaultFontColor #ffffff
+skinparam classBorderColor #387CF1
+skinparam classBackgroundColor #0a1628
+skinparam classAttributeFontColor #9FA1A2
+skinparam arrowColor #387CF1
+skinparam noteBorderColor #6b7280
+skinparam noteBackgroundColor #111d35
+skinparam titleFontColor #ffffff
+
+title FOMC Agent — Data Model (Simplified)\nBLS × Population → Enriched Points
 
 class BlsRow {
   series_id: string
@@ -33,4 +43,3 @@ note right of EnrichedPoint
 end note
 
 @enduml
-

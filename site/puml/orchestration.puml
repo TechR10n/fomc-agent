@@ -1,0 +1,28 @@
+@startuml orchestration
+!theme cyborg
+skinparam backgroundColor #020A20
+skinparam defaultFontColor #ffffff
+skinparam activityBorderColor #387CF1
+skinparam activityBackgroundColor #0a1628
+skinparam activityDiamondBorderColor #387CF1
+skinparam activityDiamondBackgroundColor #111d35
+skinparam arrowColor #387CF1
+skinparam titleFontColor #ffffff
+
+title FOMC Agent — Orchestration (Conceptual)\nStep Functions style pipeline
+
+start
+
+:Step 1 — Ingest Raw\n(BLS + API → S3 raw);
+
+if (New raw objects?) then (yes)
+  :Step 4 — CDC\n(emit change events);
+  :Step 2 — Parse & Update\n(raw → processed);
+  :Step 3 — Enrich\n(processed → curated + JSON);
+else (no)
+  :No-op / early exit;
+endif
+
+stop
+
+@enduml

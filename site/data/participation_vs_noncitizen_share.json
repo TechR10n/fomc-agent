@@ -1,6 +1,6 @@
 {
-  "title": "Participation vs Non-Citizen Share",
-  "description": "Missing BLS LN data (LNS11300000) \u2014 An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist.",
+  "title": "Labor Force Participation vs Non-Citizen Share (Nation)",
+  "description": "Annual labor force participation rate (BLS CPS/LN) plotted against the share of non-citizens in the resident population (ACS via DataUSA). Helps frame labor supply changes.",
   "y_left": {
     "label": "Labor Force Participation (%)",
     "key": "participation_rate",
@@ -11,5 +11,56 @@
     "key": "noncitizen_share",
     "color": "#8b5cf6"
   },
-  "points": []
+  "points": [
+    {
+      "year": 2013,
+      "participation_rate": 63.25833333333333,
+      "noncitizen_share": 6.976065856490872
+    },
+    {
+      "year": 2014,
+      "participation_rate": 62.88333333333333,
+      "noncitizen_share": 7.027304423208373
+    },
+    {
+      "year": 2015,
+      "participation_rate": 62.65833333333333,
+      "noncitizen_share": 7.029230251578827
+    },
+    {
+      "year": 2016,
+      "participation_rate": 62.800000000000004,
+      "noncitizen_share": 6.963496438859439
+    },
+    {
+      "year": 2017,
+      "participation_rate": 62.85,
+      "noncitizen_share": 6.931468739000686
+    },
+    {
+      "year": 2018,
+      "participation_rate": 62.88333333333333,
+      "noncitizen_share": 6.7546403968397355
+    },
+    {
+      "year": 2019,
+      "participation_rate": 63.1,
+      "noncitizen_share": 6.62625384085755
+    },
+    {
+      "year": 2021,
+      "participation_rate": 61.675000000000004,
+      "noncitizen_share": 6.395426343452179
+    },
+    {
+      "year": 2022,
+      "participation_rate": 62.23333333333333,
+      "noncitizen_share": 6.502806726402829
+    },
+    {
+      "year": 2023,
+      "participation_rate": 62.60833333333333,
+      "noncitizen_share": 6.826016182929051
+    }
+  ]
 }

@@ -1,12 +1,31 @@
-@startuml interview-localstack-vs-aws
-!theme plain
+@startuml localstack-vs-aws
+!theme cyborg
+skinparam backgroundColor #020A20
+skinparam defaultFontColor #ffffff
+skinparam packageBorderColor #387CF1
+skinparam packageBackgroundColor #0a1628
+skinparam cloudBorderColor #6b7280
+skinparam cloudBackgroundColor #111d35
+skinparam nodeBorderColor #387CF1
+skinparam nodeBackgroundColor #111d35
+skinparam componentBorderColor #387CF1
+skinparam componentBackgroundColor #111d35
+skinparam storageBorderColor #387CF1
+skinparam storageBackgroundColor #0a1628
+skinparam queueBorderColor #f59e0b
+skinparam queueBackgroundColor #1a1505
+skinparam arrowColor #387CF1
+skinparam noteBorderColor #6b7280
+skinparam noteBackgroundColor #111d35
+skinparam titleFontColor #ffffff
+
 left to right direction
-title Interview — LocalStack vs AWS\nSame mental model, different targets
+title FOMC Agent — Environments\nSame mental model, different targets
 
-cloud "BLS LABSTAT\n(download.bls.gov)" as BLS #F5F5F5
-cloud "DataUSA API\n(honolulu-api.datausa.io)" as DataUSA #F5F5F5
+cloud "BLS LABSTAT\n(download.bls.gov)" as BLS
+cloud "DataUSA API\n(honolulu-api.datausa.io)" as DataUSA
 
-package "LocalStack (Dev Laptop)" as LS #E8F5E9 {
+package "LocalStack (Dev Laptop)" as LS {
   node "Docker" as Docker
   component "LocalStack\n(s3,sqs,lambda)" as LocalStack
 
@@ -30,7 +49,7 @@ package "LocalStack (Dev Laptop)" as LS #E8F5E9 {
   LS_Touch --> LS_DataUSA : triggers S3 notification
 }
 
-package "AWS Cloud (Prod-like)" as AWS #E3F2FD {
+package "AWS Cloud (Prod-like)" as AWS {
   component "EventBridge\nHourly schedule" as EB
   component "Lambda\nfomc-data-fetcher" as Fetcher
   storage "S3\n{prefix}-bls-raw" as AWS_BLS <<Bucket>>

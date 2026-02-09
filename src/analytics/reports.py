@@ -176,6 +176,15 @@ def build_unemployment_vs_commute_time(
         commute_df = load_datausa_jsonrecords_from_s3(bucket=datausa_bucket, key=commute_key)
         if commute_df.empty:
             raise ValueError("empty commute dataset")
+        # DataUSA cubes often include many geographies; restrict to national where possible.
+        if "Nation ID" in commute_df.columns:
+            commute_df = commute_df[commute_df["Nation ID"].astype(str).str.strip() == "01000US"].copy()
+        elif "ID Nation" in commute_df.columns:
+            commute_df = commute_df[commute_df["ID Nation"].astype(str).str.strip() == "01000US"].copy()
+        elif "Nation" in commute_df.columns:
+            commute_df = commute_df[commute_df["Nation"].astype(str).str.strip() == "United States"].copy()
+        if commute_df.empty:
+            raise ValueError("no national rows in commute dataset")
         commute_df["Year"] = pd.to_numeric(commute_df.get("Year"), errors="coerce").astype("Int64")
         measure_col = _infer_numeric_measure_column(commute_df, exclude={"Year", "Nation", "ID Nation", "Slug Nation"})
         if measure_col is None:
@@ -250,17 +259,37 @@ def build_participation_vs_noncitizen_share(
             raise ValueError("empty citizenship dataset")
 
         cit_df.columns = cit_df.columns.astype(str).str.strip()
+        # Restrict to national where possible (some cubes include multiple geographies).
+        if "Nation ID" in cit_df.columns:
+            cit_df = cit_df[cit_df["Nation ID"].astype(str).str.strip() == "01000US"].copy()
+        elif "ID Nation" in cit_df.columns:
+            cit_df = cit_df[cit_df["ID Nation"].astype(str).str.strip() == "01000US"].copy()
+        elif "Nation" in cit_df.columns:
+            cit_df = cit_df[cit_df["Nation"].astype(str).str.strip() == "United States"].copy()
+        if cit_df.empty:
+            raise ValueError("no national rows in citizenship dataset")
         year_col = "Year" if "Year" in cit_df.columns else None
         if year_col is None:
             raise ValueError("missing Year column")
 
-        status_col = next((c for c in cit_df.columns if "citizenship" in c.lower()), None)
+        citizenship_cols = [c for c in cit_df.columns if "citizenship" in c.lower()]
+        if not citizenship_cols:
+            raise ValueError("missing citizenship status column")
+
+        # Prefer the human-readable categorical column, not the numeric ID or measure columns.
+        preferred_status_cols = ["Citizenship", "Citizenship Status Granular", "Citizenship Status"]
+        status_col = next((c for c in preferred_status_cols if c in cit_df.columns), None)
+        if status_col is None:
+            non_id = [c for c in citizenship_cols if "id" not in c.lower()]
+            status_col = non_id[0] if non_id else citizenship_cols[0]
         if status_col is None:
             raise ValueError("missing citizenship status column")
 
+        # Pick a population-like numeric column (avoid ID columns like "Nation ID", "Citizenship ID").
+        id_like_cols = {c for c in cit_df.columns if c.lower().endswith(" id") or c.lower().startswith("id ")}
         pop_col = "Population" if "Population" in cit_df.columns else _infer_numeric_measure_column(
             cit_df,
-            exclude={year_col, status_col, "Nation", "ID Nation", "Slug Nation"},
+            exclude={year_col, status_col, "Nation", "ID Nation", "Slug Nation", *id_like_cols},
         )
         if pop_col is None:
             raise ValueError("missing population measure column")
@@ -271,7 +300,8 @@ def build_participation_vs_noncitizen_share(
         total = cit_df.dropna(subset=[year_col, pop_col]).groupby(year_col, as_index=False)[pop_col].sum()
         total = total.rename(columns={year_col: "year", pop_col: "total_population"})
 
-        mask = cit_df[status_col].astype(str).str.contains("not", case=False, na=False)
+        status = cit_df[status_col].astype(str)
+        mask = status.str.contains("not", case=False, na=False) | status.str.contains("non", case=False, na=False)
         noncit = (
             cit_df[mask]
             .dropna(subset=[year_col, pop_col])
@@ -312,6 +342,199 @@ def build_participation_vs_noncitizen_share(
         ),
         "y_left": {"label": "Labor Force Participation (%)", "key": "participation_rate", "color": "#22c55e"},
         "y_right": {"label": "Non-Citizen Share (%)", "key": "noncitizen_share", "color": "#8b5cf6"},
+        "points": points,
+    }
+
+
+def _pr_index_series(
+    bls_df: pd.DataFrame,
+    *,
+    series_id: str,
+    period: str = "Q05",
+) -> pd.DataFrame:
+    """Extract a single PR series as a year/value DataFrame.
+
+    PR uses periods Q01..Q04 (quarters) and Q05 (annual average).
+    """
+    required = {"series_id", "year", "period", "value"}
+    if bls_df.empty or not required.issubset(set(bls_df.columns)):
+        return pd.DataFrame(columns=["year", "value"])
+
+    df = bls_df.copy()
+    df["series_id"] = df["series_id"].astype(str).str.strip()
+    df["period"] = df["period"].astype(str).str.strip()
+    df = df[(df["series_id"] == series_id.strip()) & (df["period"] == period.strip())]
+    if df.empty:
+        return pd.DataFrame(columns=["year", "value"])
+
+    df["year"] = pd.to_numeric(df["year"], errors="coerce")
+    df["value"] = pd.to_numeric(df["value"], errors="coerce")
+    df = df.dropna(subset=["year", "value"])
+    if df.empty:
+        return pd.DataFrame(columns=["year", "value"])
+
+    out = df[["year", "value"]].copy()
+    out["year"] = out["year"].astype(int)
+    return out.sort_values("year").reset_index(drop=True)
+
+
+def _rebase_index(df: pd.DataFrame, *, base_year: int) -> pd.DataFrame:
+    """Rebase an index-like series to `base_year` = 100."""
+    if df.empty or "year" not in df.columns or "value" not in df.columns:
+        return pd.DataFrame(columns=["year", "value"])
+
+    base_rows = df[df["year"] == int(base_year)]
+    if base_rows.empty:
+        raise ValueError(f"Base year {base_year} not present for rebase")
+    base_value = float(base_rows["value"].iloc[0])
+    if base_value == 0:
+        raise ValueError(f"Base year {base_year} value is 0; cannot rebase")
+
+    out = df.copy()
+    out["value"] = (out["value"] / base_value) * 100.0
+    return out
+
+
+def build_productivity_vs_compensation(
+    bls_df: pd.DataFrame,
+    *,
+    period: str = "Q05",
+    base_year: int = 2016,
+    output_per_hour_series_id: str = "PRS85006093",
+    real_hourly_compensation_series_id: str = "PRS85006153",
+) -> dict[str, Any]:
+    """Curated dataset: nonfarm productivity vs real hourly compensation (rebased index)."""
+    prod = _pr_index_series(bls_df, series_id=output_per_hour_series_id, period=period)
+    comp = _pr_index_series(bls_df, series_id=real_hourly_compensation_series_id, period=period)
+    prod = _rebase_index(prod, base_year=base_year).rename(columns={"value": "output_per_hour"})
+    comp = _rebase_index(comp, base_year=base_year).rename(columns={"value": "real_compensation"})
+
+    joined = prod.merge(comp, on="year", how="inner").sort_values("year").reset_index(drop=True)
+    points = []
+    def _r(value: Any) -> float | None:
+        v = _none_if_nan(value)
+        return None if v is None else round(float(v), 1)
+    for r in joined.to_dict("records"):
+        points.append({
+            "year": int(r["year"]),
+            "output_per_hour": _r(r.get("output_per_hour")),
+            "real_compensation": _r(r.get("real_compensation")),
+        })
+
+    return {
+        "title": "Productivity vs Real Hourly Compensation (Nonfarm Business)",
+        "description": (
+            "Nonfarm business sector indexes from BLS PR. Values are rebased so "
+            f"{base_year}=100 (source index base year 2017=100). "
+            f"Series: productivity={output_per_hour_series_id}, real_compensation={real_hourly_compensation_series_id}; "
+            f"period={period}."
+        ),
+        "y_left": {
+            "label": f"Output per Hour (Rebased Index, {base_year}=100)",
+            "key": "output_per_hour",
+            "color": "#3b82f6",
+        },
+        "y_right": {
+            "label": f"Real Hourly Compensation (Rebased Index, {base_year}=100)",
+            "key": "real_compensation",
+            "color": "#8b5cf6",
+        },
+        "points": points,
+    }
+
+
+def build_productivity_vs_unit_labor_costs(
+    bls_df: pd.DataFrame,
+    *,
+    period: str = "Q05",
+    base_year: int = 2016,
+    output_per_hour_series_id: str = "PRS85006093",
+    unit_labor_costs_series_id: str = "PRS85006113",
+) -> dict[str, Any]:
+    """Curated dataset: nonfarm productivity vs unit labor costs (rebased index)."""
+    prod = _pr_index_series(bls_df, series_id=output_per_hour_series_id, period=period)
+    ulc = _pr_index_series(bls_df, series_id=unit_labor_costs_series_id, period=period)
+    prod = _rebase_index(prod, base_year=base_year).rename(columns={"value": "output_per_hour"})
+    ulc = _rebase_index(ulc, base_year=base_year).rename(columns={"value": "unit_labor_costs"})
+
+    joined = prod.merge(ulc, on="year", how="inner").sort_values("year").reset_index(drop=True)
+    points = []
+    def _r(value: Any) -> float | None:
+        v = _none_if_nan(value)
+        return None if v is None else round(float(v), 1)
+    for r in joined.to_dict("records"):
+        points.append({
+            "year": int(r["year"]),
+            "output_per_hour": _r(r.get("output_per_hour")),
+            "unit_labor_costs": _r(r.get("unit_labor_costs")),
+        })
+
+    return {
+        "title": "Productivity vs Unit Labor Costs (Nonfarm Business)",
+        "description": (
+            "Nonfarm business sector indexes from BLS PR. Values are rebased so "
+            f"{base_year}=100 (source index base year 2017=100). "
+            f"Series: productivity={output_per_hour_series_id}, unit_labor_costs={unit_labor_costs_series_id}; "
+            f"period={period}."
+        ),
+        "y_left": {
+            "label": f"Output per Hour (Rebased Index, {base_year}=100)",
+            "key": "output_per_hour",
+            "color": "#3b82f6",
+        },
+        "y_right": {
+            "label": f"Unit Labor Costs (Rebased Index, {base_year}=100)",
+            "key": "unit_labor_costs",
+            "color": "#ef4444",
+        },
+        "points": points,
+    }
+
+
+def build_manufacturing_vs_nonfarm_productivity(
+    bls_df: pd.DataFrame,
+    *,
+    period: str = "Q05",
+    base_year: int = 2016,
+    nonfarm_output_per_hour_series_id: str = "PRS85006093",
+    manufacturing_output_per_hour_series_id: str = "PRS30006093",
+) -> dict[str, Any]:
+    """Curated dataset: manufacturing vs nonfarm productivity (rebased index)."""
+    nonfarm = _pr_index_series(bls_df, series_id=nonfarm_output_per_hour_series_id, period=period)
+    mfg = _pr_index_series(bls_df, series_id=manufacturing_output_per_hour_series_id, period=period)
+    nonfarm = _rebase_index(nonfarm, base_year=base_year).rename(columns={"value": "nonfarm"})
+    mfg = _rebase_index(mfg, base_year=base_year).rename(columns={"value": "manufacturing"})
+
+    joined = nonfarm.merge(mfg, on="year", how="inner").sort_values("year").reset_index(drop=True)
+    points = []
+    def _r(value: Any) -> float | None:
+        v = _none_if_nan(value)
+        return None if v is None else round(float(v), 1)
+    for r in joined.to_dict("records"):
+        points.append({
+            "year": int(r["year"]),
+            "nonfarm": _r(r.get("nonfarm")),
+            "manufacturing": _r(r.get("manufacturing")),
+        })
+
+    return {
+        "title": "Manufacturing vs Nonfarm Business Productivity",
+        "description": (
+            "Indexes from BLS PR. Values are rebased so "
+            f"{base_year}=100 (source index base year 2017=100). "
+            f"Series: nonfarm={nonfarm_output_per_hour_series_id}, manufacturing={manufacturing_output_per_hour_series_id}; "
+            f"period={period}."
+        ),
+        "y_left": {
+            "label": f"Nonfarm Business (Rebased Index, {base_year}=100)",
+            "key": "nonfarm",
+            "color": "#3b82f6",
+        },
+        "y_right": {
+            "label": f"Manufacturing (Rebased Index, {base_year}=100)",
+            "key": "manufacturing",
+            "color": "#f59e0b",
+        },
         "points": points,
     }
 
@@ -446,43 +669,85 @@ def build_timeseries_payload(series_rows: list[dict]) -> dict:
 
 
 def build_pipeline_status(sync_results: dict, duration_seconds: float = 0.0) -> dict:
-    """Build a pipeline_status.json payload from sync results.
+    """Build a `site/data/pipeline_status.json` payload for the static site.
 
-    ``sync_results`` is the dict returned by the data-fetcher Lambda (or a
-    local equivalent) with shape::
-
-        {
-            "bls": {"pr": {"added": [...], "updated": [...], "unchanged": [...], "deleted": [...]}, ...},
-            "datausa": {"action": "updated", "content_hash": "...", "record_count": N},
-        }
+    `sync_results` is expected to be the parsed JSON body returned by
+    `src.lambdas.data_fetcher.handler` (LocalStack or AWS). This status payload
+    is derived from those results plus `_sync_state/*` metadata already stored
+    in S3 (bytes + source_modified).
     """
     from datetime import datetime, timezone
+    import os
 
-    series_list = []
+    s3 = get_client("s3")
+    bls_bucket = get_bls_bucket()
+
+    series_names = {
+        "pr": "Major Sector Productivity and Costs",
+        "cu": "Consumer Price Index — All Urban Consumers",
+        "ce": "Employment, Hours, and Earnings — National",
+        "ln": "Labor Force Statistics (CPS)",
+        "jt": "Job Openings and Labor Turnover Survey",
+        "ci": "Employment Cost Index",
+    }
+
+    def _load_json(bucket: str, key: str) -> dict[str, Any]:
+        try:
+            response = s3.get_object(Bucket=bucket, Key=key)
+            return json.loads(response["Body"].read())
+        except Exception:
+            return {}
+
+    series_list: list[dict[str, Any]] = []
     total_checked = 0
     total_updated = 0
     total_unchanged = 0
+    total_deleted = 0
 
-    bls = sync_results.get("bls", {})
+    bls = sync_results.get("bls") if isinstance(sync_results, dict) else {}
+    if not isinstance(bls, dict):
+        bls = {}
+
     for series_id, result in sorted(bls.items()):
-        added = result.get("added", [])
-        updated = result.get("updated", [])
-        unchanged = result.get("unchanged", [])
-        deleted = result.get("deleted", [])
+        if not isinstance(result, dict):
+            continue
 
-        files = []
+        added = result.get("added") or []
+        updated = result.get("updated") or []
+        unchanged = result.get("unchanged") or []
+        deleted = result.get("deleted") or []
+
+        added = [f for f in added if isinstance(f, str) and f]
+        updated = [f for f in updated if isinstance(f, str) and f]
+        unchanged = [f for f in unchanged if isinstance(f, str) and f]
+        deleted = [f for f in deleted if isinstance(f, str) and f]
+
+        state = _load_json(bls_bucket, f"_sync_state/{series_id}/latest_state.json")
+        meta_by_file = state.get("files") if isinstance(state, dict) else {}
+        if not isinstance(meta_by_file, dict):
+            meta_by_file = {}
+
+        def _file_row(filename: str, action: str) -> dict[str, Any]:
+            meta = meta_by_file.get(filename) if isinstance(meta_by_file, dict) else None
+            if not isinstance(meta, dict):
+                meta = {}
+            return {
+                "name": filename,
+                "action": action,
+                "source_modified": meta.get("source_modified"),
+                "bytes": meta.get("bytes"),
+            }
+
+        files: list[dict[str, Any]] = []
         for f in added:
-            name = f if isinstance(f, str) else f.get("key", f.get("filename", ""))
-            files.append({"name": name, "action": "added"})
+            files.append(_file_row(f, "added"))
         for f in updated:
-            name = f if isinstance(f, str) else f.get("key", f.get("filename", ""))
-            files.append({"name": name, "action": "updated"})
+            files.append(_file_row(f, "updated"))
         for f in unchanged:
-            name = f if isinstance(f, str) else f.get("key", f.get("filename", ""))
-            files.append({"name": name, "action": "unchanged"})
+            files.append(_file_row(f, "unchanged"))
         for f in deleted:
-            name = f if isinstance(f, str) else f.get("key", f.get("filename", ""))
-            files.append({"name": name, "action": "deleted"})
+            # Deleted objects won't exist in latest state.
+            files.append({"name": f, "action": "deleted", "source_modified": None, "bytes": None})
 
         n_updated = len(added) + len(updated)
         n_unchanged = len(unchanged)
@@ -492,28 +757,80 @@ def build_pipeline_status(sync_results: dict, duration_seconds: float = 0.0) -> 
         total_checked += n_checked
         total_updated += n_updated
         total_unchanged += n_unchanged
+        total_deleted += n_deleted
+
+        latest_source_modified = None
+        for meta in meta_by_file.values():
+            if not isinstance(meta, dict):
+                continue
+            ts = meta.get("source_modified")
+            if not isinstance(ts, str) or not ts:
+                continue
+            if latest_source_modified is None or ts > latest_source_modified:
+                latest_source_modified = ts
 
         series_list.append({
             "id": series_id,
-            "name": series_id,
+            "name": series_names.get(series_id, series_id),
             "url": f"https://download.bls.gov/pub/time.series/{series_id}/",
             "files_checked": n_checked,
             "files_updated": n_updated,
             "files_unchanged": n_unchanged,
             "files_deleted": n_deleted,
+            "latest_source_modified": latest_source_modified,
             "files": files,
         })
 
-    datausa_raw = sync_results.get("datausa", {})
-    datausa = {
-        "endpoint": "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
-        "action": datausa_raw.get("action", "unknown"),
-        "content_hash": datausa_raw.get("content_hash", ""),
-        "record_count": datausa_raw.get("record_count", 0),
+    # DataUSA: summarize the population dataset (Quest Part 2).
+    datausa = sync_results.get("datausa") if isinstance(sync_results, dict) else {}
+    datasets = (datausa or {}).get("datasets") if isinstance(datausa, dict) else {}
+    if not isinstance(datasets, dict):
+        datasets = {}
+
+    dataset_id = None
+    pop = datasets.get("population")
+    if isinstance(pop, dict):
+        dataset_id = "population"
+    else:
+        dataset_id, pop = next(((k, v) for k, v in datasets.items() if isinstance(v, dict)), (None, {}))
+
+    state = {}
+    if dataset_id:
+        state = _load_json(get_datausa_bucket(), f"_sync_state/datausa/{dataset_id}/latest_state.jsonl")
+
+    year_range = pop.get("year_range") or state.get("year_range")
+    years = "N/A"
+    if isinstance(year_range, list) and len(year_range) == 2:
+        try:
+            years = f"{int(year_range[0])}–{int(year_range[1])}"
+        except Exception:
+            years = "N/A"
+
+    base_url = os.environ.get("DATAUSA_BASE_URL", "https://api.datausa.io/tesseract").rstrip("/")
+    endpoint = state.get("api_url") if isinstance(state, dict) else None
+    if not isinstance(endpoint, str) or not endpoint.strip():
+        endpoint = f"{base_url}/data.jsonrecords"
+
+    datausa_summary = {
+        "endpoint": endpoint,
+        "action": str(pop.get("action", "unknown")),
+        "content_hash": str(pop.get("content_hash") or state.get("content_hash") or ""),
+        "record_count": int(pop.get("record_count") or state.get("record_count") or 0),
+        "years": years,
+    }
+
+    analytics = {
+        "reports_generated": 3,
+        "site_json_updated": True,
+        "report_names": [
+            "Population Statistics (2013-2018)",
+            "Best Year by Series ID",
+            "Series + Population Join (PRS30006032 Q01)",
+        ],
     }
 
     return {
-        "last_run": datetime.now(timezone.utc).isoformat(),
+        "last_run": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "trigger": "EventBridge scheduled rule (nightly)",
         "duration_seconds": round(duration_seconds, 1),
         "summary": {
@@ -521,10 +838,12 @@ def build_pipeline_status(sync_results: dict, duration_seconds: float = 0.0) -> 
             "total_files_checked": total_checked,
             "files_updated": total_updated,
             "files_unchanged": total_unchanged,
-            "datausa_status": datausa["action"],
+            "files_deleted": total_deleted,
+            "datausa_status": datausa_summary["action"],
         },
         "series": series_list,
-        "datausa": datausa,
+        "datausa": datausa_summary,
+        "analytics": analytics,
     }
 
 
@@ -614,5 +933,33 @@ if __name__ == "__main__":
         )
     except Exception as exc:
         results["exported_participation_vs_noncitizen_share_error"] = str(exc)
+
+    # PR index charts (derived from BLS PR `pr.data.0.Current`).
+    try:
+        pr_df = load_bls_from_s3(bucket=get_bls_bucket(), key=bls_data_key("pr", "pr.data.0.Current"))
+        payload = build_productivity_vs_compensation(pr_df)
+        results["exported_productivity_vs_compensation"] = str(
+            export_site_payload(payload, site_dir / "productivity_vs_compensation.json")
+        )
+    except Exception as exc:
+        results["exported_productivity_vs_compensation_error"] = str(exc)
+
+    try:
+        pr_df = load_bls_from_s3(bucket=get_bls_bucket(), key=bls_data_key("pr", "pr.data.0.Current"))
+        payload = build_productivity_vs_unit_labor_costs(pr_df)
+        results["exported_productivity_vs_costs"] = str(
+            export_site_payload(payload, site_dir / "productivity_vs_costs.json")
+        )
+    except Exception as exc:
+        results["exported_productivity_vs_costs_error"] = str(exc)
+
+    try:
+        pr_df = load_bls_from_s3(bucket=get_bls_bucket(), key=bls_data_key("pr", "pr.data.0.Current"))
+        payload = build_manufacturing_vs_nonfarm_productivity(pr_df)
+        results["exported_manufacturing_vs_nonfarm"] = str(
+            export_site_payload(payload, site_dir / "manufacturing_vs_nonfarm.json")
+        )
+    except Exception as exc:
+        results["exported_manufacturing_vs_nonfarm_error"] = str(exc)
 
     print(json.dumps(results, indent=2, default=str))

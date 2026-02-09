@@ -1,12 +1,25 @@
-@startuml interview-failure-retry
-!theme plain
-title Interview — Failure, Retries, and DLQ\n(At-least-once processing with SQS)
+@startuml failure-retry
+!theme cyborg
+skinparam backgroundColor #020A20
+skinparam defaultFontColor #ffffff
+skinparam participantBorderColor #387CF1
+skinparam participantBackgroundColor #0a1628
+skinparam actorBorderColor #387CF1
+skinparam queueBorderColor #f59e0b
+skinparam queueBackgroundColor #1a1505
+skinparam arrowColor #387CF1
+skinparam noteBorderColor #6b7280
+skinparam noteBackgroundColor #111d35
+skinparam sequenceLifeLineBorderColor #387CF1
+skinparam titleFontColor #ffffff
+
+title FOMC Agent — Reliability\n(At-least-once processing with SQS)
 
 actor "Producer\n(S3 Notification\nor Upstream Step)" as Producer
-queue "SQS Queue\n{FOMC_ANALYTICS_QUEUE_NAME}" as Q #FFF3E0
-participant "Consumer\n(Lambda / Worker)" as Worker #FFF8E1
-participant "CloudWatch Logs" as Logs #F5F5F5
-queue "DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as DLQ #FFEBEE
+queue "SQS Queue\n{FOMC_ANALYTICS_QUEUE_NAME}" as Q
+participant "Consumer\n(Lambda / Worker)" as Worker
+participant "CloudWatch Logs" as Logs
+queue "DLQ\n{FOMC_ANALYTICS_DLQ_NAME}" as DLQ
 
 Producer -> Q : SendMessage(event)
 activate Q
@@ -50,4 +63,3 @@ deactivate Worker
 deactivate Q
 
 @enduml
-

@@ -16,7 +16,7 @@ import json
 import os
 import time
 import urllib.error
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 from urllib.parse import urlencode
@@ -44,6 +44,7 @@ class DataUsaDataset:
     locale: str = DEFAULT_LOCALE
     key: str | None = None
     min_sync_interval_hours: float | None = None
+    filters: dict[str, str] = field(default_factory=dict)
     fallbacks: tuple["DataUsaDataset", ...] = ()
 
     def build_url(self, *, base_url: str, limit: int | None = None) -> str:
@@ -54,6 +55,9 @@ class DataUsaDataset:
             "locale": self.locale,
             "measures": ",".join(self.measures),
         }
+        for k, v in (self.filters or {}).items():
+            if k and v:
+                query[str(k)] = str(v)
         if limit is not None and limit > 0:
             query["limit"] = str(limit)
         return f"{endpoint}?{urlencode(query)}"
@@ -64,7 +68,7 @@ class DataUsaDataset:
         return f"{self.dataset_id}.json"
 
     def candidates(self) -> list["DataUsaDataset"]:
-        seen: set[tuple[str, str, str, str, str]] = set()
+        seen: set[tuple[str, str, str, str, str, str]] = set()
         out: list[DataUsaDataset] = []
         for spec in (self,) + tuple(self.fallbacks or ()):
             key = (
@@ -73,6 +77,7 @@ class DataUsaDataset:
                 ",".join(spec.measures),
                 spec.locale,
                 spec.raw_key(),
+                ",".join(f"{k}={v}" for k, v in sorted((spec.filters or {}).items())),
             )
             if key in seen:
                 continue
@@ -262,11 +267,11 @@ def _default_datasets() -> dict[str, DataUsaDataset]:
     citizenship_cube = os.environ.get("DATAUSA_CITIZENSHIP_CUBE", "acs_ygc_citizenship_status_1")
     citizenship_drilldowns = _parse_env_list(
         "DATAUSA_CITIZENSHIP_DRILLDOWNS",
-        ["Year", "Nation", "Citizenship Status"],
+        ["Year", "Nation", "Citizenship"],
     )
     citizenship_measures = _parse_env_list(
         "DATAUSA_CITIZENSHIP_MEASURES",
-        ["Population"],
+        ["Citizenship Status"],
     )
 
     def _fallbacks_for_citizenship() -> tuple[DataUsaDataset, ...]:
@@ -303,6 +308,7 @@ def _default_datasets() -> dict[str, DataUsaDataset]:
                         description="Population by citizenship status (fallback).",
                         key="citizenship.json",
                         min_sync_interval_hours=24 * 30,
+                        filters={"Nation": "01000US"},
                     )
                 )
 
@@ -322,10 +328,12 @@ def _default_datasets() -> dict[str, DataUsaDataset]:
             dataset_id="commute_time",
             cube="acs_ygt_mean_transportation_time_to_work_1",
             drilldowns=["Year", "Nation"],
-            measures=["Mean Transportation Time to Work"],
+            measures=["Average Commute Time"],
             description="Mean commute time (minutes) for Nation by Year.",
             key="commute_time.json",
             min_sync_interval_hours=24 * 30,
+            # Restrict to national series; otherwise the cube includes many geographies.
+            filters={"Nation": "01000US"},
         ),
         "citizenship": DataUsaDataset(
             dataset_id="citizenship",
@@ -335,6 +343,7 @@ def _default_datasets() -> dict[str, DataUsaDataset]:
             description="Population by citizenship status for Nation by Year.",
             key="citizenship.json",
             min_sync_interval_hours=24 * 30,
+            filters={"Nation": "01000US"},
             fallbacks=_fallbacks_for_citizenship(),
         ),
     }

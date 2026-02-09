@@ -4,29 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Diagrams — FOMC Agent Lab</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23020A20' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23387CF1'>F</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <nav>
-    <a class="brand" href="index.html">FOMC Agent Lab</a>
-    <a href="executive-summary.html">Executive Summary</a>
-    <a href="index.html">Dashboard</a>
-    <a href="pipeline.html">Pipeline</a>
-    <a href="timeline.html">Timeline</a>
+    <a class="brand" href="index.html">FOMC Agent</a>
+    <a href="index.html">Home</a>
     <a href="charts.html">Charts</a>
+    <a href="pipeline.html">Pipeline</a>
     <a href="architecture.html">Architecture</a>
-    <a href="design.html">Design</a>
-    <a href="alternatives.html">Alternatives</a>
     <a class="active" href="diagrams.html">Diagrams</a>
+    <a href="design.html">Docs</a>
     <a href="about.html">About</a>
-    <a href="bls-guide.html">BLS Guide</a>
-    <a href="adr.html">ADRs</a>
   </nav>
 
   <div class="container">
     <div class="page-header">
       <h1>PlantUML Diagrams</h1>
-      <p class="subtitle">Interview-ready visuals: architecture, sequence, deployment, failures, and alternatives.</p>
+      <p class="subtitle">Client-ready visuals: architecture, sequence, deployment, failures, and alternatives.</p>
     </div>
 
     <div class="card prose">
@@ -34,15 +30,24 @@
       <p class="muted">These SVGs are generated from PlantUML (<code>.puml</code>) sources.</p>
       <pre><code># from repo root:
 mkdir -p site/diagrams site/puml
-cp docs/*.puml docs/interview/*.puml site/puml/
+cp docs/*.puml docs/portfolio/*.puml site/puml/
 plantuml -tsvg docs/*.puml -o ../site/diagrams
-plantuml -tsvg docs/interview/*.puml -o ../../site/diagrams</code></pre>
-      <p class="muted">Tip: open the <code>.puml</code> sources in <code>docs/</code> to customize labels for your interview.</p>
+plantuml -tsvg docs/portfolio/*.puml -o ../../site/diagrams</code></pre>
+      <p class="muted">Tip: open the <code>.puml</code> sources in <code>docs/</code> to customize labels for your presentation.</p>
     </div>
 
     <div class="card prose">
       <h2>Gallery</h2>
-      <p class="muted">Click “Show source” to view the PlantUML that generated each diagram.</p>
+      <p class="muted">Click a diagram to open it full-screen (or use “Open SVG” to zoom in a new tab). Click “Show source” to view the PlantUML that generated each diagram.</p>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Deployment Architecture</h3>
+      <img class="diagram-img" src="diagrams/deployment.svg" alt="Deployment architecture diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/deployment.puml">Loading…</code></pre>
+      </details>
     </div>
 
     <div class="diagram-container">
@@ -55,20 +60,20 @@ plantuml -tsvg docs/interview/*.puml -o ../../site/diagrams</code></pre>
     </div>
 
     <div class="diagram-container">
-      <h3 style="margin-top:0;">Interview: System Context</h3>
-      <img class="diagram-img" src="diagrams/interview-c4-context.svg" alt="System context diagram" />
+      <h3 style="margin-top:0;">FOMC Agent: System Context</h3>
+      <img class="diagram-img" src="diagrams/c4-context.svg" alt="System context diagram" />
       <details class="code-details">
         <summary>Show source</summary>
-        <pre><code data-puml="puml/interview-c4-context.puml">Loading…</code></pre>
+        <pre><code data-puml="puml/c4-context.puml">Loading…</code></pre>
       </details>
     </div>
 
     <div class="diagram-container">
-      <h3 style="margin-top:0;">Interview: Containers / Components</h3>
-      <img class="diagram-img" src="diagrams/interview-c4-containers.svg" alt="Containers and components diagram" />
+      <h3 style="margin-top:0;">FOMC Agent: Components</h3>
+      <img class="diagram-img" src="diagrams/c4-containers.svg" alt="Containers and components diagram" />
       <details class="code-details">
         <summary>Show source</summary>
-        <pre><code data-puml="puml/interview-c4-containers.puml">Loading…</code></pre>
+        <pre><code data-puml="puml/c4-containers.puml">Loading…</code></pre>
       </details>
     </div>
 
@@ -100,6 +105,15 @@ plantuml -tsvg docs/interview/*.puml -o ../../site/diagrams</code></pre>
     </div>
 
     <div class="diagram-container">
+      <h3 style="margin-top:0;">AWS Observability Flow</h3>
+      <img class="diagram-img" src="diagrams/aws-observability-flow.svg" alt="AWS observability flow diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/aws-observability-flow.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
       <h3 style="margin-top:0;">LocalStack + Synth Flow</h3>
       <img class="diagram-img" src="diagrams/localstack-synth-sequence.svg" alt="LocalStack synth sequence diagram" />
       <details class="code-details">
@@ -118,38 +132,65 @@ plantuml -tsvg docs/interview/*.puml -o ../../site/diagrams</code></pre>
     </div>
 
     <div class="diagram-container">
-      <h3 style="margin-top:0;">Interview: Data Model</h3>
-      <img class="diagram-img" src="diagrams/interview-data-model.svg" alt="Data model diagram" />
+      <h3 style="margin-top:0;">FOMC Agent: Data Model</h3>
+      <img class="diagram-img" src="diagrams/data-model.svg" alt="Data model diagram" />
       <details class="code-details">
         <summary>Show source</summary>
-        <pre><code data-puml="puml/interview-data-model.puml">Loading…</code></pre>
+        <pre><code data-puml="puml/data-model.puml">Loading…</code></pre>
       </details>
     </div>
 
     <div class="diagram-container">
-      <h3 style="margin-top:0;">Interview: Failure &amp; Retry (SQS + DLQ)</h3>
-      <img class="diagram-img" src="diagrams/interview-failure-retry.svg" alt="Failure and retry diagram" />
+      <h3 style="margin-top:0;">FOMC Agent: Reliability (SQS + DLQ)</h3>
+      <img class="diagram-img" src="diagrams/failure-retry.svg" alt="Failure and retry diagram" />
       <details class="code-details">
         <summary>Show source</summary>
-        <pre><code data-puml="puml/interview-failure-retry.puml">Loading…</code></pre>
+        <pre><code data-puml="puml/failure-retry.puml">Loading…</code></pre>
       </details>
     </div>
 
     <div class="diagram-container">
-      <h3 style="margin-top:0;">Interview: Orchestration</h3>
-      <img class="diagram-img" src="diagrams/interview-orchestration.svg" alt="Orchestration diagram" />
+      <h3 style="margin-top:0;">FOMC Agent: Orchestration</h3>
+      <img class="diagram-img" src="diagrams/orchestration.svg" alt="Orchestration diagram" />
       <details class="code-details">
         <summary>Show source</summary>
-        <pre><code data-puml="puml/interview-orchestration.puml">Loading…</code></pre>
+        <pre><code data-puml="puml/orchestration.puml">Loading…</code></pre>
       </details>
     </div>
 
     <div class="diagram-container">
-      <h3 style="margin-top:0;">Interview: LocalStack vs AWS</h3>
-      <img class="diagram-img" src="diagrams/interview-localstack-vs-aws.svg" alt="LocalStack versus AWS diagram" />
+      <h3 style="margin-top:0;">FOMC Agent: Environments</h3>
+      <img class="diagram-img" src="diagrams/localstack-vs-aws.svg" alt="LocalStack versus AWS diagram" />
       <details class="code-details">
         <summary>Show source</summary>
-        <pre><code data-puml="puml/interview-localstack-vs-aws.puml">Loading…</code></pre>
+        <pre><code data-puml="puml/localstack-vs-aws.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Alternative: Databricks (Lakehouse)</h3>
+      <img class="diagram-img" src="diagrams/alt-databricks.svg" alt="Databricks alternative architecture diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/alt-databricks.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Alternative: Google Cloud Platform (GCP)</h3>
+      <img class="diagram-img" src="diagrams/alt-gcp.svg" alt="GCP alternative architecture diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/alt-gcp.puml">Loading…</code></pre>
+      </details>
+    </div>
+
+    <div class="diagram-container">
+      <h3 style="margin-top:0;">Alternative: Microsoft Azure</h3>
+      <img class="diagram-img" src="diagrams/alt-azure.svg" alt="Azure alternative architecture diagram" />
+      <details class="code-details">
+        <summary>Show source</summary>
+        <pre><code data-puml="puml/alt-azure.puml">Loading…</code></pre>
       </details>
     </div>
   </div>
@@ -169,5 +210,7 @@ plantuml -tsvg docs/interview/*.puml -o ../../site/diagrams</code></pre>
       }));
     })();
   </script>
+
+  <script src="lightbox.js"></script>
 </body>
 </html>

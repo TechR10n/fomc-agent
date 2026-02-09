@@ -1,10 +1,12 @@
 """Tests for bls_getter.py."""
 
 import json
+import os
 import urllib.error
 from datetime import datetime
 from unittest.mock import patch
 
+import hashlib
 import boto3
 import pytest
 from moto import mock_aws
@@ -210,6 +212,138 @@ class TestSyncSeries:
             result = sync_series("pr")
 
         assert len(result["added"]) == 3
+
+    @mock_aws
+    def test_sync_ln_series_via_bls_api(self, monkeypatch):
+        """LN is fetched via BLS API into a small `ln/ln.data.0.Current` TSV."""
+        s3 = boto3.client("s3", region_name="us-east-1")
+        s3.create_bucket(Bucket="fomc-bls-raw")
+
+        monkeypatch.setenv("BLS_BUCKET", "fomc-bls-raw")
+        monkeypatch.setenv("BLS_LN_START_YEAR", "2024")
+        monkeypatch.setenv("BLS_LN_END_YEAR", "2024")
+        monkeypatch.setenv("BLS_API_MAX_YEARS_PER_REQUEST", "20")
+
+        api_payload = {
+            "status": "REQUEST_SUCCEEDED",
+            "message": [],
+            "Results": {
+                "series": [
+                    {
+                        "seriesID": "LNS14000000",
+                        "data": [
+                            {"year": "2024", "period": "M01", "value": "3.7", "footnotes": [{}]},
+                        ],
+                    },
+                    {
+                        "seriesID": "LNS11300000",
+                        "data": [
+                            {"year": "2024", "period": "M01", "value": "62.5", "footnotes": [{}]},
+                        ],
+                    },
+                ]
+            },
+        }
+
+        with patch("src.data_fetchers.bls_getter.post_json", return_value=api_payload):
+            result = sync_series("ln")
+
+        assert result["added"] == ["ln.data.0.Current"]
+        obj = s3.get_object(Bucket="fomc-bls-raw", Key="ln/ln.data.0.Current")
+        body = obj["Body"].read().decode("utf-8")
+        assert body.startswith("series_id\tyear\tperiod\tvalue\tfootnote_codes\n")
+        assert "LNS14000000\t2024\tM01\t3.7" in body
+        assert "LNS11300000\t2024\tM01\t62.5" in body
+        assert obj["Metadata"].get("source") == "bls_api"
+        assert obj["Metadata"].get("content_hash")
+
+    @mock_aws
+    def test_sync_ln_series_chunks_year_ranges_by_default(self, monkeypatch):
+        """LN API sync defaults to safe chunking so mid-range years aren't skipped."""
+        s3 = boto3.client("s3", region_name="us-east-1")
+        s3.create_bucket(Bucket="fomc-bls-raw")
+
+        monkeypatch.setenv("BLS_BUCKET", "fomc-bls-raw")
+        monkeypatch.setenv("BLS_LN_START_YEAR", "2005")
+        monkeypatch.setenv("BLS_LN_END_YEAR", "2026")
+        monkeypatch.delenv("BLS_API_MAX_YEARS_PER_REQUEST", raising=False)
+        monkeypatch.delenv("BLS_API_KEY", raising=False)
+
+        calls: list[dict] = []
+
+        def _post_json(_url: str, payload: dict, **_kwargs):
+            calls.append(payload)
+            start = str(payload.get("startyear"))
+            series = []
+            for sid in payload.get("seriesid", []) or []:
+                series.append(
+                    {
+                        "seriesID": sid,
+                        "data": [{"year": start, "period": "M01", "value": "1.0", "footnotes": [{}]}],
+                    }
+                )
+            return {"status": "REQUEST_SUCCEEDED", "message": [], "Results": {"series": series}}
+
+        with patch("src.data_fetchers.bls_getter.post_json", side_effect=_post_json):
+            result = sync_series("ln")
+
+        assert result["added"] == ["ln.data.0.Current"]
+        assert [(c.get("startyear"), c.get("endyear")) for c in calls] == [
+            ("2005", "2014"),
+            ("2015", "2024"),
+            ("2025", "2026"),
+        ]
+
+        body = s3.get_object(Bucket="fomc-bls-raw", Key="ln/ln.data.0.Current")["Body"].read().decode("utf-8")
+        # Ensure we got rows from each chunk (year chosen here is the chunk start year).
+        assert "\t2005\tM01\t" in body
+        assert "\t2015\tM01\t" in body
+        assert "\t2025\tM01\t" in body
+
+    @mock_aws
+    def test_sync_ln_series_skips_unchanged(self, monkeypatch):
+        """LN API sync does not re-upload when content hash matches."""
+        s3 = boto3.client("s3", region_name="us-east-1")
+        s3.create_bucket(Bucket="fomc-bls-raw")
+
+        monkeypatch.setenv("BLS_BUCKET", "fomc-bls-raw")
+        monkeypatch.setenv("BLS_LN_START_YEAR", "2024")
+        monkeypatch.setenv("BLS_LN_END_YEAR", "2024")
+        monkeypatch.setenv("BLS_API_MAX_YEARS_PER_REQUEST", "20")
+
+        api_payload = {
+            "status": "REQUEST_SUCCEEDED",
+            "message": [],
+            "Results": {
+                "series": [
+                    {
+                        "seriesID": "LNS14000000",
+                        "data": [
+                            {"year": "2024", "period": "M01", "value": "3.7", "footnotes": [{}]},
+                        ],
+                    },
+                ]
+            },
+        }
+
+        # Render the expected TSV body to compute the same content hash.
+        expected_body = (
+            "series_id\tyear\tperiod\tvalue\tfootnote_codes\n"
+            "LNS14000000\t2024\tM01\t3.7\t\n"
+        ).encode("utf-8")
+        expected_hash = hashlib.sha256(expected_body).hexdigest()[:16]
+
+        s3.put_object(
+            Bucket="fomc-bls-raw",
+            Key="ln/ln.data.0.Current",
+            Body=expected_body,
+            Metadata={"content_hash": expected_hash},
+        )
+
+        with patch("src.data_fetchers.bls_getter.post_json", return_value=api_payload):
+            result = sync_series("ln")
+
+        assert result["unchanged"] == ["ln.data.0.Current"]
 
 
 class TestSyncMultipleSeries:

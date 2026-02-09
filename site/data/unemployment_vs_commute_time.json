@@ -1,6 +1,6 @@
 {
-  "title": "Unemployment vs Commute Time",
-  "description": "Missing BLS LN data (LNS14000000) \u2014 An error occurred (NoSuchKey) when calling the GetObject operation: The specified key does not exist.",
+  "title": "Unemployment vs Commute Time (Nation)",
+  "description": "Annual unemployment rate (BLS CPS/LN) plotted against mean commuting time (ACS via DataUSA). Useful for spotting mismatch vs cyclical slack.",
   "y_left": {
     "label": "Unemployment Rate (%)",
     "key": "unemployment_rate",
@@ -11,5 +11,56 @@
     "key": "mean_commute_minutes",
     "color": "#3b82f6"
   },
-  "points": []
+  "points": [
+    {
+      "year": 2013,
+      "unemployment_rate": 7.358333333333333,
+      "mean_commute_minutes": 25.80386734008789
+    },
+    {
+      "year": 2014,
+      "unemployment_rate": 6.158333333333334,
+      "mean_commute_minutes": 26.044544219970703
+    },
+    {
+      "year": 2015,
+      "unemployment_rate": 5.2749999999999995,
+      "mean_commute_minutes": 26.431564331054688
+    },
+    {
+      "year": 2016,
+      "unemployment_rate": 4.875,
+      "mean_commute_minutes": 26.630359649658203
+    },
+    {
+      "year": 2017,
+      "unemployment_rate": 4.358333333333333,
+      "mean_commute_minutes": 26.87240982055664
+    },
+    {
+      "year": 2018,
+      "unemployment_rate": 3.891666666666666,
+      "mean_commute_minutes": 27.110050201416016
+    },
+    {
+      "year": 2019,
+      "unemployment_rate": 3.6750000000000003,
+      "mean_commute_minutes": 27.564327239990234
+    },
+    {
+      "year": 2021,
+      "unemployment_rate": 5.3500000000000005,
+      "mean_commute_minutes": 25.625782012939453
+    },
+    {
+      "year": 2022,
+      "unemployment_rate": 3.65,
+      "mean_commute_minutes": 26.367557525634766
+    },
+    {
+      "year": 2023,
+      "unemployment_rate": 3.625,
+      "mean_commute_minutes": 26.788724899291992
+    }
+  ]
 }

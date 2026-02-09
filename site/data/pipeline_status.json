@@ -1,85 +1,121 @@
 {
-  "last_run": "2026-02-03T04:00:00Z",
+  "last_run": "2026-02-09T04:54:26.281852Z",
   "trigger": "EventBridge scheduled rule (nightly)",
-  "duration_seconds": 12.4,
+  "duration_seconds": 39.4,
   "summary": {
-    "series_scanned": 3,
-    "total_files_checked": 47,
-    "files_updated": 3,
-    "files_unchanged": 44,
+    "series_scanned": 5,
+    "total_files_checked": 5,
+    "files_updated": 5,
+    "files_unchanged": 0,
     "files_deleted": 0,
-    "datausa_status": "unchanged"
+    "datausa_status": "updated"
   },
   "series": [
     {
-      "id": "pr",
-      "name": "Major Sector Productivity and Costs",
-      "url": "https://download.bls.gov/pub/time.series/pr/",
-      "files_checked": 12,
+      "id": "ci",
+      "name": "Employment Cost Index",
+      "url": "https://download.bls.gov/pub/time.series/ci/",
+      "files_checked": 1,
       "files_updated": 1,
-      "files_unchanged": 11,
+      "files_unchanged": 0,
       "files_deleted": 0,
-      "latest_source_modified": "2026-02-01T08:30:00Z",
+      "latest_source_modified": "2025-12-10T08:30:00",
       "files": [
-        {"name": "pr.data.0.Current", "action": "updated", "source_modified": "2026-02-01T08:30:00Z", "bytes": 245760},
-        {"name": "pr.data.1.AllData", "action": "unchanged", "source_modified": "2026-01-15T08:30:00Z", "bytes": 1482752},
-        {"name": "pr.series", "action": "unchanged", "source_modified": "2026-01-15T08:30:00Z", "bytes": 98304},
-        {"name": "pr.contacts", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 512},
-        {"name": "pr.footnote", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 1024},
-        {"name": "pr.period", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 256},
-        {"name": "pr.measure", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 2048},
-        {"name": "pr.sector", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 1536},
-        {"name": "pr.class", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 512},
-        {"name": "pr.duration", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 256},
-        {"name": "pr.subject", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 1024},
-        {"name": "pr.txt", "action": "unchanged", "source_modified": "2025-06-10T08:30:00Z", "bytes": 4096}
+        {
+          "name": "ci.data.0.Current",
+          "action": "added",
+          "source_modified": "2025-12-10T08:30:00",
+          "bytes": 3955287
+        }
       ]
     },
     {
       "id": "cu",
-      "name": "Consumer Price Index — All Urban Consumers",
+      "name": "Consumer Price Index \u2014 All Urban Consumers",
       "url": "https://download.bls.gov/pub/time.series/cu/",
-      "files_checked": 24,
-      "files_updated": 2,
-      "files_unchanged": 22,
+      "files_checked": 1,
+      "files_updated": 1,
+      "files_unchanged": 0,
       "files_deleted": 0,
-      "latest_source_modified": "2026-02-02T08:30:00Z",
+      "latest_source_modified": "2026-01-16T14:03:00",
       "files": [
-        {"name": "cu.data.0.Current", "action": "updated", "source_modified": "2026-02-02T08:30:00Z", "bytes": 524288},
-        {"name": "cu.data.1.AllItems", "action": "updated", "source_modified": "2026-02-02T08:30:00Z", "bytes": 3145728},
-        {"name": "cu.data.2.Summaries", "action": "unchanged", "source_modified": "2026-01-15T08:30:00Z", "bytes": 2097152},
-        {"name": "cu.series", "action": "unchanged", "source_modified": "2026-01-15T08:30:00Z", "bytes": 196608}
+        {
+          "name": "cu.data.0.Current",
+          "action": "added",
+          "source_modified": "2026-01-16T14:03:00",
+          "bytes": 47904021
+        }
       ]
     },
     {
-      "id": "ce",
-      "name": "Employment, Hours, and Earnings — National",
-      "url": "https://download.bls.gov/pub/time.series/ce/",
-      "files_checked": 11,
-      "files_updated": 0,
-      "files_unchanged": 11,
+      "id": "jt",
+      "name": "Job Openings and Labor Turnover Survey",
+      "url": "https://download.bls.gov/pub/time.series/jt/",
+      "files_checked": 1,
+      "files_updated": 1,
+      "files_unchanged": 0,
       "files_deleted": 0,
-      "latest_source_modified": "2026-01-20T08:30:00Z",
+      "latest_source_modified": "2026-02-05T10:00:00",
       "files": [
-        {"name": "ce.data.0.AllCESSeries", "action": "unchanged", "source_modified": "2026-01-20T08:30:00Z", "bytes": 8388608},
-        {"name": "ce.series", "action": "unchanged", "source_modified": "2026-01-20T08:30:00Z", "bytes": 262144}
+        {
+          "name": "jt.data.0.Current",
+          "action": "added",
+          "source_modified": "2026-02-05T10:00:00",
+          "bytes": 20275167
+        }
+      ]
+    },
+    {
+      "id": "ln",
+      "name": "Labor Force Statistics (CPS)",
+      "url": "https://download.bls.gov/pub/time.series/ln/",
+      "files_checked": 1,
+      "files_updated": 1,
+      "files_unchanged": 0,
+      "files_deleted": 0,
+      "latest_source_modified": null,
+      "files": [
+        {
+          "name": "ln.data.0.Current",
+          "action": "added",
+          "source_modified": null,
+          "bytes": 7037
+        }
+      ]
+    },
+    {
+      "id": "pr",
+      "name": "Major Sector Productivity and Costs",
+      "url": "https://download.bls.gov/pub/time.series/pr/",
+      "files_checked": 1,
+      "files_updated": 1,
+      "files_unchanged": 0,
+      "files_deleted": 0,
+      "latest_source_modified": "2026-01-29T08:30:00",
+      "files": [
+        {
+          "name": "pr.data.0.Current",
+          "action": "added",
+          "source_modified": "2026-01-29T08:30:00",
+          "bytes": 1576038
+        }
       ]
     }
   ],
   "datausa": {
-    "endpoint": "https://honolulu-api.datausa.io/tesseract/data.jsonrecords",
-    "action": "unchanged",
-    "content_hash": "a3b8f2c1d4e5f6a7",
-    "record_count": 11,
-    "years": "2013–2023"
+    "endpoint": "https://api.datausa.io/tesseract/data.jsonrecords?cube=acs_yg_total_population_1&drilldowns=Year%2CNation&locale=en&measures=Population",
+    "action": "updated",
+    "content_hash": "645b90b412ecde83",
+    "record_count": 10,
+    "years": "2013\u20132023"
   },
   "analytics": {
     "reports_generated": 3,
     "site_json_updated": true,
     "report_names": [
-      "Population Statistics (2013–2018)",
-      "Best Year by Series",
-      "Series-Population Join (PRS30006032 Q01)"
+      "Population Statistics (2013-2018)",
+      "Best Year by Series ID",
+      "Series + Population Join (PRS30006032 Q01)"
     ]
   }
 }

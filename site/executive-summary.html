@@ -4,23 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Executive Summary — FOMC Agent Lab</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23020A20' width='100' height='100' rx='20'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23387CF1'>F</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <nav>
-    <a class="brand" href="index.html">FOMC Agent Lab</a>
-    <a class="active" href="executive-summary.html">Executive Summary</a>
-    <a href="index.html">Dashboard</a>
-    <a href="pipeline.html">Pipeline</a>
-    <a href="timeline.html">Timeline</a>
+    <a class="brand" href="index.html">FOMC Agent</a>
+    <a href="index.html">Home</a>
     <a href="charts.html">Charts</a>
+    <a href="pipeline.html">Pipeline</a>
     <a href="architecture.html">Architecture</a>
-    <a href="design.html">Design</a>
-    <a href="alternatives.html">Alternatives</a>
     <a href="diagrams.html">Diagrams</a>
+    <a class="active" href="design.html">Docs</a>
     <a href="about.html">About</a>
-    <a href="bls-guide.html">BLS Guide</a>
-    <a href="adr.html">ADRs</a>
   </nav>
 
   <div class="container">
@@ -63,7 +59,7 @@
 
     <div class="card prose">
       <h2>Run it (LocalStack)</h2>
-      <p>For interviews, run the end-to-end LocalStack refresh and generate dashboards in one pass:</p>
+      <p>To demonstrate the pipeline, run the end-to-end LocalStack refresh and generate dashboards in one pass:</p>
       <pre><code>docker compose up -d
 source .env.shared
 source .env.localstack
@@ -109,5 +105,6 @@ python tools/localstack_full_refresh.py</code></pre>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="app.js"></script>
+  <script src="lightbox.js"></script>
 </body>
 </html>

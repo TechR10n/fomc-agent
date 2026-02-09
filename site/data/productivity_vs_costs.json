@@ -1,29 +1,166 @@
 {
   "title": "Productivity vs Unit Labor Costs (Nonfarm Business)",
-  "description": "When unit labor costs rise faster than productivity, profit margins compress. This spread is a leading indicator for Fed policy decisions.",
-  "y_left": {"label": "Output per Hour (Index, 2012=100)", "key": "output_per_hour", "color": "#3b82f6"},
-  "y_right": {"label": "Unit Labor Costs (Index, 2012=100)", "key": "unit_labor_costs", "color": "#ef4444"},
+  "description": "Nonfarm business sector indexes from BLS PR. Values are rebased so 2016=100 (source index base year 2017=100). Series: productivity=PRS85006093, unit_labor_costs=PRS85006113; period=Q05.",
+  "y_left": {
+    "label": "Output per Hour (Rebased Index, 2016=100)",
+    "key": "output_per_hour",
+    "color": "#3b82f6"
+  },
+  "y_right": {
+    "label": "Unit Labor Costs (Rebased Index, 2016=100)",
+    "key": "unit_labor_costs",
+    "color": "#ef4444"
+  },
   "points": [
-    {"year": 2003, "output_per_hour": 82.1, "unit_labor_costs": 82.4},
-    {"year": 2004, "output_per_hour": 84.8, "unit_labor_costs": 82.9},
-    {"year": 2005, "output_per_hour": 86.3, "unit_labor_costs": 84.6},
-    {"year": 2006, "output_per_hour": 87.2, "unit_labor_costs": 86.8},
-    {"year": 2007, "output_per_hour": 88.5, "unit_labor_costs": 89.4},
-    {"year": 2008, "output_per_hour": 89.7, "unit_labor_costs": 92.1},
-    {"year": 2009, "output_per_hour": 92.4, "unit_labor_costs": 90.8},
-    {"year": 2010, "output_per_hour": 95.1, "unit_labor_costs": 89.7},
-    {"year": 2011, "output_per_hour": 95.6, "unit_labor_costs": 91.0},
-    {"year": 2012, "output_per_hour": 96.5, "unit_labor_costs": 92.8},
-    {"year": 2013, "output_per_hour": 97.3, "unit_labor_costs": 94.1},
-    {"year": 2014, "output_per_hour": 98.0, "unit_labor_costs": 96.3},
-    {"year": 2015, "output_per_hour": 99.4, "unit_labor_costs": 98.5},
-    {"year": 2016, "output_per_hour": 100.0, "unit_labor_costs": 100.0},
-    {"year": 2017, "output_per_hour": 101.3, "unit_labor_costs": 102.8},
-    {"year": 2018, "output_per_hour": 102.5, "unit_labor_costs": 105.1},
-    {"year": 2019, "output_per_hour": 104.2, "unit_labor_costs": 108.3},
-    {"year": 2020, "output_per_hour": 107.8, "unit_labor_costs": 116.9},
-    {"year": 2021, "output_per_hour": 109.7, "unit_labor_costs": 121.4},
-    {"year": 2022, "output_per_hour": 108.3, "unit_labor_costs": 130.2},
-    {"year": 2023, "output_per_hour": 112.1, "unit_labor_costs": 134.8}
+    {
+      "year": 1995,
+      "output_per_hour": 63.6,
+      "unit_labor_costs": 78.7
+    },
+    {
+      "year": 1996,
+      "output_per_hour": 64.9,
+      "unit_labor_costs": 79.8
+    },
+    {
+      "year": 1997,
+      "output_per_hour": 66.2,
+      "unit_labor_costs": 81.3
+    },
+    {
+      "year": 1998,
+      "output_per_hour": 68.4,
+      "unit_labor_costs": 83.2
+    },
+    {
+      "year": 1999,
+      "output_per_hour": 71.1,
+      "unit_labor_costs": 83.8
+    },
+    {
+      "year": 2000,
+      "output_per_hour": 73.2,
+      "unit_labor_costs": 87.1
+    },
+    {
+      "year": 2001,
+      "output_per_hour": 75.1,
+      "unit_labor_costs": 88.6
+    },
+    {
+      "year": 2002,
+      "output_per_hour": 78.3,
+      "unit_labor_costs": 86.9
+    },
+    {
+      "year": 2003,
+      "output_per_hour": 81.2,
+      "unit_labor_costs": 86.9
+    },
+    {
+      "year": 2004,
+      "output_per_hour": 83.6,
+      "unit_labor_costs": 88.3
+    },
+    {
+      "year": 2005,
+      "output_per_hour": 85.5,
+      "unit_labor_costs": 89.5
+    },
+    {
+      "year": 2006,
+      "output_per_hour": 86.3,
+      "unit_labor_costs": 92.1
+    },
+    {
+      "year": 2007,
+      "output_per_hour": 87.8,
+      "unit_labor_costs": 94.4
+    },
+    {
+      "year": 2008,
+      "output_per_hour": 89.1,
+      "unit_labor_costs": 96.1
+    },
+    {
+      "year": 2009,
+      "output_per_hour": 92.6,
+      "unit_labor_costs": 93.5
+    },
+    {
+      "year": 2010,
+      "output_per_hour": 95.7,
+      "unit_labor_costs": 92.2
+    },
+    {
+      "year": 2011,
+      "output_per_hour": 95.6,
+      "unit_labor_costs": 94.2
+    },
+    {
+      "year": 2012,
+      "output_per_hour": 96.3,
+      "unit_labor_costs": 95.6
+    },
+    {
+      "year": 2013,
+      "output_per_hour": 97.1,
+      "unit_labor_costs": 96.1
+    },
+    {
+      "year": 2014,
+      "output_per_hour": 98.0,
+      "unit_labor_costs": 97.7
+    },
+    {
+      "year": 2015,
+      "output_per_hour": 99.2,
+      "unit_labor_costs": 99.4
+    },
+    {
+      "year": 2016,
+      "output_per_hour": 100.0,
+      "unit_labor_costs": 100.0
+    },
+    {
+      "year": 2017,
+      "output_per_hour": 101.3,
+      "unit_labor_costs": 102.1
+    },
+    {
+      "year": 2018,
+      "output_per_hour": 102.7,
+      "unit_labor_costs": 104.1
+    },
+    {
+      "year": 2019,
+      "output_per_hour": 105.0,
+      "unit_labor_costs": 105.7
+    },
+    {
+      "year": 2020,
+      "output_per_hour": 110.6,
+      "unit_labor_costs": 108.6
+    },
+    {
+      "year": 2021,
+      "output_per_hour": 112.9,
+      "unit_labor_costs": 111.7
+    },
+    {
+      "year": 2022,
+      "output_per_hour": 111.2,
+      "unit_labor_costs": 117.4
+    },
+    {
+      "year": 2023,
+      "output_per_hour": 113.5,
+      "unit_labor_costs": 119.8
+    },
+    {
+      "year": 2024,
+      "output_per_hour": 116.7,
+      "unit_labor_costs": 122.6
+    }
   ]
 }
